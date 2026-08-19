@@ -843,7 +843,7 @@ class SoChiHuyGiaoDien:
         elif menu == "🌿 2. Họ Từ Xuân Lộc":
             st.subheader("🌿 Phả hệ Họ Từ Xuân Lộc (Hệ thống tương tác)")
             
-            sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🎯 Cây Trực Hệ", "🌳 Cây Toàn Cảnh", "🔍 Tra Cứu Danh Bạ"])
+            sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🎯Trực Hệ", "🌳Toàn Cảnh", "🔍Tra Cứu"])
             
             with sub_tab1:
                 chain = KyThuatBanVeGiaPha.get_ancestors_chain(df, st.session_state.focus_id)
