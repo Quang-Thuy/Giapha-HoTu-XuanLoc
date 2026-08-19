@@ -661,6 +661,7 @@ class KyThuatBanVeGiaPha:
         return dot
 
 
+ 
     @classmethod
     def hien_thi_so_do_tuong_tac(cls, dot_graph, chieu_cao=620):
         try:
@@ -681,16 +682,13 @@ class KyThuatBanVeGiaPha:
                         border: 1.5px solid #CFD8DC; border-radius: 10px;
                         background: #FDFEFE; box-shadow: inset 0 0 8px rgba(0,0,0,0.03);
                         position: relative;
-                        touch-action: none;
                     }}
-                    /* Ép cả thẻ SVG bên trong nhận diện cảm ứng 2 ngón tay */
                     #container-giapha svg {{ 
                         width: 100%; 
                         height: 100%; 
-                        touch-action: none;
                     }}
                     
-                    /* Thanh công cụ zoom nằm gọn ở góc trên bên trái */
+                    /* Thanh công cụ zoom gọn gàng ở góc trên bên trái */
                     .custom-zoom-controls {{
                         position: absolute;
                         top: 12px;
@@ -735,9 +733,10 @@ class KyThuatBanVeGiaPha:
                         var svgElement = document.querySelector('#container-giapha svg');
                         if (svgElement) {{
                             svgElement.setAttribute('id', 'svg-zoom-target');
-                            panZoomInstance = svgPanZoom('#svg-svg-zoom-target' || '#svg-zoom-target', {{
+                            // Khởi tạo đúng ID #svg-zoom-target và bật touchEnabled
+                            panZoomInstance = svgPanZoom('#svg-zoom-target', {{
                                 zoomEnabled: true,
-                                controlIconsEnabled: false, // Bắt buộc tắt hoàn toàn nút mặc định
+                                controlIconsEnabled: false,
                                 fit: true,
                                 center: true,
                                 minZoom: 0.1,
@@ -745,7 +744,7 @@ class KyThuatBanVeGiaPha:
                                 zoomScaleSensitivity: 0.25,
                                 dblClickZoomEnabled: true,
                                 mouseWheelZoomEnabled: true,
-                                preventMouseEventsDefault: true
+                                touchEnabled: true
                             }});
                         }}
                     }};
@@ -769,6 +768,7 @@ class KyThuatBanVeGiaPha:
             components.html(html_content, height=chieu_cao + 10)
         except Exception:
             st.graphviz_chart(dot_graph, use_container_width=True)
+
 
 
 
