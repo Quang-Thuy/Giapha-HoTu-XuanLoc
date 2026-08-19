@@ -660,6 +660,7 @@ class KyThuatBanVeGiaPha:
                 
         return dot
 
+
     @classmethod
     def hien_thi_so_do_tuong_tac(cls, dot_graph, chieu_cao=620):
         try:
@@ -679,30 +680,88 @@ class KyThuatBanVeGiaPha:
                         width: 100%; height: {chieu_cao}px;
                         border: 1.5px solid #CFD8DC; border-radius: 10px;
                         background: #FDFEFE; box-shadow: inset 0 0 8px rgba(0,0,0,0.03);
+                        position: relative;
+                        touch-action: none;
                     }}
-                    #container-giapha svg {{ width: 100%; height: 100%; }}
+                    /* Ép cả thẻ SVG bên trong nhận diện cảm ứng 2 ngón tay */
+                    #container-giapha svg {{ 
+                        width: 100%; 
+                        height: 100%; 
+                        touch-action: none;
+                    }}
+                    
+                    /* Thanh công cụ zoom nằm gọn ở góc trên bên trái */
+                    .custom-zoom-controls {{
+                        position: absolute;
+                        top: 12px;
+                        left: 12px;
+                        z-index: 999;
+                        display: flex;
+                        flex-direction: row;
+                        gap: 6px;
+                    }}
+                    .custom-zoom-controls button {{
+                        width: 36px;
+                        height: 36px;
+                        background-color: #ffffff;
+                        color: #333333;
+                        border: 1px solid #B0BEC5;
+                        border-radius: 6px;
+                        font-size: 18px;
+                        font-weight: bold;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }}
+                    .custom-zoom-controls button:active {{
+                        background-color: #ECEFF1;
+                    }}
                 </style>
             </head>
             <body>
                 <div id="container-giapha">
+                    <div class="custom-zoom-controls">
+                        <button onclick="zoomIn()" title="Phóng to">+</button>
+                        <button onclick="zoomOut()" title="Thu nhỏ">-</button>
+                        <button onclick="resetZoom()" title="Đặt lại" style="font-size: 14px;">⟳</button>
+                    </div>
                     {svg_data}
                 </div>
                 <script>
+                    var panZoomInstance = null;
                     window.onload = function() {{
                         var svgElement = document.querySelector('#container-giapha svg');
                         if (svgElement) {{
                             svgElement.setAttribute('id', 'svg-zoom-target');
-                            svgPanZoom('#svg-zoom-target', {{
+                            panZoomInstance = svgPanZoom('#svg-svg-zoom-target' || '#svg-zoom-target', {{
                                 zoomEnabled: true,
-                                controlIconsEnabled: true,
+                                controlIconsEnabled: false, // Bắt buộc tắt hoàn toàn nút mặc định
                                 fit: true,
                                 center: true,
                                 minZoom: 0.1,
                                 maxZoom: 25,
-                                zoomScaleSensitivity: 0.25
+                                zoomScaleSensitivity: 0.25,
+                                dblClickZoomEnabled: true,
+                                mouseWheelZoomEnabled: true,
+                                preventMouseEventsDefault: true
                             }});
                         }}
                     }};
+                    
+                    function zoomIn() {{
+                        if (panZoomInstance) panZoomInstance.zoomIn();
+                    }}
+                    function zoomOut() {{
+                        if (panZoomInstance) panZoomInstance.zoomOut();
+                    }}
+                    function resetZoom() {{
+                        if (panZoomInstance) {{
+                            panZoomInstance.resetZoom();
+                            panZoomInstance.center();
+                        }}
+                    }}
                 </script>
             </body>
             </html>
@@ -710,6 +769,7 @@ class KyThuatBanVeGiaPha:
             components.html(html_content, height=chieu_cao + 10)
         except Exception:
             st.graphviz_chart(dot_graph, use_container_width=True)
+
 
 
 # ==============================================================================
