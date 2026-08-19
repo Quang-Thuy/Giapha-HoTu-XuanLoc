@@ -662,6 +662,7 @@ class KyThuatBanVeGiaPha:
 
 
  
+   
     @classmethod
     def hien_thi_so_do_tuong_tac(cls, dot_graph, chieu_cao=620):
         try:
@@ -671,6 +672,8 @@ class KyThuatBanVeGiaPha:
             <html>
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+                <!-- Tích hợp Hammer.js để hỗ trợ cảm ứng đa điểm (2 ngón tay phóng to/thu nhỏ) -->
+                <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
                 <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
                 <style>
                     html, body {{
@@ -733,7 +736,6 @@ class KyThuatBanVeGiaPha:
                         var svgElement = document.querySelector('#container-giapha svg');
                         if (svgElement) {{
                             svgElement.setAttribute('id', 'svg-zoom-target');
-                            // Khởi tạo đúng ID #svg-zoom-target và bật touchEnabled
                             panZoomInstance = svgPanZoom('#svg-zoom-target', {{
                                 zoomEnabled: true,
                                 controlIconsEnabled: false,
