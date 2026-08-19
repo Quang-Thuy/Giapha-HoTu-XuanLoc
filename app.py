@@ -663,6 +663,7 @@ class KyThuatBanVeGiaPha:
 
  
    
+   
     @classmethod
     def hien_thi_so_do_tuong_tac(cls, dot_graph, chieu_cao=620):
         try:
@@ -672,7 +673,7 @@ class KyThuatBanVeGiaPha:
             <html>
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-                <!-- Tích hợp Hammer.js để hỗ trợ cảm ứng đa điểm (2 ngón tay phóng to/thu nhỏ) -->
+                <!-- Tích hợp Hammer.js cho cảm ứng đa điểm -->
                 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
                 <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
                 <style>
@@ -736,6 +737,47 @@ class KyThuatBanVeGiaPha:
                         var svgElement = document.querySelector('#container-giapha svg');
                         if (svgElement) {{
                             svgElement.setAttribute('id', 'svg-zoom-target');
+                            
+                            // Định nghĩa trình xử lý sự kiện cảm ứng đa điểm qua Hammer.js
+                            var customEventsHandler = {{
+                                haltEventListeners: ['touchstart', 'touchend', 'touchmove', 'touchleave', 'touchcancel'],
+                                init: function(options) {{
+                                    var instance = options.instance,
+                                        initialScale = 1,
+                                        pannedX = 0,
+                                        pannedY = 0;
+
+                                    this.hammer = Hammer(options.svgElement, {{
+                                        inputClass: Hammer.SUPPORT_ALL_TOUCHES ? Hammer.AllTouchInput : Hammer.TouchInput
+                                    }});
+
+                                    this.hammer.get('pinch').set({ enable: true });
+
+                                    this.hammer.on('panstart panmove', function(ev) {{
+                                        if (ev.type === 'panstart') {{
+                                            pannedX = 0;
+                                            pannedY = 0;
+                                        }}
+                                        instance.panBy({x: ev.deltaX - pannedX, y: ev.deltaY - pannedY});
+                                        pannedX = ev.deltaX;
+                                        pannedY = ev.deltaY;
+                                    }});
+
+                                    this.hammer.on('pinchstart pinchmove', function(ev) {{
+                                        if (ev.type === 'pinchstart') {{
+                                            initialScale = instance.getZoom();
+                                            instance.zoomAtPoint(initialScale * ev.scale, {{x: ev.center.x, y: ev.center.y}});
+                                        }}
+                                        instance.zoomAtPoint(initialScale * ev.scale, {{x: ev.center.x, y: ev.center.y}});
+                                    }});
+
+                                    options.svgElement.addEventListener('touchmove', function(e) {{ e.preventDefault(); }});
+                                }},
+                                destroy: function() {{
+                                    this.hammer.destroy();
+                                }}
+                            }};
+
                             panZoomInstance = svgPanZoom('#svg-zoom-target', {{
                                 zoomEnabled: true,
                                 controlIconsEnabled: false,
@@ -746,7 +788,7 @@ class KyThuatBanVeGiaPha:
                                 zoomScaleSensitivity: 0.25,
                                 dblClickZoomEnabled: true,
                                 mouseWheelZoomEnabled: true,
-                                touchEnabled: true
+                                customEventsHandler: customEventsHandler
                             }});
                         }}
                     }};
@@ -770,6 +812,8 @@ class KyThuatBanVeGiaPha:
             components.html(html_content, height=chieu_cao + 10)
         except Exception:
             st.graphviz_chart(dot_graph, use_container_width=True)
+
+
 
 
 
