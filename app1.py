@@ -2569,7 +2569,6 @@ class SoChiHuyGiaoDien:
     #=====================================================================
     # [PHÂN LÔ E8]: Hàm con điều phối đầu não giao diện với menu chuẩn xác mới (Tối ưu Mobile Title)
     #=====================================================================
-
     @classmethod
     def render_app(cls):
         cls.thiet_lap_giao_dien()
@@ -2587,32 +2586,8 @@ class SoChiHuyGiaoDien:
         if "focus_id" not in st.session_state:
             st.session_state.focus_id = "000.01.0.001"
 
-        # 🌟 Đưa khối điều hướng lên sát hết cỡ phía trên (Sát nút << mặc định)
-        st.sidebar.markdown("""
-            <style>
-                @keyframes runSameWayFar {
-                    0% { transform: translateX(-8px); opacity: 0.2; }
-                    50% { transform: translateX(8px); opacity: 1; }
-                    100% { transform: translateX(-8px); opacity: 0.2; }
-                }
-                .run-arrow-far {
-                    display: inline-block;
-                    color: #D32F2F;
-                    font-weight: 900;
-                    animation: runSameWayFar 1.0s infinite ease-in-out;
-                }
-                /* Dịch toàn bộ vùng chứa sidebar lên sát phía trên cùng */
-                [data-testid="stSidebarUserContent"] {
-                    padding-top: 0rem !important;
-                }
-            </style>
-            <div style="text-align: center; font-weight: bold; color: #C62828; margin-top: -32px; margin-bottom: 8px; padding: 6px; background: #FFEBEE; border-radius: 6px; border: 1px dashed #EF9A9A;">
-                <span class="run-arrow-far">&gt;&gt;</span> &nbsp;&nbsp;&nbsp; ĐIỀU HƯỚNG &nbsp;&nbsp;&nbsp; <span class="run-arrow-far">&gt;&gt;</span>
-            </div>
-        """, unsafe_allow_html=True)
-
-
-        menu_options = [
+        # Cập nhật menu theo đúng thứ tự ông chủ yêu cầu
+        menu = st.sidebar.radio("CHỌN CHỨC NĂNG:", [
             "📖 Lời Giới thiệu",
             "🎯 Trực Hệ", 
             "🌳 Toàn Cảnh", 
@@ -2621,64 +2596,33 @@ class SoChiHuyGiaoDien:
             "👤 Cá nhân hóa",
             "✍ Thêm Thành Viên", 
             "🖨 Xuất Báo Cáo", 
-            "🛡 Quản Trị Hệ Thống",
-            "🚪 EXIT"
-        ]
-
-        # Kiểm tra nếu có lệnh quay lại trang chủ
-        if st.session_state.get("reset_to_intro", False):
-            st.session_state["CHỌN CHỨC NĂNG"] = "📖 Lời Giới thiệu"
-            st.session_state["reset_to_intro"] = False
-
-        # 🎯 Menu chính
-        menu = st.sidebar.radio("CHỌN CHỨC NĂNG:", menu_options, key="CHỌN CHỨC NĂNG")
+            "🛡 Quản Trị Hệ Thống"
+        ])
         
-        # Điều phối giao diện (Đưa "🚪 EXIT" lên đầu để phản hồi ngay lập tức khi người dùng bấm vào)
-        if menu == "🚪 EXIT":
-            st.markdown("""
-                <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #fdfbf7 0%, #f4ebd0 100%); border-radius: 12px; border: 1px solid #d4c5a9; margin-top: 30px; font-family: 'Times New Roman', Times, serif;">
-                    <h2 style="color: #8B0000; text-transform: uppercase; margin-bottom: 15px;">📜 KẾT THÚC PHIÊN TRA CỨU</h2>
-                    <p style="font-size: 1.15rem; color: #2C3E50; font-style: italic; margin-bottom: 15px;">
-                        "Cây có gốc mới nở cành xanh ngọn, nước có nguồn mới chảy khắp sông sâu."
-                    </p>
-                    <p style="font-size: 1.05rem; color: #555; line-height: 1.6; margin-bottom: 20px;">
-                        Cảm ơn quý vị đã sử dụng ứng dụng Gia phả điện tử của dòng Họ.<br>
-                        Chúc quý vị luôn mạnh khỏe, hạnh phúc và an khang thịnh vượng!
-                    </p>
-                    <p style="font-size: 0.95rem; color: #666;">
-                        Quý vị có thể đóng tab trình duyệt hoặc bấm nút bên dưới để tiếp tục quay lại trang chủ.
-                    </p>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            col_bt1, col_bt2, col_bt3 = st.columns([1, 2, 1])
-            with col_bt2:
-                if st.button("🔄 Quay lại trang chủ hệ thống", use_container_width=True):
-                    st.session_state["reset_to_intro"] = True
-                    st.rerun()
-
-        elif menu == "📖 Lời Giới thiệu":
+        if menu == "📖 Lời Giới thiệu":
             cls.render_gioithieu_1trang()
-        elif menu == "🎯 Trực Hệ": 
+        if menu == "🎯 Trực Hệ": 
             cls.render_tructhe(df)
         elif menu == "🌳 Toàn Cảnh": 
             cls.render_toancanh(df)
         elif menu == "🆔 Lọc theo ID": 
-            cls.render_loc_theo_id(df)
+            cls.render_loc_theo_id(df) # Màn hình chuyên biệt vẽ trục dọc và tỏa nhánh theo ID
         elif menu == "🔍 Tra Cứu": 
             cls.render_tracuu(df)
+
         elif menu == "👤 Cá nhân hóa": 
             cn_hoa = QuanLyCaNhanHoa()
             cn_hoa.hien_thi_menu_ca_nhan_hoa()
+            
         elif menu == "✍ Thêm Thành Viên": 
             cls.render_themthanhvien(df)
         elif menu == "🖨 Xuất Báo Cáo": 
             cls.render_xuatbaocao(df)
-        elif menu == "🛡 Quản Trị Hệ Thống":
+        elif menu == "🛡 Quản Trị Hệ Thống": 
             cls.render_quantri(df)
 
-            
+
+
     #=====================================================================
     # [PHÂN LÔ E9]: Màn hình chuyên biệt Lọc theo ID hoặc Tên
     #=====================================================================

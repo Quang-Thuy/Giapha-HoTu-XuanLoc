@@ -2587,7 +2587,11 @@ class SoChiHuyGiaoDien:
         if "focus_id" not in st.session_state:
             st.session_state.focus_id = "000.01.0.001"
 
-        # 🌟 Đưa khối điều hướng lên sát hết cỡ phía trên (Sát nút << mặc định)
+        # Khởi tạo trạng thái menu để điều khiển nút quay lại hoạt động mượt mà
+        if "menu_selection" not in st.session_state:
+            st.session_state.menu_selection = "📖 Lời Giới thiệu"
+
+        # 🌟 HIỆU ỨNG DẤU >> MÀU ĐỎ CÙNG CHIỀU, THOÁNG VÀ CHẠY MƯỢT MÀ Ở SIDEBAR
         st.sidebar.markdown("""
             <style>
                 @keyframes runSameWayFar {
@@ -2601,18 +2605,14 @@ class SoChiHuyGiaoDien:
                     font-weight: 900;
                     animation: runSameWayFar 1.0s infinite ease-in-out;
                 }
-                /* Dịch toàn bộ vùng chứa sidebar lên sát phía trên cùng */
-                [data-testid="stSidebarUserContent"] {
-                    padding-top: 0rem !important;
-                }
             </style>
-            <div style="text-align: center; font-weight: bold; color: #C62828; margin-top: -32px; margin-bottom: 8px; padding: 6px; background: #FFEBEE; border-radius: 6px; border: 1px dashed #EF9A9A;">
+            <div style="text-align: center; font-weight: bold; color: #C62828; margin-bottom: 8px; padding: 6px; background: #FFEBEE; border-radius: 6px; border: 1px dashed #EF9A9A;">
                 <span class="run-arrow-far">&gt;&gt;</span> &nbsp;&nbsp;&nbsp; ĐIỀU HƯỚNG &nbsp;&nbsp;&nbsp; <span class="run-arrow-far">&gt;&gt;</span>
             </div>
         """, unsafe_allow_html=True)
 
-
-        menu_options = [
+        # 🎯 Menu chính (Dùng key="menu_selection" để đồng bộ trạng thái)
+        menu = st.sidebar.radio("CHỌN CHỨC NĂNG:", [
             "📖 Lời Giới thiệu",
             "🎯 Trực Hệ", 
             "🌳 Toàn Cảnh", 
@@ -2623,42 +2623,10 @@ class SoChiHuyGiaoDien:
             "🖨 Xuất Báo Cáo", 
             "🛡 Quản Trị Hệ Thống",
             "🚪 EXIT"
-        ]
-
-        # Kiểm tra nếu có lệnh quay lại trang chủ
-        if st.session_state.get("reset_to_intro", False):
-            st.session_state["CHỌN CHỨC NĂNG"] = "📖 Lời Giới thiệu"
-            st.session_state["reset_to_intro"] = False
-
-        # 🎯 Menu chính
-        menu = st.sidebar.radio("CHỌN CHỨC NĂNG:", menu_options, key="CHỌN CHỨC NĂNG")
+        ], key="menu_selection")
         
-        # Điều phối giao diện (Đưa "🚪 EXIT" lên đầu để phản hồi ngay lập tức khi người dùng bấm vào)
-        if menu == "🚪 EXIT":
-            st.markdown("""
-                <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #fdfbf7 0%, #f4ebd0 100%); border-radius: 12px; border: 1px solid #d4c5a9; margin-top: 30px; font-family: 'Times New Roman', Times, serif;">
-                    <h2 style="color: #8B0000; text-transform: uppercase; margin-bottom: 15px;">📜 KẾT THÚC PHIÊN TRA CỨU</h2>
-                    <p style="font-size: 1.15rem; color: #2C3E50; font-style: italic; margin-bottom: 15px;">
-                        "Cây có gốc mới nở cành xanh ngọn, nước có nguồn mới chảy khắp sông sâu."
-                    </p>
-                    <p style="font-size: 1.05rem; color: #555; line-height: 1.6; margin-bottom: 20px;">
-                        Cảm ơn quý vị đã sử dụng ứng dụng Gia phả điện tử của dòng Họ.<br>
-                        Chúc quý vị luôn mạnh khỏe, hạnh phúc và an khang thịnh vượng!
-                    </p>
-                    <p style="font-size: 0.95rem; color: #666;">
-                        Quý vị có thể đóng tab trình duyệt hoặc bấm nút bên dưới để tiếp tục quay lại trang chủ.
-                    </p>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            col_bt1, col_bt2, col_bt3 = st.columns([1, 2, 1])
-            with col_bt2:
-                if st.button("🔄 Quay lại trang chủ hệ thống", use_container_width=True):
-                    st.session_state["reset_to_intro"] = True
-                    st.rerun()
-
-        elif menu == "📖 Lời Giới thiệu":
+        # Điều phối giao diện tương ứng với các chức năng
+        if menu == "📖 Lời Giới thiệu":
             cls.render_gioithieu_1trang()
         elif menu == "🎯 Trực Hệ": 
             cls.render_tructhe(df)
@@ -2677,8 +2645,29 @@ class SoChiHuyGiaoDien:
             cls.render_xuatbaocao(df)
         elif menu == "🛡 Quản Trị Hệ Thống":
             cls.render_quantri(df)
-
+        elif menu == "🚪 EXIT":
+            st.markdown("""
+                <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #fdfbf7 0%, #f4ebd0 100%); border-radius: 12px; border: 1px solid #d4c5a9; margin-top: 30px; font-family: 'Times New Roman', Times, serif;">
+                    <h2 style="color: #8B0000; text-transform: uppercase; margin-bottom: 15px;">📜 KẾT THÚC PHIÊN TRA CỨU</h2>
+                    <p style="font-size: 1.15rem; color: #2C3E50; font-style: italic; margin-bottom: 10px;">
+                        "Cây có gốc mới nở cành xanh ngọn, nước có nguồn mới chảy khắp sông sâu."
+                    </p>
+                    <p style="font-size: 1.05rem; color: #555; margin-bottom: 20px;">
+                        Cảm ơn quý cô bác, anh chị em và toàn thể con cháu dòng họ đã sử dụng ứng dụng Gia phả điện tử dòng Họ Từ Xuân Lộc. Chúc gia tộc luôn đoàn kết, hưng thịnh và vạn sự an lành.
+                    </p>
+                    <p style="font-size: 0.95rem; color: #666;">
+                        Quý vị có thể đóng tab trình duyệt hoặc bấm nút bên dưới để tiếp tục quay lại trang chủ.
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
             
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_bt1, col_bt2, col_bt3 = st.columns([1, 2, 1])
+            with col_bt2:
+                if st.button("🔄 Quay lại trang chủ hệ thống", use_container_width=True):
+                    st.session_state.menu_selection = "📖 Lời Giới thiệu"
+                    st.rerun()
+
     #=====================================================================
     # [PHÂN LÔ E9]: Màn hình chuyên biệt Lọc theo ID hoặc Tên
     #=====================================================================
