@@ -201,10 +201,10 @@ class KhoDuLieuSQL:
                     # ==========================================================
                     # ĐỜI THỨ 3: CÁC CỤ ĐỨNG ĐẦU CHI
                     # ==========================================================
-                    ("110.03.0.001", "100.02.0.001", "Từ Hữu Liện", "", "Bà Trần Thị Tần", "", "", "11/12 AL", "Con đầu cụ Trí. Làm chức Huyện Thừa.", "", ""),
+                    ("110.03.0.001", "100.02.0.001", "Từ Hữu Liện", "", "Bà Trần Thị Tần", "", "", "11/12AL", "Con đầu cụ Trí. Làm chức Huyện Thừa.", "", ""),
                     ("120.03.0.002", "100.02.0.001", "Từ Hữu Dực", "", "Bà Ngô Thị Nữ Tắc", "", "", "", "Con thứ 2 cụ Trí.", "", ""),
                     ("130.03.0.003", "100.02.0.001", "Từ Hữu Lạng", "", "Bà Trần Thị Yêm", "", "", "", "Con thứ 3 cụ Trí. Tri điện nội chức.", "", ""),
-                    ("100.03.0.004", "100.02.0.001", "Nguyễn Bá Hoan", "", "", "", "", "Mất 01/8 AL", "", "Con nuôi", ""),
+                    ("100.03.0.004", "100.02.0.001", "Nguyễn Bá Hoan", "", "", "", "", "01/8 AL", "", "Con nuôi", ""),
                     ("240.03.0.005", "200.02.0.002", "Từ Hữu Màn", "", "Bà Trần Thị Lụ", "", "", "", "Con đầu cụ Mưu. Thầy thuốc y dược tế sinh.", "", ""),
                     ("250.03.0.006", "200.02.0.002", "Từ Hữu Hùng", "", "Bà Trần Thị Bích", "", "", "", "Con thứ 2 cụ Mưu. Tri hộ kiêm chính đạo nghĩa Nam.", "", ""),
                     ("260.03.0.007", "200.02.0.002", "Từ Hữu Lân", "", "Bà Trần Thị... (Hiệu Tiệp Ảnh)", "", "", "", "Con thứ 3 cụ Mưu. Ưu binh đội trưởng.", "", ""),
@@ -270,7 +270,7 @@ class KhoDuLieuSQL:
                     ("135.05.0.027", "135.04.0.009", "Từ Hữu Lập", "", "Bà chính Trần Thị Tự, bà thứ Bùi Thị Liên", "", "", "", "Con thứ 3 cụ Tình. Làm nghề thầy thuốc kiêm xã hộ giám tri. Sinh hạ: Từ Hữu Quán, Từ Hữu Thường (chết sớm), Từ Hữu Cự (chết sớm), Từ Hữu Kính (chết sớm), Từ Hữu Ngoạn (hán tự thông minh, chết sớm), Từ Hữu Xán (ông Cố Hạo), Từ Hữu Đỏ (tảo vong).", "", ""),
                     ("135.05.0.028", "135.04.0.009", "Từ Hữu Cống", "", "", "", "", "", "Con cụ Tình", "Chết sớm", ""),   
                     ("246.05.0.029", "246.04.0.011", "Từ Hữu Khảng", "", "Bà cả Nguyễn Thị Sự, Bà thứ Trần Thị Thượng", "", "", "", "Con cụ Hiển. Sinh hạ: Từ Hữu Đỏ (tảo vong); 6 con gái gồm: Đỏ, Hảo, Đỏ, Đỏ, Chẹch, Thông (đều tảo vong).", "Phạp tự", ""),     
-                    ("246.05.0.030", "246.04.0.011", "Từ Hữu Khái", "Cả, Kỳ", "Bà Nguyễn Thị Yến", "", "", "", "Con thứ 2 cụ Hiển. Sinh hạ: Từ Hữu Hoè, Từ Hữu Trấn, Từ Hữu Ất, Từ Hữu Dự, Từ Thị, Từ Hữu Đỏ, Từ Hữu Vinh, Từ Hữu Bổng; 3 con gái gồm: Thị Đỏ, Đỏ, Đỏ (đều tảo vong).", "", ""),           
+                    ("246.05.0.030", "246.04.0.011", "Từ Hữu Khai", "Cả, Kỳ", "Bà Nguyễn Thị Yến", "", "", "", "Con thứ 2 cụ Hiển. Sinh hạ: Từ Hữu Hoè, Từ Hữu Trấn, Từ Hữu Ất, Từ Hữu Dự, Từ Thị, Từ Hữu Đỏ, Từ Hữu Vinh, Từ Hữu Bổng; 3 con gái gồm: Thị Đỏ, Đỏ, Đỏ (đều tảo vong).", "", ""),           
                     ("246.05.1.031", "246.04.0.011", "Từ Thị Hân", "", "", "", "", "", "Con cụ Hiển.", "Chết sớm", ""),
                     ("257.05.0.032", "257.04.0.016", "Từ Hữu Kiệt", "", "", "", "", "", "Con cụ Linh.", "Phạp tự", ""),
                     ("257.05.0.033", "257.04.0.016", "Từ Hữu Quýnh", "", "Bà Nguyễn Thị Cưu", "", "", "", "Con thứ 2 cụ Linh. Sinh hạ: Từ Hữu Thạc, Từ Hữu Đỏ (tảo vong).", "", ""),
@@ -462,7 +462,7 @@ class KhoDuLieuSQL:
                     ("123.07.1.046", "123.06.0.026", "Từ Thị Chút", "", "Trần Tuần", "", "", "", "Con cụ Vẹn. Lấy ông Trần Tuần dư nại", "", ""),
                     ("123.07.1.047", "123.06.0.026", "Từ Thị Tỷ", "", "Ông Long", "", "", "", "Con cụ Vẹn. Lấy chồng về Tiến Lộc", "", ""),
                     ("123.07.1.048", "123.06.0.027", "Từ Thị Xin", "", "", "", "", "", "Con cụ Vẹ", "Chết sớm", ""),
-                    ("124.07.0.049", "124.06.0.042", "Từ Quang Diệu", "", "Bà Trần Thị Thái", "1920", "1992", "01/05 AL", "Con đầu cụ Chính. Cán bộ xã, huyện, tỉnh liên khu 4; Huân, Huy chương kháng chiến hạng Nhất. Vợ là Bà Trần Thị Thái (1934-2012, giỗ 15/01). Sinh hạ: Từ Hữu Chắt (Chết sớm), Từ Thị Đào (tảo vong), Từ Thị Lý (Chết sớm), Từ Hữu Hạnh (tảo vong), Từ Quang Viện, Từ Quang Xá, Từ Kim Khánh, Từ Quang Thuỳ, Từ Thị Đỏ (tảo vong).", "", ""),
+                    ("124.07.0.049", "124.06.0.042", "Từ Quang Diệu", "", "Bà Trần Thị Thái", "1920", "1992", "01/05 AL", "Con đầu cụ Chính. Cán bộ xã, huyện, tỉnh liên khu 4; Huân, Huy chương kháng chiến hạng Nhất. Vợ là Bà Trần Thị Thái (1934-2012, giỗ 15/01). Sinh hạ: Từ Hữu Chắt (Chết sớm), Từ Thị Lý (Chết sớm), Từ Hữu Hạnh (tảo vong), Từ Thị Đào (tảo vong), Từ Quang Viện, Từ Quang Xá, Từ Kim Khánh, Từ Quang Thuỳ, Từ Thị Đỏ (tảo vong).", "", ""),
                     ("124.07.0.050", "124.06.0.042", "Từ Quang Bút", "", "Không có vợ", "", "", "", "Con cụ Chính. Liệt sĩ chống Pháp", "Không có con", ""),
                     ("124.07.1.051", "124.06.0.042", "Từ Thị Tam", "", "Trần Khới", "", "", "", "Con cụ Chính. Lấy ông Trần Khới trong làng (Con cháu hiện nay là Trần Khởi", "", ""),
                     ("124.07.1.052", "124.06.0.042", "Từ Thị Tứ", "", "", "", "", "", "Con cụ Chính", "Tảo vong", ""),
@@ -744,6 +744,7 @@ class KhoDuLieuSQL:
                     ("258.08.0.169", "258.07.0.120", "Từ Hữu Dạ", "", "", "", "", "", "Con ông Vi", "Tảo một", ""),
                     ("258.08.0.170", "258.07.0.120", "Từ Hữu Túc", "Thân", "Bà Nguyễn Thị Hai", "", "", "", "Con ông Vi đời thứ 7. Ông trước làm nghề thợ mộc. Sinh hạ: Từ Thị Thìn (lấy chồng về Trung Lộc), Từ Thị Kiêm (lấy ông Trần Đạt trong làng), Từ Thị Yêm (tảo một), Từ Thị Chế (tảo một), Từ Hữu Đỏ (tảo một), Từ Hữu Tuý, Từ Thị Tuyết (lấy ông Trần Tùng trong làng), Từ Thị Bình (lấy chồng về Nghi Xuân).", "", ""),
                     ("258.08.1.171", "258.07.0.120", "Từ Thị Đạn", "", "Trần Bá", "", "", "", "Con ông Vi. Lấy ông Trần Bá trong làng", "", ""),
+
                     ("258.08.0.172", "258.07.0.121", "Từ Hữu Vân", "Bính", "Bà Trần Thị Đém", "", "", "", "Con ông Lậu. Sinh hạ: Từ Thị Bính (lấy chồng về Quang Lộc), Từ Thị Tam (lấy Trần Ngoạt trong làng), Từ Thị Lục (lấy chồng về Hương Sơn), Từ Thị Liên (ở Đắk Lắk, không lấy chồng ), Từ Thị Xuân (lấy chồng về Thạch Hà), Từ Hữu Hậu.", "", ""),
                     ("258.08.0.173", "258.07.0.121", "Từ Hữu Đằng", "", "", "", "", "", "Con ông Lậu. Ông làm công nhân ở Nghĩa Đàn - Nghệ An. Sinh hạ: Từ Hợp, Từ Hoà, Từ Hoa, Từ Lý, Từ Long, Từ Thành, Từ Bình.", "", ""),
                     ("258.08.0.174", "258.07.0.121", "Từ Hữu Bầng", "", "", "", "", "", "Con ông Lậu. Liệt sỹ chống Pháp.", "Không có con", ""),
@@ -771,6 +772,7 @@ class KhoDuLieuSQL:
                     # ------------------------------------
                     ("111.09.0.001", "111.08.0.002", "Từ Hữu Vện", "Hà", "Bà Trần Thị Nghĩa", "", "", "", "Con ông Điệt. Ông làm nghề thợ mộc. Sinh hạ: Từ Hữu Đắc, Từ Hữu Bật, Từ Hữu Phú, Từ Hữu Tư [mất sớm], Từ Hữu Ngụ, Từ Thị Xuân [chồng Thạch Sơn, Thạch Hà].", "", ""),
                     ("111.09.0.002", "111.08.0.005", "Từ Hữu Cháu", "", "Bà: lấy chồng khác", "", "", "", "Con ông Huyền. Sinh hạ: Từ Hữu Tân.", "", ""),
+
                     ("111.09.0.003", "111.08.0.005", "Từ Hữu Thụ", "Dụng", "Bà Trần Thị Đởm", "", "", "", "Con thứ 2 ông Huyền. Sinh hạ: Từ Thị Hoà [lấy chồng trong làng], Từ Thị Dũng [lấy ông Trần Đại trong làng], Từ Thị Bình, Từ Hữu Đính, Từ Thị Minh, Từ Hữu Bính.", "", ""),
                     ("111.09.0.004", "111.08.0.005", "Từ Hữu Phù", "Tửu", "Bà Trần Thị Em", "", "", "", "Con thứ 3 ông Huyền. Ông trước làm cán bộ xã và HTX nhiều nhiệm kỳ. Sinh hạ: Từ Thị Hương [lấy chồng về Xóm Mới], Từ Hữu Đạt, Từ Thị Xuân [lấy anh Trần Tám(Cân)trong làng].", "", ""),
                     ("111.09.1.005", "111.08.0.005", "Từ Thị Tứ", "", "Nguyễn Chung", "", "", "", "Con ông Huyền. Lấy ông Nguyễn Chung trong làng", "", ""),
@@ -824,14 +826,23 @@ class KhoDuLieuSQL:
                     ("111.09.1.050", "111.08.0.045", "Từ Thị Lê", "", "Đang cập nhật", "", "", "", "Con ông Thanh. Đang cập nhật", "", ""),
                     ("111.09.0.051", "111.08.0.045", "Từ Ngọc Lĩnh", "", "Bà Trần Thị Sâm", "", "", "", "Con trai thứ 3 ông Thanh. Sinh hạ: Từ Ngọc Ý [đang cập nhật].", "", ""),
                     ("111.09.1.052", "111.08.0.045", "Từ Thị Lộc", "", "Đang cập nhật", "", "", "", "Con ông Thanh. Đang cập nhật", "", ""),
+
+
+
+
+
                     ("111.09.1.053", "111.08.0.047", "Từ Thị Hiền", "", "Nguyễn Bảo", "", "", "", "Con ông Hiền. Lấy anh Nguyễn Bảo con ông Nguyễn Toàn trong làng", "", ""),
                     ("111.09.0.054", "111.08.0.047", "Từ Hữu Thảo", "", "", "", "", "", "Con ông Hiền.", "Chết sớm", ""),
-                    ("111.09.0.055", "111.08.0.047", "Từ Hữu Cát", "", "Bà Nguyễn Thị Tứ", "", "", "", "Con ông Hiền. Sinh hạ: Từ Thị Mai, Từ Hữu Thuận, Từ Thị Hà, Từ Hữu Thoả.", "", ""),
-                    ("111.09.0.056", "111.08.0.047", "Từ Hữu Nhung", "", "Bà Nguyễn Thị Tạo", "", "", "", "Con ông Hiền. Sinh hạ: Từ Hữu Hoàn, Từ Hữu Hải.", "", ""),
+
+                    ("111.09.0.055", "111.08.0.047", "Từ Hữu Cát", "", "Bà Nguyễn Thị Tứ", "", "", "", "Con ông Hiền. Sinh hạ: Từ Thị Mai, Từ Hữu Thuận, Từ Thị Hà, Từ Ngọc Thoả.", "", ""),
+                    ("111.09.0.056", "111.08.0.047", "Từ Hữu Nhung", "", "Bà Nguyễn Thị Tạo", "", "", "", "Con ông Hiền. Sinh hạ: Từ Ngọc Hoàn, Từ Ngọc Hải.", "", ""),
+
                     ("111.09.1.057", "111.08.0.047", "Từ Thị Sâm", "", "Nguyễn Tú", "", "", "", "Con ông Hiền. Lấy anh Nguyễn Tú (Chiên)", "", ""),
                     ("111.09.1.058", "111.08.0.047", "Từ Thị Liệu", "", "Trần Bình", "", "", "", "Con ông Hiền. Lấy anh Trần Bình con ông Trự", "", ""),
+
                     ("111.09.1.059", "111.08.0.047", "Từ Thị Đào", "", "Trần Đình Trọng", "", "", "", "Con ông Hiền. Lấy anh Trần Đình Trọng trong làng", "", ""),
-                    ("111.09.0.060", "111.08.0.047", "Từ Ngọc Xuân", "", "đang cập nhật", "", "", "", "Con ông Hiền. Đang cập nhật.", "", ""),
+                    ("111.09.0.060", "111.08.0.047", "Từ Ngọc Xuân", "", "Trần Thị Thu Thủy", "", "", "", "Con ông Hiền. Sinh hạ: Từ Ngọc Huy.", "", ""),
+
                     ("111.09.0.061", "111.08.0.049", "Từ Hữu Bình", "", "Bà Trần Thị Sen", "", "", "", "Con ông Thường. Sinh hạ: Từ Hữu Linh, Từ Thị Tâm.", "", ""),
                     ("111.09.0.062", "111.08.0.049", "Từ Hữu Minh", "", "đang cập nhật", "", "", "", "Con ông Thường. Đang cập nhật.", "", ""),
                     ("111.09.1.063", "111.08.0.049", "Từ Thị Hòa", "", "đang cập nhật", "", "", "", "Con ông Thường. Đang cập nhật.", "", ""),
@@ -869,7 +880,7 @@ class KhoDuLieuSQL:
 
                     ("122.09.0.016", "122.08.0.079", "Từ Hữu Trung", "", "Lê Thị Vân", "", "", "", "Con đầu ông Lương. Vợ là Lê Thị Vân Lê Thị Vân ở  xã Thạch Sơn, Thạch Hà. Sinh hạ: Từ Thị Bích Loan (lấy chồng về tỉnh Lâm Đồng), Từ Ngọc Luân, Từ Ngọc Lễ", "", ""),
                     ("122.09.0.017", "122.08.0.079", "Từ Hữu Thông", "", "Trần Thị Hạnh", "", "", "", "Con ông Lương. Vợ là Trần Thị Hạnh (Thành) ở giữa làng. Sinh hạ: Từ Hữu Huy, Từ Hữu Ngọc.", "", ""),
-                    ("122.09.0.018", "122.08.0.079", "Từ Hữu Tiến", "", "Trần Thị Hà", "", "", "", "Con ông Lương. Vợ là Trần Thị Hà ở Đắc Lắc. Sinh hạ: Từ Hữu Thỏa, Từ Thị Hà Ly, Từ Thị Thùy Linh", "", ""),
+                    ("122.09.0.018", "122.08.0.079", "Từ Hữu Tiến", "", "Bùi Thị Luyến, Trần Thị Hà", "", "", "", "Con ông Lương. Vợ là Bùi Thị Luyến ở Thanh Hóa; Trần Thị Hà ở Đắc Lắc. Sinh hạ: Từ Hữu Thỏa, Từ Thị Hà Ly, Từ Thị Thùy Linh", "", ""),
                     ("122.09.0.019", "122.08.0.079", "Từ Hữu Triển", "", "", "", "", "", "Con ông Lương", "Tảo một", ""),                    
                     ("122.09.0.020", "122.08.0.079", "Từ Hữu Trường", "", "Lữ Thị Kim Khuê", "", "", "", "Con ông Lương. Vợ là Lữ Thị Kim Khuê ở Đắc Lắc. Sinh hạ: Từ Ngọc Anh Thư, Từ Vĩnh Cường", "", ""),
                     ("122.09.1.021", "122.08.0.079", "Từ Thị T́ình", "", "", "", "", "", "Con ông Lương.", "Tảo một", ""),
@@ -1015,17 +1026,18 @@ class KhoDuLieuSQL:
                     # CHI 5
                     # ------------------------------------
                     ("258.09.1.001", "258.08.0.158", "Từ Thị Cháu", "", "Không rõ", "", "", "", "Con ông Từ Hữu Điểu. Lấy hồng người Quang Lộc", "", ""),
-                    ("258.09.0.002", "258.08.0.158", "Từ Hữu Loan", "", "Bà Đặng Thị Thức", "", "", "", "Con ông Từ Hữu Điểu (Trung). Vợ là Bà Đặng Thị Thức người ở Quang Lộc. Sinh hạ: Từ Hữu Sơn, Từ Thị Hà, Từ Hữu Hải, Từ Hữu Hùng, Từ Hữu Tuấn.", "", ""),
+
+                    ("258.09.0.002", "258.08.0.158", "Từ Hữu Loan", "", "Bà Đặng Thị Thức", "", "", "", "Con ông Từ Hữu Điểu (Trung). Vợ là Bà Đặng Thị Thức người ở Quang Lộc. Sinh hạ: Từ Hữu Sơn, Từ Thị Hà, Từ Hữu Hải, Từ Hữu Hùng.", "", ""),
                     ("258.09.0.003", "258.08.0.158", "Từ Hữu Ba", "", "Bà Trần Thị Xuân", "", "", "", "Con ông Từ Hữu Điểu. Cán bộ Nhà nước. Sinh hạ: Từ Hữu Long, Từ Thu Mai.", "", ""),
                     ("258.09.1.004", "258.08.0.158", "Từ Thị Tỷ", "", "Trần Thành", "", "", "", "Con ông Từ Hữu Điểu. Lấy anh Trần Thành (Phu) trong làng", "", ""),
-                    ("258.09.1.005", "258.08.0.158", "Từ Thị Xuân", "", "Không rõ", "", "", "", "Con ông Từ Hữu Điểu. Lấy chồng về Nghi Xuân", "", ""),
+                    ("258.09.1.005", "258.08.0.158", "Từ Thị Xuân", "", "Hoàng Văn Định", "", "", "", "Con ông Từ Hữu Điểu. Lấy chồng về Nghi Xuân", "", ""),
                     ("258.09.0.006", "258.08.0.159", "Từ Hữu Phán", "", "Bà Phan Thị Lộc", "", "", "", "Con ông Từ Hữu Tiếu (Phán). Ông là Chánh án Tòa án huyện Can Lộc. Sinh hạ: Từ Thị Nga (lấy chồng về Trường Lộc), Từ Thị Ngân, Từ Hữu Anh (chết sớm), Từ Hữu Hùng.", "", ""),
                     ("258.09.0.007", "258.08.0.159", "Từ Hữu Đán", "", "Bà Trần Thị Thảo", "", "", "", "Con ông Từ Hữu Tiếu", "Chết sớm", ""),
                     ("258.09.1.008", "258.08.0.159", "Từ Thị Hòa", "", "Không rõ", "", "", "", "Con ông Từ Hữu Tiếu. Lấy chồng về Thuận Lộc", "", ""),
                     ("258.09.1.009", "258.08.0.159", "Từ Thị Chất", "", "Không rõ", "", "", "", "Con ông Từ Hữu Tiếu. Lấy chồng về Thạch Đài, Thạch Hà", "", ""),
                     ("258.09.0.010", "258.08.0.159", "Từ Hữu Tường", "", "Bà Trần Thị Thảo", "", "", "", "Con ông Từ Hữu Tiếu. Liệt sỹ", "Chưa có con", ""),
-                    ("258.09.0.011", "258.08.0.159", "Từ Hữu Lục", "", "Bà Trần Thị Thảo", "", "", "", "Con ông Từ Hữu Tiếu. Sinh hạ: Từ Thị Nhung, Từ Thị Thuỷ, Từ Thị Lâm.", "", ""),
-                    ("258.09.0.012", "258.08.0.159", "Từ Hữu Lương", "", "Bà Trần Thị Tài", "", "", "", "Con ông Từ Hữu Tiếu. Sinh hạ: Từ Thị Hiền, Từ Thị Hữu, Từ Hữu Đạt, Từ Hữu Phương.", "", ""),
+                    ("258.09.0.011", "258.08.0.159", "Từ Hữu Lục", "", "Bà Trần Thị Thảo", "", "", "", "Con ông Từ Hữu Tiếu. Sinh hạ: Từ Thị Nhung, Từ Thị Thuỷ, Từ Thị Lâm, Từ Hữu Huy.", "", ""),
+                    ("258.09.0.012", "258.08.0.159", "Từ Hữu Lương", "", "Bà Trần Thị Tài", "", "", "", "Con ông Từ Hữu Tiếu. Sinh hạ: Từ Thị Hiền, Từ Thị Hữu, Từ Hữu Phương, Từ Hữu Đạt.", "", ""),
                     ("258.09.0.013", "258.08.0.168", "Từ Hữu Đàn", "", "Bà Trần Thị Liên", "", "", "", "Con ông Từ Hữu Đề. Sinh hạ: Từ Hữu Minh, Từ Thị Anh.", "", ""),
                     ("258.09.0.014", "258.08.0.168", "Từ Hữu Liêm", "", "Bà Lê Thị Hồng", "", "", "", "Con ông Từ Hữu Đề. Sinh hạ: Từ Thị Tâm, Từ Thị Như.", "", ""),
                     ("258.09.0.015", "258.08.0.168", "Từ Hữu Thanh", "", "Bà Phan Thị Quế", "", "", "", "Con ông Từ Hữu Đề. Sinh hạ: Từ Hữu Quỳnh, Từ Thị Oanh.", "", ""),
@@ -1043,42 +1055,51 @@ class KhoDuLieuSQL:
                     ("258.09.1.026", "258.08.0.172", "Từ Thị Liên", "", "Không lấy chồng", "", "", "", "Con ông Từ Hữu Vân. Sinh hạ: Từ Thị Hiền. Ở Đắc Lắc", "", ""),
                     ("258.09.1.027", "258.08.0.172", "Từ Thị Xuân", "", "Ngô Đức Kính", "", "", "", "Con ông Từ Hữu Vân. Lấy chồng về Đại Lộc", "", ""),
                     ("258.09.0.028", "258.08.0.172", "Từ Hữu Hậu", "", "Bà Hoàng Thị Chung", "", "", "", "Con ông Từ Hữu Vân. Vợ là Bà Hoàng Thị Chung người ở Sơn Lộc. Sinh hạ: Từ Thị Thanh, Từ Hữu Thành, Từ Thị Thắm, Từ Hữu Thiết, Từ Hữu Phát.", "", ""),
-                    ("258.09.0.029", "258.08.0.173", "Từ Hợp", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.030", "258.08.0.173", "Từ Hòa", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.031", "258.08.0.173", "Từ Hoa", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.032", "258.08.0.173", "Từ Lý", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.033", "258.08.0.173", "Từ Long", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.034", "258.08.0.173", "Từ Thành", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.035", "258.08.0.173", "Từ Bình", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.036", "258.08.0.175", "Từ Hữu Thanh", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nhuệ. Đang cập nhật.", "", ""),
-                    ("258.09.0.037", "258.08.0.175", "Từ Hữu Bình", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nhuệ. Đang cập nhật.", "", ""),
-                    ("258.09.0.038", "258.08.0.176", "Từ Hữu Lý", "", "Bà Đào Thị Lan", "", "", "", "Con ông Từ Hữu Sàn. Vợ là Bà Đào Thị Lan người ở Đức Thọ. Sinh hạ: Từ Thị Liễu, Từ Thị Lâm, Từ Hữu Luân, Từ Hữu Luật.", "", ""),
-                    ("258.09.0.039", "258.08.0.176", "Từ Hữu Hộ", "", "", "", "", "", "Con ông Từ Hữu Sàn. Liệt sỹ", "Không có con", ""),                
-                    ("258.09.0.040", "258.08.0.176", "Từ Hữu Minh", "", "Bà Nguyễn Thị Nựu", "", "", "", "Con ông Từ Hữu Sàn. Sinh hạ: Từ Thị Bình, Từ Hữu Thanh, Từ Thị Xanh, Từ Hữu Tuấn.", "", ""),
-                    ("258.09.1.041", "258.08.0.178", "Từ Thị Xuân", "", "", "", "", "", "Con ông Từ Hữu Hiệt", "Tảo một", ""),
-                    ("258.09.1.042", "258.08.0.178", "Từ Thị Đào", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hiệt. Lấy chồng về Thạch Đỉnh", "", ""),
-                    ("258.09.1.043", "258.08.0.178", "Từ Thị Huệ", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hiệt. Lấy chồng về Thạch Tượng", "", ""),
-                    ("258.09.1.044", "258.08.0.178", "Từ Thị Lan", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hiệt. Lấy chồng về Đức Lâm, Đức Thọ", "", ""),
-                    ("258.09.0.045", "258.08.0.178", "Từ Hữu Toàn", "", "Bà Trần Thị Vân", "", "", "", "Con ông Từ Hữu Hiệt. Vợ là Bà Trần Thị Vân người ở Đại Lộc. Sinh hạ: Từ Hữu Nam, Từ Hữu Đông.", "", ""),
-                    ("258.09.0.046", "258.08.0.178", "Từ Hữu Tiến", "", "Bà Trần Thị Hoa", "", "", "", "Con ông Từ Hữu Hiệt. Sinh hạ: Từ Thị Hằng, Từ Hữu Tuấn, Từ Hữu Hải.", "", ""),
-                    ("258.09.0.047", "258.08.0.178", "Từ Hữu Dũng", "", "Bà Trần Thị Hạnh", "", "", "", "Con ông Từ Hữu Hiệt. Sinh hạ: Từ Thị Nga, Từ Hữu Anh, Từ Hữu Sơn.", "", ""),
-                    ("258.09.1.048", "258.08.0.180", "Từ Thị Nhu", "", "ông Minh", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Lấy chồng về Đại Lộc ", "", ""),
-                    ("258.09.0.049", "258.08.0.180", "Từ Hữu Giáp", "", "Bà Trần Thị Luận", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Sinh hạ: Từ Hữu Quý, Từ Thị Huyền, Từ Hữu Quyền, Từ Hữu Lợi.", "", ""),
-                    ("258.09.1.050", "258.08.0.180", "Từ Thị Huệ", "", "Ông Bình", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Lấy chồng về Trung Lộc", "", ""),
-                    ("258.09.0.051", "258.08.0.180", "Từ Hữu Huề", "", "Bà Trần Thị Nga", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Sinh hạ: Từ Thị Hạnh, Từ Thị Linh, Từ Hữu Khoa.", "", ""),
-                    ("258.09.0.052", "258.08.0.181", "Từ Hữu Triển", "", "", "", "", "", "Con ông Từ Hữu Trà. Liệt sỹ", "Chưa có con", ""),                     
-                    ("258.09.0.053", "258.08.0.181", "Từ Hữu Đại", "", "Bà Trần Thị Hương", "", "", "", "Con ông Từ Hữu Trà. Sinh hạ: Từ Hữu Thắng, Từ Hữu Đông, Từ Hữu Trường, Từ Thị Hà, Từ Hữu Đồng.", "", ""),
-                    ("258.09.1.054", "258.08.0.181", "Từ Thị Thanh", "", "Trần Hùng", "", "", "", "Con ông Từ Hữu Trà. Lấy Trần Hùng (Xương) trong làng", "", ""),     
-                    ("258.09.0.055", "258.08.0.186", "Từ Hữu Nậy", "", "Không lấy vợ", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Mất lúc 47 Tuổi", "Không có con", ""),
-                    ("258.09.0.056", "258.08.0.186", "Từ Hữu Em", "Hoài", "Bà Trần Thị Đợt", "", "", "", "Con ông Từ Hữu Tưu. Vợ là Bà Trần Thị Đợt người ở Thanh Hoá. Sinh hạ: Từ Hữu Sơn, Từ Thị Thuỷ, Từ Hữu Hùng.", "", ""),
-                    ("258.09.1.057", "258.08.0.186", "Từ Thị Tỷ", "", "", "", "", "", "Con ông Từ Hữu Tưu. Lấy Trần Tịnh trong làng", "", ""),
-                    ("258.09.1.058", "258.08.0.186", "Từ Thị Tứ", "", "", "", "", "", "Con ông Từ Hữu Tưu. Lấy chồng về Thanh Hoá", "", ""),
-                    ("258.09.0.059", "258.08.0.186", "Từ Hữu Năm", "", "", "", "", "", "Con ông Từ Hữu Tưu", "Chết sớm", ""),
-                    ("258.09.1.060", "258.08.0.186", "Từ Thị Sáu", "", "Trần Tam", "", "", "", "Con ông Từ Hữu Tưu. Lấy Trần Tam (Cứ) trong làng ", "", ""),
-                    ("258.09.0.061", "258.08.0.186", "Từ Hữu Chất", "", "Bà cả: Trần Thị Vân, bà thứ: Trần Thị Huê", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Sinh hạ: Từ Hữu Phú, Từ Hữu Dũng, Từ Thị Anh, Từ Hữu Văn.", "", ""),
-                    ("258.09.0.062", "258.08.0.186", "Từ Hữu Tạo", "", "Bà Trần Thị Lợi", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Sinh hạ: Từ Thị Xuân, Từ Hữu Hạnh, Từ Thị Hà.", "", ""),
-                    ("258.09.0.063", "258.08.0.186", "Từ Hữu Bình", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Đang cập nhật.", "", ""),
-                    ("258.09.0.064", "258.08.0.186", "Từ Hữu Chín", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Đang cập nhật.", "", ""),
+
+                    ("258.09.1.029", "258.08.0.173", "Từ Thị Hợp", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
+                    ("258.09.0.030", "258.08.0.173", "Từ Hữu Hòa", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
+                    ("258.09.1.031", "258.08.0.173", "Từ Thị Hoa", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
+                    ("258.09.1.032", "258.08.0.173", "Từ Thị Lý", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
+                    ("258.09.0.033", "258.08.0.173", "Từ Hữu Long", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
+                    ("258.09.0.034", "258.08.0.173", "Từ Hữu Thành", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
+                    ("258.09.0.035", "258.08.0.173", "Từ Hữu Minh", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Sinh hạ: Từ Hữu Châu, Từ Hữu Tiến.", "", ""),                
+                    ("258.09.0.036", "258.08.0.173", "Từ Hữu Định", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Sinh hạ: Từ Hữu Tuấn, Từ Hữu Tú, Từ Hữu Tài.", "", ""),
+
+                    ("258.09.0.037", "258.08.0.175", "Từ Hữu Thanh", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nhuệ. Sinh hạ: Từ Hữu Cường.", "", ""),
+                    ("258.09.0.038", "258.08.0.175", "Từ Hữu Bình", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nhuệ. Đang cập nhật.", "", ""),
+                    ("258.09.0.039", "258.08.0.175", "Từ Hữu Thống", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nhuệ.", "", ""),
+
+                    ("258.09.0.040", "258.08.0.176", "Từ Hữu Lý", "", "Bà Đào Thị Lan", "", "", "", "Con ông Từ Hữu Sàn. Vợ là Bà Đào Thị Lan người ở Đức Thọ. Sinh hạ: Từ Thị Liễu, Từ Thị Lâm, Từ Hữu Luận, Từ Hữu Luật.", "", ""),
+                    ("258.09.0.041", "258.08.0.176", "Từ Hữu Hộ", "", "", "", "", "", "Con ông Từ Hữu Sàn. Liệt sỹ", "Không có con", ""),                
+                    ("258.09.0.042", "258.08.0.176", "Từ Hữu Minh", "", "Bà Nguyễn Thị Nựu", "", "", "", "Con ông Từ Hữu Sàn. Sinh hạ: Từ Thị Bình, Từ Hữu Thanh, Từ Thị Xanh, Từ Hữu Tuấn.", "", ""),
+
+                    ("258.09.1.043", "258.08.0.178", "Từ Thị Xuân", "", "", "", "", "", "Con ông Từ Hữu Hiệt", "Tảo một", ""),
+                    ("258.09.1.044", "258.08.0.178", "Từ Thị Đào", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hiệt. Lấy chồng về Thạch Đỉnh", "", ""),
+                    ("258.09.1.045", "258.08.0.178", "Từ Thị Huệ", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hiệt. Lấy chồng về Thạch Tượng", "", ""),
+                    ("258.09.1.046", "258.08.0.178", "Từ Thị Lan", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hiệt. Lấy chồng về Đức Lâm, Đức Thọ", "", ""),
+
+                    ("258.09.0.047", "258.08.0.178", "Từ Hữu Toàn", "", "Bà Trần Thị Vân", "", "", "", "Con ông Từ Hữu Hiệt. Vợ là Bà Trần Thị Vân người ở Đại Lộc. Sinh hạ: Từ Hữu Nam, Từ Hữu Đông.", "", ""),
+                    ("258.09.0.048", "258.08.0.178", "Từ Hữu Tiến", "", "Bà Trần Thị Hoa", "", "", "", "Con ông Từ Hữu Hiệt. Sinh hạ: Từ Thị Hằng, Từ Hữu Tuấn, Từ Hữu Hải.", "", ""),
+                    ("258.09.0.049", "258.08.0.178", "Từ Hữu Dũng", "", "Bà Trần Thị Hạnh", "", "", "", "Con ông Từ Hữu Hiệt. Sinh hạ: Từ Thị Nga, Từ Hữu Anh, Từ Hữu Sơn.", "", ""),
+
+                    ("258.09.1.050", "258.08.0.180", "Từ Thị Nhu", "", "ông Minh", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Lấy chồng về Đại Lộc ", "", ""),
+                    ("258.09.0.051", "258.08.0.180", "Từ Hữu Giáp", "", "Bà Trần Thị Luận", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Sinh hạ: Từ Hữu Quý, Từ Thị Huyền, Từ Hữu Quyền, Từ Hữu Lợi.", "", ""),
+                    ("258.09.1.052", "258.08.0.180", "Từ Thị Huệ", "", "Ông Bình", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Lấy chồng về Trung Lộc", "", ""),
+                    ("258.09.0.053", "258.08.0.180", "Từ Hữu Huề", "", "Bà Trần Thị Nga", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Sinh hạ: Từ Thị Hạnh, Từ Thị Linh, Từ Hữu Khoa.", "", ""),
+                    ("258.09.0.054", "258.08.0.181", "Từ Hữu Triển", "", "", "", "", "", "Con ông Từ Hữu Trà. Liệt sỹ", "Chưa có con", ""),                     
+                    ("258.09.0.055", "258.08.0.181", "Từ Hữu Đại", "", "Bà Trần Thị Hương", "", "", "", "Con ông Từ Hữu Trà. Sinh hạ: Từ Hữu Thắng, Từ Hữu Đông, Từ Hữu Trường, Từ Thị Hà, Từ Hữu Đồng.", "", ""),
+                    ("258.09.1.056", "258.08.0.181", "Từ Thị Thanh", "", "Trần Hùng", "", "", "", "Con ông Từ Hữu Trà. Lấy Trần Hùng (Xương) trong làng", "", ""),     
+
+                    ("258.09.0.057", "258.08.0.186", "Từ Hữu Nậy", "", "Không lấy vợ", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Mất lúc 47 Tuổi", "Không có con", ""),
+                    ("258.09.0.058", "258.08.0.186", "Từ Hữu Em", "Hoài", "Bà Trần Thị Đợt", "", "", "", "Con ông Từ Hữu Tưu. Vợ là Bà Trần Thị Đợt người ở Thanh Hoá. Sinh hạ: Từ Hữu Sơn, Từ Thị Thuỷ, Từ Hữu Hưng.", "", ""),
+                    ("258.09.1.059", "258.08.0.186", "Từ Thị Tỷ", "", "", "", "", "", "Con ông Từ Hữu Tưu. Lấy Trần Tịnh trong làng", "", ""),
+                    ("258.09.1.060", "258.08.0.186", "Từ Thị Tứ", "", "", "", "", "", "Con ông Từ Hữu Tưu. Lấy chồng về Thanh Hoá", "", ""),
+                    ("258.09.0.061", "258.08.0.186", "Từ Hữu Năm", "", "", "", "", "", "Con ông Từ Hữu Tưu", "Chết sớm", ""),
+                    ("258.09.1.062", "258.08.0.186", "Từ Thị Sáu", "", "Trần Tam", "", "", "", "Con ông Từ Hữu Tưu. Lấy Trần Tam (Cứ) trong làng ", "", ""),
+                    ("258.09.0.063", "258.08.0.186", "Từ Hữu Chất", "", "Bà cả: Trần Thị Vân, bà thứ: Trần Thị Huê", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Sinh hạ: Từ Hữu Phú, Từ Hữu Dũng, Từ Thị Anh, Từ Hữu Văn.", "", ""),
+                    ("258.09.0.064", "258.08.0.186", "Từ Hữu Tạo", "", "Bà Trần Thị Lợi", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Sinh hạ: Từ Thị Xuân, Từ Hữu Hạnh, Từ Thị Hà.", "", ""),
+                    ("258.09.0.065", "258.08.0.186", "Từ Hữu Bình", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Đang cập nhật.", "", ""),
+                    ("258.09.0.066", "258.08.0.186", "Từ Hữu Chín", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Đang cập nhật.", "", ""),
 
 
                     # ==========================================================
@@ -1092,15 +1113,19 @@ class KhoDuLieuSQL:
                     ("111.10.0.002", "111.09.0.001", "Từ Hữu Bật", "", "Bà Đặng Thị Đào", "", "", "", "Con ông Vện (Hà). Vợ là Bà Đặng Thị Đào người Hương Khê. Sinh hạ: Từ Hữu Nhâm, Từ Hữu Tý.", "", ""),
                     ("111.10.0.003", "111.09.0.001", "Từ Hữu Phú", "", "Bà Trần Thị Nho", "", "", "", "Con ông Vện (Hà). Vợ là Bà Trần Thị Nho. Sinh hạ: Từ Thị Long, Từ Thị Thuỷ, Từ Thị Vân, Từ Hữu Quốc, Từ Hữu Kỳ.", "", ""),
                     ("111.10.0.004", "111.09.0.001", "Từ Hữu Tư", "", "", "", "", "", "Con ông Vện (Hà) .", "Chết sớm", ""),
+
                     ("111.10.0.005", "111.09.0.001", "Từ Hữu Ngụ", "", "Bà Trần Thị Hồng", "", "", "", "Con ông Vện (Hà). Vợ là Bà Trần Thị Hồng. Sinh hạ: Từ Thị Quảng, Từ Thị Quyền, Từ Hữu Quý, Từ Hữu Báu.", "", ""),
                     ("111.10.1.006", "111.09.0.001", "Từ Thị Xuân", "", "Không rõ", "", "", "", "Con ông Vện (Hà). Chồng người Thạch Sơn, Thạch Hà.", "", ""),
                     ("111.10.0.007", "111.09.0.002", "Từ Hữu Tân", "Hải", "Bà Trần Thị An", "", "", "", "Con ông Từ Hữu Cháu. Vợ là Bà Trần Thị An. Sinh hạ: Từ Thị Hải, Từ Thị Dương, Từ Thị Liễu, Từ Thị Lan, Từ Thị Hạnh, Từ Thị Cúc.", "", ""),
+
+
                     ("111.10.1.008", "111.09.0.003", "Từ Thị Hoà", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thụ (Dụng). Lấy chồng trong làng.", "", ""),
                     ("111.10.1.009", "111.09.0.003", "Từ Thị Dũng", "", "Ông Trần Đại", "", "", "", "Con ông Từ Hữu Thụ (Dụng). Lấy ông Trần Đại trong làng.", "", ""),
                     ("111.10.1.010", "111.09.0.003", "Từ Thị Bình", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thụ (Dụng).", "", ""),
-                    ("111.10.0.011", "111.09.0.003", "Từ Hữu Đính", "", "Bà Trần Thị Hằng", "", "", "", "Con ông Từ Hữu Thụ (Dụng). Vợ là Bà Trần Thị Hằng. Sinh hạ: Từ Hữu Ý.", "", ""),
+
+                    ("111.10.0.011", "111.09.0.003", "Từ Hữu Đính", "", "Bà Trần Thị Hằng", "", "", "", "Con ông Từ Hữu Thụ (Dụng). Vợ là Bà Trần Thị Hằng. Sinh hạ: Từ Hữu Ý, Từ Hữu Lương, Từ Hữu Linh.", "", ""),
                     ("111.10.1.012", "111.09.0.003", "Từ Thị Minh", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thụ (Dụng).", "", ""),
-                    ("111.10.0.013", "111.09.0.003", "Từ Hữu Bính", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thụ (Dụng). Đang cập nhật.", "", ""),
+                    ("111.10.0.013", "111.09.0.003", "Từ Hữu Bính", "", "Lê Thị Giang", "", "", "", "Con ông Từ Hữu Thụ (Dụng). Sinh hạ: Từ Hữu Phương.", "", ""),
                     
                     ("111.10.1.014", "111.09.0.004", "Từ Thị Hương", "", "Không rõ", "", "", "", "Con ông Từ Hữu Phù (Tửu). Lấy chồng về Xóm Mới.", "", ""),
                     ("111.10.0.015", "111.09.0.004", "Từ Quang Đạt", "", "Bà Trần Thị Bính", "", "", "", "Con ông Từ Hữu Phù (Tửu). Vợ là Bà Trần Thị Bính. Sinh hạ: Từ Thị Thảo, Từ Thị Hiền, Từ Hữu Trung.", "", ""),
@@ -1108,7 +1133,7 @@ class KhoDuLieuSQL:
                     
                     ("111.10.0.017", "111.09.0.006", "Từ Hữu Huề", "", "Bà Trần Thị Quế", "", "", "", "Con ông Từ Hữu Dấu. Vợ là Bà Trần Thị Quế. Sinh hạ: Từ Hữu Tuấn, Từ Hữu Anh.", "", ""),
                     ("111.10.0.018", "111.09.0.006", "Từ Hữu Huê", "", "Đặng Thị Quyền", "", "", "", "Con ông Từ Hữu Dấu. Sinh hạ: Từ Hữu Dũng, Từ Hữu Công.", "", ""),
-                    ("111.10.0.019", "111.09.0.006", "Từ Hữu Hoà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dấu. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("111.10.0.019", "111.09.0.006", "Từ Hữu Hoà", "", "Lê Thị Kim Cúc", "1972", "", "", "Con ông Từ Hữu Dấu. Vợ là Lê Thị Kim Cúc ở Vụ Bản, Nam Định. Sinh hạ: Từ Thị Khánh Linh.", "", ""),
                     ("111.10.1.020", "111.09.0.006", "Từ Thị Phương", "", "Không rõ", "", "", "", "Con ông Từ Hữu Dấu.", "", ""),
 
                     ("111.10.0.021", "111.09.0.009", "Từ Hữu Quân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hồng. Đang cập nhật thông tin vợ con.", "", ""),
@@ -1174,13 +1199,17 @@ class KhoDuLieuSQL:
 
                     ("111.10.0.097", "111.09.0.051", "Từ Ngọc Ý", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Lĩnh. Đang cập nhật thông tin vợ con.", "", ""),
 
-                    ("111.10.1.101", "111.09.0.055", "Từ Thị Mai", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Cát.", "", ""),
-                    ("111.10.0.102", "111.09.0.055", "Từ Hữu Thuận", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Cát. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.1.103", "111.09.0.055", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Cát.", "", ""),
-                    ("111.10.0.104", "111.09.0.055", "Từ Hữu Thoả", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Cát. Đang cập nhật thông tin vợ con.", "", ""),
 
-                    ("111.10.0.105", "111.09.0.056", "Từ Hữu Hoàn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.0.106", "111.09.0.056", "Từ Hữu Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung. Đang cập nhật thông tin vợ con.", "", ""),
+
+                    ("111.10.1.101", "111.09.0.055", "Từ Thị Mai", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Cát.", "", ""),
+                    ("111.10.0.102", "111.09.0.055", "Từ Hữu Thuận", "", "Trần Thị Hiền Phương", "", "", "", "Con ông Từ Hữu Cát. Sinh hạ: Từ Quang Minh.", "", ""),
+                    ("111.10.1.103", "111.09.0.055", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Cát.", "", ""),
+                    ("111.10.0.104", "111.09.0.055", "Từ Ngọc Thoả", "", "Trần Thị Thúy Hằng", "", "", "", "Con ông Từ Hữu Cát. Đang cập nhật thông tin vợ con.", "", ""),
+
+                    ("111.10.0.105", "111.09.0.056", "Từ Ngọc Hoàn", "", "Nguyễn Thị Tuyết", "", "", "", "Con ông Từ Hữu Nhung. Sinh hạ: Từ Ngọc Việt Anh.", "", ""),
+                    ("111.10.0.106", "111.09.0.056", "Từ Ngọc Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung. Đang cập nhật thông tin vợ con.", "", ""),
+
+                    ("111.10.0.107", "111.09.0.060", "Từ Ngọc Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Xuân. Đang cập nhật thông tin vợ con.", "", ""),
 
                     ("111.10.0.111", "111.09.0.061", "Từ Hữu Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bình. Đang cập nhật thông tin vợ con.", "", ""),
                     ("111.10.1.112", "111.09.0.061", "Từ Thị Tâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bình.", "", ""),
@@ -1280,10 +1309,6 @@ class KhoDuLieuSQL:
                     ("246.10.0.020", "246.09.0.018", "Từ Huy Trung", "", "Nguyễn Thị Kim Oanh", "", "", "", "Con ông Từ Quốc Lệ. Sinh hạ: Từ Quốc Bảo.", "", ""),
                     ("246.10.1.021", "246.09.0.018", "Từ Thị Huyền Nga", "", "Lê Dũng", "", "", "", "Con ông Từ Quốc Lệ.", "", ""),
 
-
-
-
-
                     ("246.10.0.022", "246.09.0.018", "Từ Quốc Việt", "", "Nguyễn Thị Tú Trang", "", "", "", "Con ông Từ Quốc Lệ. Sinh hạ: Từ Quốc Sơn, Từ Quốc Hải, Từ Ngọc Minh Châu.", "", ""),
                     ("246.10.1.023", "246.09.0.019", "Từ Thị Sâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Quốc Đạt.", "", ""),
                     ("246.10.0.024", "246.09.0.019", "Từ Hữu Nhung", "", "Phạm Thị Hoài An", "", "", "", "Con ông Từ Quốc Đạt. Sinh hạ: Từ Quốc Tuấn, Từ Nam Phong, Từ Minh Khang, Từ Minh Huy.", "", ""),
@@ -1309,30 +1334,31 @@ class KhoDuLieuSQL:
                     # ------------------------------------
                     # CHI 5
                     # ------------------------------------            
-                    ("258.10.0.001", "258.09.0.002", "Từ Hữu Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan. Đang cập nhật thông tin vợ con.", "", ""),
+
+                    ("258.10.0.001", "258.09.0.002", "Từ Hữu Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan. Sinh hạ: Từ Anh Tuấn, Từ Quang Anh.", "", ""),
                     ("258.10.1.002", "258.09.0.002", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan.", "", ""),
-                    ("258.10.0.003", "258.09.0.002", "Từ Hữu Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.004", "258.09.0.002", "Từ Hữu Hùng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.005", "258.09.0.002", "Từ Hữu Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.003", "258.09.0.002", "Từ Hữu Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan. Sinh hạ: Từ Hữu Quang Huy, Từ Hữu Quang Tùng.", "", ""),
+                    ("258.10.0.004", "258.09.0.002", "Từ Hữu Hùng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan. Sinh hạ: Từ Hữu Cường.", "", ""),
+                    
+                    ("258.10.0.005", "258.09.0.003", "Từ Nam Long", "", "Doãn Thu Phương", "", "", "", "Con ông Từ Hữu Ba. Từ Nhật Nam, Từ Nhật Hoàng", "", ""),
+                    ("258.10.1.006", "258.09.0.003", "Từ Thu Mai", "", "Trần Trọng An", "", "", "", "Con ông Từ Hữu Ba. Chồng là Trần Trọng An con Ông Khánh ở giữa làng", "", ""),
 
-                    ("258.10.0.006", "258.09.0.003", "Từ Hữu Long", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Ba. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.007", "258.09.0.003", "Từ Thu Mai", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Ba.", "", ""),
+                    ("258.10.1.007", "258.09.0.006", "Từ Thị Nga", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán. Lấy chồng về Trường Lộc.", "", ""),
+                    ("258.10.1.008", "258.09.0.006", "Từ Thị Ngân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán.", "", ""),
+                    ("258.10.0.009", "258.09.0.006", "Từ Hữu Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán. Chết sớm.", "", ""),
+                    ("258.10.0.010", "258.09.0.006", "Từ Hữu Hùng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán. Đang cập nhật thông tin vợ con.", "", ""),
 
-                    ("258.10.1.008", "258.09.0.006", "Từ Thị Nga", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán. Lấy chồng về Trường Lộc.", "", ""),
-                    ("258.10.1.009", "258.09.0.006", "Từ Thị Ngân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán.", "", ""),
-                    ("258.10.0.010", "258.09.0.006", "Từ Hữu Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán. Chết sớm.", "", ""),
-                    ("258.10.0.011", "258.09.0.006", "Từ Hữu Hùng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("258.10.1.012", "258.09.0.011", "Từ Thị Nhung", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-                    ("258.10.1.013", "258.09.0.011", "Từ Thị Thuỷ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-                    ("258.10.1.014", "258.09.0.011", "Từ Thị Lâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-
+                    ("258.10.1.011", "258.09.0.011", "Từ Thị Nhung", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
+                    ("258.10.1.012", "258.09.0.011", "Từ Thị Thuỷ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
+                    ("258.10.1.013", "258.09.0.011", "Từ Thị Lâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
+                    ("258.10.0.014", "258.09.0.011", "Từ Hữu Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
+                    
                     ("258.10.1.015", "258.09.0.012", "Từ Thị Hiền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương.", "", ""),
-                    ("258.10.1.016", "258.09.0.012", "Từ Thị Hữu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương.", "", ""),
-                    ("258.10.0.017", "258.09.0.012", "Từ Hữu Đạt", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.018", "258.09.0.012", "Từ Hữu Phương", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.1.016", "258.09.0.012", "Từ Thị Hữu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương.", "", ""),    
+                    ("258.10.0.017", "258.09.0.012", "Từ Hữu Phương", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.018", "258.09.0.012", "Từ Hữu Đạt", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương. Đang cập nhật thông tin vợ con.", "", ""),
 
-                    ("258.10.0.019", "258.09.0.013", "Từ Hữu Minh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đàn. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.019", "258.09.0.013", "Từ Hữu Minh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đàn. Sinh hạ: Từ Hữu Huy.", "", ""),
                     ("258.10.1.020", "258.09.0.013", "Từ Thị Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đàn.", "", ""),
 
                     ("258.10.1.021", "258.09.0.014", "Từ Thị Tâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Liêm.", "", ""),
@@ -1341,66 +1367,76 @@ class KhoDuLieuSQL:
                     ("258.10.0.023", "258.09.0.015", "Từ Hữu Quỳnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh. Đang cập nhật thông tin vợ con.", "", ""),
                     ("258.10.1.024", "258.09.0.015", "Từ Thị Oanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
 
-                    ("258.10.0.025", "258.09.0.020", "Từ Ngọc Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.026", "258.09.0.020", "Từ Ngọc Dũng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.025", "258.09.0.020", "Từ Ngọc Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Sinh hạ: Từ Hữu Ngọc Tuấn, Từ Hữu Ngọc Tú.", "", ""),
+                    ("258.10.0.026", "258.09.0.020", "Từ Ngọc Dũng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Sinh hạ: Từ Hữu Ngọc Hiếu.", "", ""),
                     ("258.10.0.027", "258.09.0.020", "Từ Ngọc Cường", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.028", "258.09.0.020", "Từ Ngọc Quyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.028", "258.09.0.020", "Từ Ngọc Quyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Sinh hạ: Từ Hữu Ngọc Đức.", "", ""),
                     ("258.10.1.029", "258.09.0.020", "Từ Thị Hoa", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý.", "", ""),
-              
+
                     ("258.10.1.030", "258.09.0.028", "Từ Thị Thanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu.", "", ""),
                     ("258.10.0.031", "258.09.0.028", "Từ Hữu Thành", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu. Đang cập nhật thông tin vợ con.", "", ""),
                     ("258.10.1.032", "258.09.0.028", "Từ Thị Thắm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu.", "", ""),
-                    ("258.10.0.033", "258.09.0.028", "Từ Hữu Thiết", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.033", "258.09.0.028", "Từ Hữu Thiết", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu. Sinh hạ: Từ Hữu Phát.", "", ""),
                     ("258.10.0.034", "258.09.0.028", "Từ Hữu Phát", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu. Đang cập nhật thông tin vợ con.", "", ""),
+                   
+                    #Thay sTT    
+                    ("258.10.0.040", "258.09.0.035", "Từ Hữu Châu", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Minh. Sinh hạ: Từ Hữu Dũng, Từ Hữu Mạnh", "", ""),
+                    ("258.10.0.041", "258.09.0.035", "Từ Hữu Tiến", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Minh.", "", ""),
 
-                    ("258.10.1.064", "258.09.0.038", "Từ Thị Liễu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý.", "", ""),
-                    ("258.10.1.065", "258.09.0.038", "Từ Thị Lâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý.", "", ""),
-                    ("258.10.0.066", "258.09.0.038", "Từ Hữu Luân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.067", "258.09.0.038", "Từ Hữu Luật", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.045", "258.09.0.036", "Từ Hữu Tuấn", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Định", "", ""),
+                    ("258.10.0.046", "258.09.0.036", "Từ Hữu Tú", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Định", "", ""),
+                    ("258.10.0.047", "258.09.0.036", "Từ Hữu Tài", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Định", "", ""),
 
-                    ("258.10.1.068", "258.09.0.040", "Từ Thị Bình", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh.", "", ""),
-                    ("258.10.0.069", "258.09.0.040", "Từ Hữu Thanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.070", "258.09.0.040", "Từ Thị Xanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh.", "", ""),
-                    ("258.10.0.071", "258.09.0.040", "Từ Hữu Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.050", "258.09.0.037", "Từ Hữu Cường", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
 
-                    ("258.10.0.072", "258.09.0.045", "Từ Hữu Nam", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Toàn. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.073", "258.09.0.045", "Từ Hữu Đông", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Toàn. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.1.064", "258.09.0.040", "Từ Thị Liễu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý.", "", ""),
+                    ("258.10.1.065", "258.09.0.040", "Từ Thị Lâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý.", "", ""),
+                    ("258.10.0.066", "258.09.0.040", "Từ Hữu Luận", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý. Sinh hạ: Từ Hữu Báu.", "", ""),
+                    ("258.10.0.067", "258.09.0.040", "Từ Hữu Luật", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý. Sinh hạ: Từ Hữu Bảo.", "", ""),
 
-                    ("258.10.1.074", "258.09.0.046", "Từ Thị Hằng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến.", "", ""),
-                    ("258.10.0.075", "258.09.0.046", "Từ Hữu Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.076", "258.09.0.046", "Từ Hữu Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.1.068", "258.09.0.042", "Từ Thị Bình", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh.", "", ""),
+                    ("258.10.0.069", "258.09.0.042", "Từ Hữu Thanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh. Sinh hạ: Từ Hữu Hiếu, Từ Hữu Ngọc.", "", ""),
+                    ("258.10.1.070", "258.09.0.042", "Từ Thị Xanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh.", "", ""),
+                    ("258.10.0.071", "258.09.0.042", "Từ Hữu Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh. Đang cập nhật thông tin vợ con.", "", ""),
 
-                    ("258.10.1.077", "258.09.0.047", "Từ Thị Nga", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng.", "", ""),
-                    ("258.10.0.078", "258.09.0.047", "Từ Hữu Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.079", "258.09.0.047", "Từ Hữu Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.072", "258.09.0.047", "Từ Hữu Nam", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Toàn. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.073", "258.09.0.047", "Từ Hữu Đông", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Toàn. Sinh hạ: Từ Hữu Khang, Từ Hữu Minh.", "", ""),
 
-                    ("258.10.0.080", "258.09.0.049", "Từ Hữu Quý", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.081", "258.09.0.049", "Từ Thị Huyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp.", "", ""),
-                    ("258.10.0.082", "258.09.0.049", "Từ Hữu Quyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.083", "258.09.0.049", "Từ Hữu Lợi", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.1.074", "258.09.0.048", "Từ Thị Hằng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến.", "", ""),
+                    ("258.10.0.075", "258.09.0.048", "Từ Hữu Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.076", "258.09.0.048", "Từ Hữu Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến. Đang cập nhật thông tin vợ con.", "", ""),
 
-                    ("258.10.1.084", "258.09.0.051", "Từ Thị Hạnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề.", "", ""),
-                    ("258.10.1.085", "258.09.0.051", "Từ Thị Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề.", "", ""),
-                    ("258.10.0.086", "258.09.0.051", "Từ Hữu Khoa", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.1.077", "258.09.0.049", "Từ Thị Nga", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng.", "", ""),
+                    ("258.10.0.078", "258.09.0.049", "Từ Hữu Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.079", "258.09.0.049", "Từ Hữu Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng. Đang cập nhật thông tin vợ con.", "", ""),
 
-                    ("258.10.0.087", "258.09.0.053", "Từ Hữu Thắng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.088", "258.09.0.053", "Từ Hữu Đông", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.089", "258.09.0.053", "Từ Hữu Trường", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.090", "258.09.0.053", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại.", "", ""),
-                    ("258.10.0.091", "258.09.0.053", "Từ Hữu Đồng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.080", "258.09.0.051", "Từ Hữu Quý", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp. Sinh hạ: Từ Hữu Vũ.", "", ""),
+                    ("258.10.1.081", "258.09.0.051", "Từ Thị Huyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp.", "", ""),
+                    ("258.10.0.082", "258.09.0.051", "Từ Hữu Quyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp. Sinh hạ: Từ Hữu Phúc.", "", ""),
+                    ("258.10.0.083", "258.09.0.051", "Từ Hữu Lợi", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp. Đang cập nhật thông tin vợ con.", "", ""),
 
-                    ("258.10.0.092", "258.09.0.056", "Từ Hữu Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Em. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.093", "258.09.0.056", "Từ Thị Thuỷ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Em.", "", ""),
-                    ("258.10.0.094", "258.09.0.056", "Từ Hữu Hùng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Em. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.1.084", "258.09.0.053", "Từ Thị Hạnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề.", "", ""),
+                    ("258.10.1.085", "258.09.0.053", "Từ Thị Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề.", "", ""),
+                    ("258.10.0.086", "258.09.0.053", "Từ Hữu Khoa", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề. Đang cập nhật thông tin vợ con.", "", ""),
 
-                    ("258.10.0.095", "258.09.0.061", "Từ Hữu Phú", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.096", "258.09.0.061", "Từ Hữu Dũng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.097", "258.09.0.061", "Từ Thị Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất.", "", ""),
-                    ("258.10.0.098", "258.09.0.061", "Từ Hữu Văn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.087", "258.09.0.055", "Từ Hữu Thắng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Sinh hạ: Từ Hữu Long, Từ Hữu Thiên.", "", ""),
+                    ("258.10.0.088", "258.09.0.055", "Từ Hữu Đông", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.0.089", "258.09.0.055", "Từ Hữu Trường", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Sinh hạ: Từ Hữu Nguyên, Từ Hữu Quân.", "", ""),
+                    ("258.10.1.090", "258.09.0.055", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại.", "", ""),
+                    ("258.10.0.091", "258.09.0.055", "Từ Hữu Đồng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Đang cập nhật thông tin vợ con.", "", ""),
 
-                    ("258.10.1.099", "258.09.0.062", "Từ Thị Xuân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tạo.", "", ""),
-                    ("258.10.0.100", "258.09.0.062", "Từ Hữu Hạnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tạo. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.101", "258.09.0.062", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tạo.", "", ""),
+                    ("258.10.0.092", "258.09.0.058", "Từ Hữu Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Em. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.1.093", "258.09.0.058", "Từ Thị Thuỷ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Em.", "", ""),
+                    ("258.10.0.094", "258.09.0.058", "Từ Hữu Hưng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Em. Đang cập nhật thông tin vợ con.", "", ""),
+
+                    ("258.10.0.095", "258.09.0.063", "Từ Hữu Phú", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất. Sinh hạ: Từ Hữu An, Từ Hữu Huy", "", ""),
+                    ("258.10.0.096", "258.09.0.063", "Từ Hữu Dũng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất. Sinh hạ: Từ Hữu Hiếu, Từ Hữu Phúc.", "", ""),
+                    ("258.10.1.097", "258.09.0.063", "Từ Thị Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất.", "", ""),
+                    ("258.10.0.098", "258.09.0.063", "Từ Hữu Văn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất. Sinh hạ: Từ Hữu Khôi", "", ""),
+
+                    ("258.10.1.099", "258.09.0.064", "Từ Thị Xuân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tạo.", "", ""),
+                    ("258.10.0.100", "258.09.0.064", "Từ Hữu Hạnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tạo. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("258.10.1.101", "258.09.0.064", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tạo.", "", ""),
 
                     # ==========================================================
                     # ĐỜI 11 
@@ -1409,27 +1445,28 @@ class KhoDuLieuSQL:
                     # ------------------------------------
                     # CHI 1
                     # ------------------------------------
-
-
                   
+                    ("111.11.0.002", "111.10.0.005", "Từ Hữu Quý", "", "Bà Trần Thị Trang", "", "", "", "Con ông Từ Hữu Ngụ. Sinh hạ: Từ Hữu Khánh Duy, Từ Hải Đăng", "", ""),
+                    ("111.11.0.003", "111.10.0.005", "Từ Hữu Báu", "", "Bà Nguyễn Thị Hòa", "", "", "", "Con ông Từ Hữu Ngụ. Sinh hạ: Từ Hữu Đức", "", ""),
+
+                    ("111.11.0.005", "111.10.0.011", "Từ Hữu Ý", "", "Bà Phạm Khánh Vi", "", "", "", "Con ông Từ Hữu Đính", "", ""),
+                    ("111.11.0.006", "111.10.0.011", "Từ Hữu Lương", "", "Bà Nguyễn Thị Quỳnh Thư", "", "", "", "Con ông Từ Hữu Đính. Sinh hạ: Từ Hữu Phước", "", ""),
+                    ("111.11.0.007", "111.10.0.011", "Từ Hữu Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đính", "", ""),
+                    
+                    ("111.11.0.008", "111.10.0.013", "Từ Hữu Phương", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bính", "", ""),
+            
                     ("111.11.1.010", "111.10.0.015", "Từ Thị Thảo", "", "Đang cập nhật", "", "", "", "Con ông Từ Quang Đạt", "", ""),
                     ("111.11.1.011", "111.10.0.015", "Từ Thị Hiền", "", "Đang cập nhật", "", "", "", "Con ông Từ Quang Đạt", "", ""),
                     ("111.11.0.012", "111.10.0.015", "Từ Hữu Trung", "", "Trần Thị Thu Phương", "", "", "", "Con ông Từ Quang Đạt. Sinh hạ: Từ Minh Hoàng", "", ""),
 
-
                     ("111.11.0.020", "111.10.0.017", "Từ Hữu Tuấn", "", "Bà Nguyễn Thị Hồng Ngọc", "", "", "", "Con ông Từ Hữu Huề. Sinh hạ: Từ Hữu Ngọc Khang", "", ""),
                     ("111.11.0.021", "111.10.0.017", "Từ Hữu Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề. Đang cập nhật", "", ""),
-
-
-                   
+              
                     ("111.11.0.022", "111.10.0.018", "Từ Hữu Dũng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huê", "", ""),
                     ("111.11.0.023", "111.10.0.018", "Từ Hữu Công", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huê", "", ""),
-
-
+                    ("111.11.1.024", "111.10.0.019", "Từ Thị Khánh Linh", "", "Đang cập nhật", "2006", "", "", "Con ông Từ Hữu Hoà.", "", ""),
                  
                     ("111.11.0.060", "111.10.0.063", "Từ Hữu Thắng", "", "Vương Thị Hải Yến", "", "", "", "Con ông Từ Hữu Định. Sinh hạ: Từ Vương Minh Nguyên", "", ""),
-
-               
                     ("111.11.0.080", "111.10.0.069", "Từ Hữu Trường", "", "Nguyễn Anh Đào", "", "", "", "Con ông Từ Hữu Sơn(Nghiệm). Sinh hạ: Từ Hữu Long", "", ""),
                     ("111.11.1.081", "111.10.0.069", "Từ Thị Vân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sơn(Nghiệm)", "", ""),
                     ("111.11.0.082", "111.10.0.069", "Từ Hữu Lý", "", "Nguyễn Thị Sao", "", "", "", "Con ông Từ Hữu Sơn(Nghiệm)", "", ""),
@@ -1442,8 +1479,11 @@ class KhoDuLieuSQL:
                     ("111.11.0.089", "111.10.0.072", "Từ Hữu Thuận", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải(Nghiệm)", "", ""),         
                     ("111.11.0.090", "111.10.0.074", "Từ Hữu Anh", "", "Mạc Thị Quỳnh Anh", "", "", "", "Con ông Từ Hữu Nga (Nghiệm). Sinh hạ: Từ Quang Vinh.", "", ""),
                     ("111.11.0.091", "111.10.0.074", "Từ Hữu Hoàng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nga (Nghiệm)", "", ""),
-                    
 
+                    ("111.11.0.120", "111.10.0.102", "Từ Quang Minh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thuận.", "", ""),
+        
+                    ("111.11.0.130", "111.10.0.105", "Từ Ngọc Việt Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Hoàn", "", ""),
+                    
                     # ------------------------------------
                     # CHI 4
                     # ------------------------------------
@@ -1466,9 +1506,8 @@ class KhoDuLieuSQL:
                     ("246.11.0.011", "246.10.0.018", "Từ Gia Bảo", "", "Đang cập nhật", "", "", "", "Con ông Từ Mạnh Hùng", "", ""),
 
                     ("246.11.0.012", "246.10.0.020", "Từ Quốc Bảo", "", "Đang cập nhật", "", "", "", "Con ông Từ Huy Trung", "", ""),
-                    ("246.11.1.013", "246.10.0.020", "Từ Thị Trâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Huy Trung", "", ""),
-
-                   
+                    ("246.11.1.013", "246.10.0.020", "Từ Bảo Trâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Huy Trung", "", ""),
+     
                     ("246.11.0.014", "246.10.0.022", "Từ Quốc Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Quốc Việt", "", ""),
                     ("246.11.0.015", "246.10.0.022", "Từ Quốc Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Quốc Việt", "", ""),
                     ("246.11.1.016", "246.10.0.022", "Từ Ngọc Minh Châu", "", "Đang cập nhật", "", "", "", "Con ông Từ Quốc Việt", "", ""),
@@ -1477,7 +1516,6 @@ class KhoDuLieuSQL:
                     ("246.11.0.018", "246.10.0.024", "Từ Nam Phong", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung", "", ""),
                     ("246.11.0.019", "246.10.0.024", "Từ Minh Khang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung", "", ""),
                     ("246.11.0.020", "246.10.0.024", "Từ Minh Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung", "", ""),
-
     
                     ("246.11.1.021", "246.10.0.026", "Từ Thị Thiên", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lành", "", ""),
                     ("246.11.0.022", "246.10.0.026", "Từ Nguyễn Duy Phước", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lành", "", ""),
@@ -1488,33 +1526,97 @@ class KhoDuLieuSQL:
                      
                     ("246.11.0.026", "246.10.0.031", "Từ Hữu Luân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Luân", "", ""),
 
+                    # ------------------------------------
+                    # CHI 5
+                    # ------------------------------------
 
+                    ("258.11.0.001", "258.10.0.001", "Từ Anh Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sơn. Sinh hạ: Từ Anh Quân.", "", ""),
+                    ("258.11.0.002", "258.10.0.001", "Từ Quang Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sơn", "", ""),
+                                      
+                    ("258.11.0.005", "258.10.0.003", "Từ Hữu Quang Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải", "", ""),
+                    ("258.11.0.006", "258.10.0.003", "Từ Hữu Quang Tùng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải", "", ""),
+                  
+                    ("258.11.0.008", "258.10.0.004", "Từ Hữu Cường", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hùng", "", ""),
+
+                    ("258.11.0.010", "258.10.0.005", "Từ Nhật Nam", "", "Phan Vân Khanh", "2001", "", "", "Con ông Từ Hữu Long. Sinh hạ: Từ Nhật Khang (2026)", "", ""),
+                    ("258.11.0.011", "258.10.0.005", "Từ Nhật Hoàng", "", "Đang cập nhật", "2006", "", "", "Con ông Từ Hữu Long", "", ""),
+              
+                    ("258.11.0.040", "258.10.0.025", "Từ Hữu Ngọc Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Anh.", "", ""),
+                    ("258.11.0.041", "258.10.0.025", "Từ Hữu Ngọc Tú", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Anh.", "", ""),
+                    
+                    ("258.11.0.045", "258.10.0.026", "Từ Hữu Ngọc Hiếu", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Dũng.", "", ""),
+                    
+                    ("258.11.0.050", "258.10.0.028", "Từ Hữu Ngọc Đức", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Quyền.", "", ""),
+
+                    ("258.11.0.055", "258.10.0.033", " Từ Hữu Phát", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thiết.", "", ""),
+          
+                    ("258.11.0.070", "258.10.0.040", "Từ Hữu Dũng", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Châu.", "", ""),
+                    ("258.11.0.071", "258.10.0.040", "Từ Hữu Mạnh", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Châu.", "", ""),
+            
+                    ("258.11.0.090", "258.10.0.066", "Từ Hữu Báu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Luận.", "", ""),
+
+                    ("258.11.0.091", "258.10.0.067", "Từ Hữu Bảo", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Luật", "", ""),
+               
+                    ("258.11.0.098", "258.10.0.069", "Từ Hữu Hiếu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
+                    ("258.11.0.099", "258.10.0.069", "Từ Hữu Ngọc", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
+                                  
+                    ("258.11.0.105", "258.10.0.073", "Từ Hữu Khang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đông.", "", ""),
+                    ("258.11.0.106", "258.10.0.073", "Từ Hữu Minh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đông.", "", ""),
+                    
+                    ("258.11.0.120", "258.10.0.080", "Từ Hữu Vũ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Quý", "", ""),
+                   
+                    ("258.11.0.122", "258.10.0.082", "Từ Hữu Phúc", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Quyền", "", ""),
+                  
+                    ("258.11.0.131", "258.10.0.087", "Từ Hữu Long", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thắng", "", ""),
+                    ("258.11.0.132", "258.10.0.087", "Từ Hữu Thiên", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thắng", "", ""),
+                    
+                    ("258.11.0.140", "258.10.0.089", "Từ Hữu Nguyên", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường", "", ""),
+                    ("258.11.0.141", "258.10.0.089", "Từ Hữu Quân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường", "", ""),
+                   
+                    ("258.11.0.145", "258.10.0.095", "Từ Hữu An", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phú", "", ""),
+                    ("258.11.0.146", "258.10.0.095", "Từ Hữu Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phú", "", ""),
+
+                    ("258.11.0.148", "258.10.0.096", "Từ Hữu Hiếu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng", "", ""),
+                    ("258.11.0.149", "258.10.0.096", "Từ Hữu Phúc", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng", "", ""),
+                  
+                    ("258.11.0.150", "258.10.0.098", "Từ Hữu Khôi", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Văn", "", ""),
+                    
                     # ==========================================================
                     # ĐỜI 12 
                     # ==========================================================
                     # ------------------------------------
                     # CHI 1
                     # ------------------------------------
+                     
+                    ("111.12.0.002", "111.11.0.002", "Từ Hữu Khánh Duy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Quý", "", ""),
+                    ("111.12.0.003", "111.11.0.002", "Từ Hải Đăng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Quý", "", ""),
+                    
+                    ("111.12.0.004", "111.11.0.003", "Từ Hữu Đức", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Báu", "", ""),
 
-                   
-
-                  
-                    ("111.12.0.005", "111.11.0.012", "Từ Minh Hoàng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trung", "", ""),
+                    ("111.12.0.005", "111.11.0.006", "Từ Hữu Phước", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương", "", ""),
 
 
-
+                    ("111.12.0.008", "111.11.0.012", "Từ Minh Hoàng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trung", "", ""),
 
                     ("111.12.0.010", "111.11.0.020", "Từ Hữu Ngọc Khang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuấn", "", ""),
-
                   
-                    ("111.12.0.050", "111.11.0.060", "Từ Vương Minh Nguyên", "", "", "", "", "", "Con ông Từ Hữu Thắng", "", ""),
-
-
-                    
+                    ("111.12.0.050", "111.11.0.063", "Từ Vương Minh Nguyên", "", "", "", "", "", "Con ông Từ Hữu Thắng", "", ""),
+       
                     ("111.12.0.090", "111.11.0.080", "Từ Hữu Long", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường", "", ""),
                     ("111.12.0.092", "111.11.0.085", "Từ Hải Đăng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bản", "", ""),               
                     ("111.12.0.095", "111.11.0.086", "Từ Hải Lâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Mạnh", "", ""),                 
                     ("111.12.0.098", "111.11.0.090", "Từ Quang Vinh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Anh.", "", ""),
+
+
+                    # ------------------------------------
+                    # CHI 5
+                    # ------------------------------------
+
+                    ("258.12.0.001", "258.11.0.001", "Từ Anh Quân", "", "Đang cập nhật", "", "", "", "Con ông Từ Anh Tuấn", "", ""),
+                    
+                    ("258.12.0.010", "258.11.0.010", "Từ Nhật Khang", "", "Đang cập nhật", "2026", "", "", "Con ông Từ Nhật Nam", "", "")
+
+                    
 
                 ]
 
@@ -2521,33 +2623,410 @@ class SoChiHuyGiaoDien:
                 else: 
                     for err in messages: st.error(err)
 
+
     #=====================================================================
-    # [PHÂN LÔ E6]: Hàm con render màn hình Xuất Báo Cáo & In Ấn
+    # [PHÂN LÔ E6]: Trung tâm Xuất Báo cáo & In ấn Phả Hệ (Tổng lực Bìa nền tràn viền 100% A4)
     #=====================================================================
     @staticmethod
     def render_xuatbaocao(df):
         st.subheader("🖨️ Trung tâm Xuất Báo cáo & In ấn Phả Hệ")
         df_app = df[df["TrangThai"] == "Đã duyệt"].copy()
         
-        export_df = df_app[["STT", "ID", "ChaMe_ID", "HoTen", "TenTu", "VoChong", "NamSinh", "NamMat", "NgayGio", "GhiChu", "TinhTrang", "HinhAnh"]].rename(columns={
-            "ID": "Mã Định Danh", "ChaMe_ID": "Mã Cha/Mẹ", "HoTen": "Họ và Tên", "TenTu": "Tên Tự", 
-            "VoChong": "Vợ/Chồng", "NamSinh": "Năm Sinh", "NamMat": "Năm Mất", "NgayGio": "Ngày Giỗ", 
-            "GhiChu": "Ghi Chú", "TinhTrang": "Tình Trạng", "HinhAnh": "Hình Ảnh"
-        })
-        
         tab1, tab2 = st.tabs(["📥 Xuất dữ liệu (CSV)", "📄 In ấn báo cáo"])
         with tab1:
-            st.download_button("📥 Tải xuống tệp CSV", export_df.to_csv(index=False).encode('utf-8-sig'), "GiaPha_HoTu.csv", "text/csv")
+            export_df_csv = df_app[["STT", "ID", "ChaMe_ID", "HoTen", "TenTu", "VoChong", "NamSinh", "NamMat", "NgayGio", "GhiChu", "TinhTrang", "HinhAnh"]].rename(columns={
+                "ID": "Mã Định Danh", "ChaMe_ID": "Mã Cha/Mẹ", "HoTen": "Họ và Tên", "TenTu": "Tên Tự", 
+                "VoChong": "Vợ/Chồng", "NamSinh": "Năm Sinh", "NamMat": "Năm Mất", "NgayGio": "Ngày Giỗ", 
+                "GhiChu": "Ghi Chú", "TinhTrang": "Tình Trạng", "HinhAnh": "Hình Ảnh"
+            })
+            st.download_button("📥 Tải xuống tệp CSV", export_df_csv.to_csv(index=False).encode('utf-8-sig'), "GiaPha_HoTu.csv", "text/csv")
+            
         with tab2:
+            st.markdown("🖼️ **Chọn ảnh bìa cho tập tài liệu (Tùy chọn):**")
+            uploaded_cover = st.file_uploader("Tải lên tệp ảnh bìa (JPG, PNG)", type=["jpg", "jpeg", "png"], key="upload_cover_pdf")
+            
+            # --- Hộp chọn tùy chỉnh Auto và các số dòng từ 14 đến 20 (mặc định 17) ---
+            st.markdown("---")
+            st.markdown("⚙️ **Cấu hình định dạng trang in:**")
+            page_mode_options = ["Auto", 14, 15, 16, 17, 18, 19, 20]
+            selected_page_mode = st.selectbox(
+                "Chọn chế độ trình bày trang in:",
+                options=page_mode_options,
+                index=4  # Vị trí số 4 tương ứng với giá trị 17 (mặc định)
+            )
+            
             if st.button("🖨️ Mở cửa sổ In ấn / Xuất PDF"):
-                html_report = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>@page {{ size: A4 landscape; margin: 10mm; }} body {{ font-family: 'Times New Roman'; }} table {{ width: 100%; border-collapse: collapse; }} th, td {{ border: 1px solid #333; padding: 5px; font-size: 10px; }} th {{ background: #f2f2f2; }}</style></head><body>
-                <h1 style="text-align:center;">DÒNG HỌ TỪ XUÂN LỘC - PHẢ HỆ ĐỊNH DANH</h1>
-                <table><thead><tr><th>STT</th><th>Mã Định Danh</th><th>Mã Cha/Mẹ</th><th>Họ Tên</th><th>Tên Tự</th><th>Vợ/Chồng</th><th>Năm Sinh</th><th>Năm Mất</th><th>Ngày Giỗ</th><th>Ghi Chú</th><th>Tình Trạng</th><th>Hình Ảnh</th></tr></thead><tbody>"""
-                for _, r in export_df.iterrows():
-                    html_report += f"<tr><td>{r['STT']}</td><td>{r['Mã Định Danh']}</td><td>{r['Mã Cha/Mẹ']}</td><td><b>{r['Họ và Tên']}</b></td><td>{r['Tên Tự']}</td><td>{r['Vợ/Chồng']}</td><td>{r['Năm Sinh']}</td><td>{r['Năm Mất']}</td><td>{r['Ngày Giỗ']}</td><td>{r['Ghi Chú']}</td><td>{r['Tình Trạng']}</td><td>{r['Hình Ảnh']}</td></tr>"
-                html_report += "</tbody></table><script>window.print();</script></body></html>"
-                components.html(html_report, height=600, scrolling=True)
+                records = df_app.to_dict('records')
+    
+                import base64
+                import os
+                cover_image_base64 = ""
+                
+                # 1. Ưu tiên lấy ảnh người dùng vừa tải lên trực tiếp từ giao diện
+                if uploaded_cover is not None:
+                    try:
+                        bytes_data = uploaded_cover.getvalue()
+                        encoded_string = base64.b64encode(bytes_data).decode("utf-8")
+                        mime_type = uploaded_cover.type
+                        cover_image_base64 = f"data:{mime_type};base64,{encoded_string}"
+                    except Exception as e:
+                        st.error(f"Lỗi đọc ảnh bìa tải lên: {e}")
+                else:
+                    # 2. Tự động quét tìm tệp bia_giapha trong thư mục images hoặc thư mục gốc
+                    current_dir = os.path.dirname(os.path.abspath(__file__)) if "__file__" in locals() else os.getcwd()
+                    possible_paths = [
+                        os.path.join(current_dir, "images", "bia_giapha"),
+                        os.path.join(current_dir, "images", "bia_giapha.jpg"),
+                        os.path.join(current_dir, "images", "bia_giapha.png"),
+                        os.path.join(current_dir, "images", "bia_giapha.jpeg"),
+                        os.path.join("images", "bia_giapha"),
+                        os.path.join("images", "bia_giapha.jpg"),
+                        os.path.join("images", "bia_giapha.png"),
+                        "bia_giapha.jpg",
+                        "bia_giapha.png"
+                    ]
+                    found_cover_path = None
+                    for path in possible_paths:
+                        if os.path.exists(path):
+                            found_cover_path = path
+                            break
+                        for ext in [".jpg", ".png", ".jpeg", ""]:
+                            if os.path.exists(f"{path}{ext}"):
+                                found_cover_path = f"{path}{ext}" if ext != "" else path
+                                break
+                        if found_cover_path:
+                            break
+                    
+                    if found_cover_path:
+                        try:
+                            with open(found_cover_path, "rb") as img_file:
+                                encoded_string = base64.b64encode(img_file.read()).decode("utf-8")
+                                mime_type = "image/png" if "png" in found_cover_path.lower() else "image/jpeg"
+                                cover_image_base64 = f"data:{mime_type};base64,{encoded_string}"
+                        except Exception:
+                            pass
 
+                def get_gen_title(r):
+                    gen = int(r.get('DoiThu', 1))
+                    if gen <= 3:
+                        return "ĐỜI THỨ NHẤT ĐẾN ĐỜI THỨ 3"
+                    else:
+                        roman_map = {4: 'TƯ', 5: 'NĂM', 6: 'SÁU', 7: 'BẢY', 8: 'TÁM', 9: 'CHÍN', 10: 'MƯỜI', 11: 'MƯỜI MỘT', 12: 'MƯỜI HAI'}
+                        gen_label = roman_map.get(gen, str(gen))
+                        return f"ĐỜI THỨ {gen_label}"
+
+                def format_multiline(text):
+                    if not text or str(text).lower() in ["nan", "none", ""]:
+                        return ""
+                    parts = [p.strip() for p in str(text).split(',') if p.strip()]
+                    return '<br>'.join(parts)
+
+                def format_vo_chong(text):
+                    if not text or str(text).lower() in ["nan", "none", ""]:
+                        return ""
+                    raw_list = [p.strip() for p in str(text).split(',') if p.strip()]
+                    cleaned_parts = []
+                    for item in raw_list:
+                        item_clean = re.sub(r'^(bà chính|bà thứ|bà cả|bà hai|bà ba|bà nhất|bà nhì|bà út|chính|thứ|cả|hai|ba|nhất|nhì|út)\s*', '', item, flags=re.IGNORECASE).strip()
+                        if item_clean.lower().startswith("bà"):
+                            item_clean = "Bà" + item_clean[2:]
+                        else:
+                            item_clean = f"Bà: {item_clean}"
+                        cleaned_parts.append(item_clean)
+                    return '<br>'.join(cleaned_parts)
+
+                # ==========================================
+                # ĐIỀU PHỐI LOGIC: AUTO HOẶC SỐ DÒNG CỐ ĐỊNH
+                # ==========================================
+                is_auto_mode = (selected_page_mode == "Auto")
+
+                if is_auto_mode:
+                    html_report = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+                        @page {{ size: A4 landscape; margin: 10mm; }} 
+                        body {{ font-family: 'Times New Roman', serif; background-color: #FDFBF7; color: #2C2C2C; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }} 
+                        
+                        .cover-image-container {{
+                            page-break-after: always; break-after: page;
+                            width: 100%; height: 190mm;
+                            background-color: #590000;
+                            background-image: url("{cover_image_base64}");
+                            background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
+                            box-sizing: border-box; margin-bottom: 10mm;
+                        }}
+                        table {{ width: 100%; border-collapse: collapse; margin-top: 6px; background-color: #fff; }} 
+                        th {{ border: 1px solid #8B0000; padding: 5px; font-size: 11px; background: #8B0000; color: #FFF8DC; text-align: center; font-weight: bold; display: table-header-group; }} 
+                        tr {{ page-break-inside: avoid; break-inside: avoid; }}
+                        td {{ border: 1px solid #c2b292; padding: 4px; font-size: 11.5px; word-break: break-word; vertical-align: middle; color: #1a1a1a; }} 
+                        .main-title {{ text-align: center; font-size: 16px; font-weight: bold; color: #8B0000; margin-top: 10px; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1.5px; }}
+                        .sub-title {{ text-align: center; font-size: 10px; font-style: italic; color: #555; margin-bottom: 10mm; }}
+                        .doi-header {{ background: #F4EBD0; color: #8B0000; border: 1.5px solid #8B0000; font-weight: bold; text-align: center; font-size: 12px; letter-spacing: 2px; padding: 5px; text-transform: uppercase; page-break-after: avoid; break-after: avoid; }}
+                    </style></head><body>"""
+                    
+                    html_report += f"""<div class="cover-image-container">"""
+                    if not cover_image_base64:
+                        html_report += f"""<div style="color: #FFD700; font-size: 16px; font-family: 'Times New Roman', serif; padding: 20px; text-align: center; margin: auto;">[Chưa có ảnh bìa. Vui lòng chọn tệp ảnh bìa từ giao diện]</div>"""
+                    html_report += f"""</div>"""
+
+                    html_report += f"""<h2 class="main-title">DÒNG HỌ TỪ XUÂN LỘC - PHẢ HỆ ĐỊNH DANH</h2>"""
+                    html_report += f"""<div class="sub-title">Lưu giữ huyết mạch dòng tộc — Trân trọng kính dâng tiên tổ</div>"""
+                    
+                    html_report += f"""<table><thead><tr>
+                        <th style="width: 4%;">STT</th>
+                        <th style="width: 9%;">Mã Định Danh</th>
+                        <th style="width: 11%;">Họ Tên</th>
+                        <th style="width: 8%;">Tên Tự</th>
+                        <th style="width: 13%;">Vợ/Chồng</th>
+                        <th style="width: 5%;">Năm Sinh</th>
+                        <th style="width: 5%;">Năm Mất</th>
+                        <th style="width: 6%;">Ngày Giỗ</th>
+                        <th style="width: 40%;">Ghi Chú</th>
+                    </tr></thead><tbody>"""
+                    
+                    stt_in = 1
+                    last_rendered_gen = None
+                    for r in records:
+                        curr_gen_title = get_gen_title(r)
+                        if curr_gen_title != last_rendered_gen:
+                            html_report += f"""<tr><td colspan="9" class="doi-header">📜 {curr_gen_title}</td></tr>"""
+                            last_rendered_gen = curr_gen_title
+                        
+                        ten_tu_fmt = format_multiline(r.get('TenTu', ''))
+                        vo_chong_fmt = format_vo_chong(r.get('VoChong', ''))
+                        
+                        html_report += f"""<tr>
+                            <td style="text-align:center; font-weight: bold; color: #8B0000;">{stt_in}</td>
+                            <td style="text-align:center; font-family: monospace; font-size: 11px; white-space: nowrap; color: #333;">{r.get('ID', '')}</td>
+                            <td><b style="color: #8B0000; font-size: 12.5px;">{r.get('HoTen', '')}</b></td>
+                            <td>{ten_tu_fmt}</td>
+                            <td>{vo_chong_fmt}</td>
+                            <td style="text-align:center;">{r.get('NamSinh', '')}</td>
+                            <td style="text-align:center;">{r.get('NamMat', '')}</td>
+                            <td style="text-align:center; font-weight: bold; color: #700;">{r.get('NgàyGiỗ') if 'NgàyGiỗ' in r else r.get('NgayGio', '')}</td>
+                            <td>{r.get('GhiChu', '')}</td>
+                        </tr>"""
+                        stt_in += 1
+
+                    html_report += "</tbody></table><script>window.print();</script></body></html>"
+
+                else:
+                    ROWS_PER_PAGE = int(selected_page_mode) 
+                    page_chunks = [records[i:i + ROWS_PER_PAGE] for i in range(0, len(records), ROWS_PER_PAGE)]
+
+                    html_report = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+                        @page {{ 
+                            size: A4 landscape; 
+                            margin: 6mm;
+                        }} 
+                        
+                        body {{ 
+                            font-family: 'Times New Roman', serif; 
+                            background-color: #FDFBF7; 
+                            color: #2C2C2C; 
+                            margin: 0; 
+                            padding: 0; 
+                            -webkit-print-color-adjust: exact;
+                        }} 
+                        
+                        /* ---------------- TRANG BÌA LÀM NỀN PHỦ KHÍT 100% ---------------- */
+                        .cover-image-container {{
+                            page-break-after: always; 
+                            break-after: page;
+                            page-break-inside: avoid;
+                            break-inside: avoid;
+                            width: 100%;
+                            height: 194mm;
+                            max-height: 194mm;
+                            position: relative; 
+                            background-color: #590000;
+                            background-image: url("{cover_image_base64}");
+                            background-size: 100% 100%; /* Ép ảnh dãn đều khít trọn vẹn 100% A4 ngang */
+                            background-position: center;
+                            background-repeat: no-repeat;
+                            box-sizing: border-box;
+                            margin-bottom: 15mm;
+                            overflow: hidden;
+                        }}
+
+                        /* ---------------- CÁC TRANG NỘI DUNG SỔ TAY CỔ ĐIỂN ---------------- */
+                        .page-container {{ 
+                            page-break-after: always; 
+                            break-after: page;
+                            page-break-inside: avoid;
+                            break-inside: avoid;
+                            height: 194mm; 
+                            max-height: 194mm;
+                            position: relative; 
+                            background: linear-gradient(135deg, #fdfbf7 0%, #f4ebd0 100%);
+                            border: 3px double #8B0000;
+                            padding: 10px;
+                            padding-top: 26px;
+                            box-sizing: border-box;
+                            margin-bottom: 15mm;
+                            overflow: hidden;
+                        }}
+                        .page-container:last-child {{ page-break-after: avoid; break-after: avoid; margin-bottom: 0; }}
+                        
+                        .page-number-badge {{
+                            position: absolute;
+                            top: 0px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 26px;
+                            height: 26px;
+                            border: 2px solid #8B0000;
+                            border-radius: 50%;
+                            background-color: #FDFBF7;
+                            color: #8B0000;
+                            font-family: 'Times New Roman', serif;
+                            font-weight: bold;
+                            font-size: 11px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            z-index: 100;
+                            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+                        }}
+
+                        .watermark-draft {{
+                            position: absolute;
+                            top: 28px;
+                            left: 35px;
+                            border: 3.5px solid #C62828;
+                            color: #C62828;
+                            font-family: 'Times New Roman', serif;
+                            font-weight: bold;
+                            font-size: 22px;
+                            padding: 6px 18px;
+                            text-transform: uppercase;
+                            letter-spacing: 3.5px;
+                            border-radius: 6px;
+                            background-color: rgba(255, 235, 238, 0.85);
+                            transform: rotate(-10deg);
+                            z-index: 99;
+                            box-shadow: 2px 2px 5px rgba(0,0,0,0.15);
+                        }}
+
+                        table {{ width: 100%; border-collapse: collapse; margin-top: 6px; background-color: rgba(255, 255, 255, 0.85); }} 
+                        th {{ 
+                            border: 1px solid #8B0000; 
+                            padding: 3px; 
+                            font-size: 11px; 
+                            background: #8B0000; 
+                            color: #FFF8DC; 
+                            text-align: center; 
+                            font-weight: bold; 
+                        }}
+                        td {{ 
+                            border: 1px solid #c2b292; 
+                            padding: 3px; 
+                            font-size: 11.5px; 
+                            height: 20px; 
+                            word-break: break-word; 
+                            vertical-align: middle; 
+                            color: #1a1a1a;
+                        }} 
+                        .main-title {{ 
+                            text-align: center; 
+                            font-size: 15px; 
+                            font-weight: bold; 
+                            color: #8B0000; 
+                            margin-top: 2px;
+                            margin-bottom: 1px; 
+                            text-transform: uppercase; 
+                            letter-spacing: 1.5px; 
+                        }}
+                        .sub-title {{
+                            text-align: center;
+                            font-size: 9.5px;
+                            font-style: italic;
+                            color: #555;
+                            margin-bottom: 3px;
+                        }}
+                        .doi-header {{ 
+                            background: #F4EBD0; 
+                            color: #8B0000; 
+                            border: 1.5px solid #8B0000; 
+                            font-weight: bold; 
+                            text-align: center; 
+                            font-size: 12px; 
+                            letter-spacing: 2px; 
+                            padding: 3px; 
+                            text-transform: uppercase; 
+                        }}
+                        .empty-row td {{ color: transparent; border: 1px solid #c2b292; background-color: rgba(255,255,255,0.2); }}
+                    </style></head><body>"""
+                    
+                    # --- TRANG 1: ẢNH BÌA LÀM NỀN PHỦ KHÍT TUYỆT ĐỐI ---
+                    html_report += f"""<div class="cover-image-container">"""
+                    if not cover_image_base64:
+                        html_report += f"""<div style="color: #FFD700; font-size: 16px; font-family: 'Times New Roman', serif; padding: 20px; text-align: center; margin: auto;">[Chưa có ảnh bìa. Vui lòng chọn tệp ảnh bìa từ giao diện]</div>"""
+                    html_report += f"""</div>"""
+
+                    # --- CÁC TRANG NỘI DUNG TIẾP THEO (Từ trang 2 trở đi) ---
+                    stt_in = 1
+                    last_rendered_gen = None
+
+                    for chunk_idx, chunk in enumerate(page_chunks):
+                        page_idx = chunk_idx + 2
+                        html_report += f"""<div class="page-container">"""
+                        
+                        page_str = f"{page_idx:02d}"
+                        html_report += f"""<div class="page-number-badge">{page_str}</div>"""
+                        html_report += f"""<div class="watermark-draft">BẢN NHÁP</div>"""
+                        html_report += f"""<h2 class="main-title">DÒNG HỌ TỪ XUÂN LỘC - PHẢ HỆ ĐỊNH DANH</h2>"""
+                        html_report += f"""<div class="sub-title">Lưu giữ huyết mạch dòng tộc — Trân trọng kính dâng tiên tổ</div>"""
+                        
+                        html_report += f"""<table><thead><tr>
+                            <th style="width: 4%;">STT</th>
+                            <th style="width: 9%;">Mã Định Danh</th>
+                            <th style="width: 11%;">Họ Tên</th>
+                            <th style="width: 8%;">Tên Tự</th>
+                            <th style="width: 13%;">Vợ/Chồng</th>
+                            <th style="width: 5%;">Năm Sinh</th>
+                            <th style="width: 5%;">Năm Mất</th>
+                            <th style="width: 6%;">Ngày Giỗ</th>
+                            <th style="width: 40%;">Ghi Chú</th>
+                        </tr></thead><tbody>"""
+                        
+                        row_count = 0
+                        for r in chunk:
+                            curr_gen_title = get_gen_title(r)
+                            if curr_gen_title != last_rendered_gen:
+                                html_report += f"""<tr><td colspan="9" class="doi-header">📜 {curr_gen_title}</td></tr>"""
+                                last_rendered_gen = curr_gen_title
+                                row_count += 1
+                            
+                            ten_tu_fmt = format_multiline(r.get('TenTu', ''))
+                            vo_chong_fmt = format_vo_chong(r.get('VoChong', ''))
+                            
+                            html_report += f"""<tr>
+                                <td style="text-align:center; font-weight: bold; color: #8B0000;">{stt_in}</td>
+                                <td style="text-align:center; font-family: monospace; font-size: 11px; white-space: nowrap; color: #333;">{r.get('ID', '')}</td>
+                                <td><b style="color: #8B0000; font-size: 12.5px;">{r.get('HoTen', '')}</b></td>
+                                <td>{ten_tu_fmt}</td>
+                                <td>{vo_chong_fmt}</td>
+                                <td style="text-align:center;">{r.get('NamSinh', '')}</td>
+                                <td style="text-align:center;">{r.get('NamMat', '')}</td>
+                                <td style="text-align:center; font-weight: bold; color: #700;">{r.get('NgàyGiỗ') if 'NgàyGiỗ' in r else r.get('NgayGio', '')}</td>
+                                <td>{r.get('GhiChu', '')}</td>
+                            </tr>"""
+                            stt_in += 1
+                            row_count += 1
+
+                        while row_count < ROWS_PER_PAGE:
+                            html_report += f"""<tr class="empty-row">
+                                <td style="text-align:center;">&nbsp;</td>
+                                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                            </tr>"""
+                            row_count += 1
+
+                        html_report += "</tbody></table></div>"
+
+                    html_report += "<script>window.print();</script></body></html>"
+
+                components.html(html_report, height=650, scrolling=True)
+                
     #=====================================================================
     # [PHÂN LÔ E7]: Hàm con render màn hình Quản Trị Hệ Thống
     #=====================================================================
