@@ -220,7 +220,7 @@ class KhoDuLieuSQL:
                      
                     ("200.02.0.002", "000.01.0.001", "Từ Hữu Mưu", "", "Bà Trần Thị Dinh, Bà Trần Thị Đài", "", "", "", "Đứng đầu cửa Ất. Làm nghề tri điện kiêm tổng trưởng. Sinh hạ: Từ Hữu Màn, Từ Hữu Hùng, Từ Hữu Lân, Từ Hữu Lạc. [5 Trai: Chức, Tuế, Phong, Bộ, Ẩm: chết sớm]. [2 Gái: Mại, Tưởng: Tảo vong]", "", ""),
                     ("000.02.1.003", "000.01.0.001", "Từ Thị Hằng", "", "", "", "", "", "", "Lấy chồng", ""),
-                    ("000.02.1.906", "000.01.0.001", "Từ Thị Đỏ", "", "", "", "", "", "", "Tảo vong", ""),
+                    ("000.02.1.004", "000.01.0.001", "Từ Thị Đỏ", "", "", "", "", "", "", "Tảo vong", ""),
 
                     # ==========================================================
                     # ĐỜI THỨ 3: CÁC CỤ ĐỨNG ĐẦU CHI
@@ -232,7 +232,7 @@ class KhoDuLieuSQL:
                     ("240.03.0.005", "200.02.0.002", "Từ Hữu Màn", "", "Bà Trần Thị Lụ (Hiệu Ái Hộ)", "", "", "", "Con đầu cụ Mưu. Đứng đầu Chi 4. Ông làm Thầy thuốc, Y dược tế sinh. Hưởng kỳ thọ. Sinh hạ: Từ Hữu Hiển, Từ Hữu Kiến (chết sớm), Từ Thị Dục (chết sớm), Từ Hữu Thông (tảo một), Từ Hữu Minh (tảo vong)", "", ""),
                     ("250.03.0.006", "200.02.0.002", "Từ Hữu Hùng", "", "Bà Trần Thị Bích (Hiệu Từ Thuận)", "", "", "", "Con thứ 2 cụ Mưu. Đứng đầu Chi 5. Ông làm chức Tri bộ kiêm Chính đạo, Nghĩa nam. Sinh hạ: Từ Hữu Linh, Từ Hữu Cảo, Từ Hữu Đỏ (tảo vong), Từ Hữu Đỏ (tảo vong), [4 con gái: Vẹ, Thanh, Cần, Đỏ đều tảo vong]", "", ""),
                     ("260.03.0.007", "200.02.0.002", "Từ Hữu Lân", "", "Bà Trần Thị Ảnh (Hiệu Tiệp Ảnh)", "", "", "", "Con thứ 3 cụ Mưu. Đứng đầu Chi 6. Ông làm ưu binh đội trưởng. Sinh hạ: Từ Hữu Niên, Từ Hữu Điền, Từ Hữu Trung (tảo vong)", "", ""),
-                    ("270.03.0.008", "200.02.0.002", "Từ Hữu Lạc", "", "Bà cả Hồ Thị Hiệu, Bà thứ Hà Thị Hiệu Từ", "", "", "", "Con thứ 4 cụ Mưu. Đứng đầu Chi 7. Ông làm ban cai đội phó cơ chưởng ngọc hầu. Sinh hạ: Từ Hữu Thận, Từ Hữu Đỏ (tảo một), Từ Thị Đỏ (tảo vong), Từ Hữu Thung (tảo vong), Từ Thị Thuyết (tảo một)", "", ""),
+                    ("270.03.0.008", "200.02.0.002", "Từ Hữu Lạc", "", "Bà cả Hồ Thị (Hiệu Thuần Thục), Bà thứ Hà Thị (Hiệu Từ Hiên)", "", "", "", "Con thứ 4 cụ Mưu. Đứng đầu Chi 7. Ông làm việc cho nhà Vua, Chức vụ Ban cai đội Phó cơ chưởng Ngọc hầu. Sinh hạ: Từ Hữu Thận, Từ Hữu Đỏ (tảo một), Từ Thị Đỏ (tảo vong), Từ Hữu Chúng (tảo vong), Từ Thị Thuyết (tảo một)", "", ""),
                
 
                     # ==========================================================
@@ -240,87 +240,99 @@ class KhoDuLieuSQL:
                     # ==========================================================
                   
                     ("111.04.0.001", "110.03.0.001", "Từ Hữu Di", "", "Bà Ngô Thị Tố (Hiệu Trang Nhạ)", "", "", "", "Con cụ Liện. Làm nghề Thợ rèn. Sinh hạ: Từ Hữu Loan, Từ Hữu Kiệu, Từ Hữu Phượng, Từ Hữu Điều", "", ""),
-                    ("122.04.0.002", "120.03.0.002", "Từ Hữu Kỵ", "", "Bà Ngô Thị Lân", "", "", "", "Con đầu cụ Dực. Ông làm thầy thuốc. Sinh hạ: Từ Hữu Triển, Từ Hữu Thạch, Từ Hữu Ngọc, Từ Hữu Ngà, Từ Hữu Lầu, Từ Hữu Ngân, Từ Chi Cảnh (tảo vong)", "", ""),
+                    ("122.04.0.002", "120.03.0.002", "Từ Hữu Kỵ", "", "Bà Ngô Thị Lân", "", "", "", "Con đầu cụ Dực. Ông làm thầy thuốc. Sinh hạ: Từ Hữu Triển, Từ Hữu Thạch, Từ Hữu Ngọc, Từ Hữu Ngà, Từ Hữu Lầu, Từ Hữu Ngân, Từ Thị Cảnh (tảo vong)", "", ""),
                     ("123.04.0.003", "120.03.0.002", "Từ Hữu Tương", "", "Bà Đào Thị Đính", "", "", "", "Con thứ 2 cụ Dực. Ông làm ưu binh đội trưởng, hưởng kỳ thọ. Sinh hạ: Từ Hữu Nghị, Từ Hữu Vị, Từ Hữu Toàn", "", ""),
                     ("120.04.0.004", "120.03.0.002", "Từ Hữu Tạc", "", "Bà Nguyễn Thị Trân", "", "", "", "Con thứ 3 cụ Dực. Ông làm nghề thợ rèn, hưởng kỳ thọ. Sinh hạ: Từ Thị Tân (tảo vong), Từ Thị Lụ (tảo vong)", "Phạp tự", ""),
-                    ("124.04.0.005", "120.03.0.002", "Từ Hữu Tỉnh", "Cố Phùng", "Bà Trần Thị Phi", "1812", "1885", "13/4 AL", "Con thứ 4 cụ Dực. Ông là đại phú, được phong sắc ân tứ thọ dân, thọ 74 tuổi. Vợ là Bà Trần Thị Phi (1814-1882, giỗ 30/11 âm). Sinh hạ: Từ Hữu Bường (mất sớm), Từ Thị Bẹn (lấy ông Trần Song trong làng), Từ Thị Phấn (lấy Trần Ích trong làng), Từ Hữu Chấn, Từ Hữu Nhin, Từ Hữu Đỏ (tảo vong)", "", ""),
+                    ("124.04.0.005", "120.03.0.002", "Từ Hữu Tỉnh", "Cố Phùng", "Bà Trần Thị Phi", "1812", "1885", "13/4 AL", "Con thứ 4 cụ Dực. Ông là đại phú, được phong sắc ân Tứ thọ dân, thọ 74 tuổi. Vợ là Bà Trần Thị Phi (1814-1882, giỗ 30/11 âm). Sinh hạ: Từ Hữu Bường (mất sớm), Từ Thị Bẹn (lấy ông Trần Song trong làng), Từ Thị Phấn (lấy Trần Ích trong làng), Từ Hữu Chấn, Từ Hữu Nhin, Từ Hữu Đỏ (tảo vong)", "", ""),
                     ("120.04.0.006", "120.03.0.002", "Từ Hữu Ẩm", "", "Bà Trương Thị Tư, Bà thứ Nguyễn Thị Chiên", "", "", "", "Con thứ 5 cụ Dực. Sinh hạ: Từ Hữu Hưng (tảo một), Từ Thị Chiêm (tảo vong), Từ Thị Diền (tảo vong)", "", ""),
                     ("120.04.0.007", "120.03.0.002", "Từ Hữu Lộc", "", "", "", "", "", "Con thứ 5 cụ Dực.", "Tảo vong", ""),
                     ("120.04.0.008", "120.03.0.002", "Từ Hữu Phú", "", "", "", "", "", "Con thứ 5 cụ Dực.", "Tảo vong", ""),
-                    ("135.04.0.009", "130.03.0.003", "Từ Hữu Tình", "", "Bà Ngô Thị Phụng", "", "", "", "Con cụ Lạng. Thí trúng nhị trường. Sinh hạ: Từ Hữu Hồng, Từ Hữu Bằng, Từ Hữu Lập, Từ Hữu Đỏ (tảo vong), Từ Hữu Cống (chết sớm), [3 gái: Kim, Trát, Bảng đều chết sớm]", "", ""),
+                    ("135.04.0.009", "130.03.0.003", "Từ Hữu Tình", "", "Bà Ngô Thị Phụng", "", "", "", "Con cụ Lạng. Thí trúng nhị trường. Sinh hạ: Từ Hữu Hồng, Từ Hữu Bằng, Từ Hữu Lập, Từ Hữu Đỏ (tảo vong), Từ Hữu Cống (chết sớm), [3 gái: Kim, Trát, Bảy đều chết sớm]", "", ""),
                     ("130.04.0.010", "130.03.0.003", "Từ Hữu Tính", "", "", "", "", "", "Con cụ Lạng.", "Chết sớm", ""),
-                    ("246.04.0.011", "240.03.0.005", "Từ Hữu Hiển", "", "Bà Ngô Thị ? (Hiệu Thao Chuyết)", "", "", "", "Con đầu cụ Màn. Ông làm nghề ruộng, hưởng thọ kỳ. Sinh hạ: Từ Hữu Khảng, Từ Hữu Khai (Cả, Kỳ), Từ Thị Hân (chết sớm)", "", ""),
+                    ("246.04.0.011", "240.03.0.005", "Từ Hữu Hiển", "", "Bà Ngô Thị ? (Hiệu Thao Chuyết)", "", "", "", "Con đầu cụ Màn. Ông làm nghề ruộng. Hưởng Thọ kỳ di (Gần 100 Tuổi). Sinh hạ: Từ Hữu Khảng, Từ Hữu Khai (Cả, Kỳ), Từ Thị Hân (chết sớm)", "", ""),
                     ("240.04.0.012", "240.03.0.005", "Từ Hữu Kiến", "", "", "", "", "", "Con cụ Màn", "Chết sớm", ""),             
                     ("240.04.1.013", "240.03.0.005", "Từ Thị Dục", "", "", "", "", "", "Con cụ Màn", "Chết sớm", ""),   
                     ("240.04.0.014", "240.03.0.005", "Từ Hữu Thông", "", "", "", "", "", "Con cụ Màn", "Tảo một", ""),
                     ("240.04.0.015", "240.03.0.005", "Từ Hữu Minh", "", "", "", "", "", "Con cụ Màn", "Tảo vong", ""),
-                    ("257.04.0.016", "250.03.0.006", "Từ Hữu Linh", "", "Bà Trần Thị Dương", "", "", "", "Con cụ Hùng. Sinh hạ: Từ Hữu Kiệt, Từ Hữu Quýnh, Từ Thị Thước (chết sớm), Từ Hữu Cu (tảo vong), Từ Thị Hinh (tảo vong), Từ Thị Đỏ (tảo một), Từ Thị Ky (tảo một)", "", ""),
-                    ("258.04.0.017", "250.03.0.006", "Từ Hữu Cảo", "", "Bà Trần Thị Phổ", "", "", "", "Con thứ 2 cụ Hùng. Sinh hạ: Từ Hữu Trinh, Từ Hữu Triền (chết sớm), Từ Hữu Liên (chết sớm), Từ Hữu Tranh, Từ Hữu Phối (chết sớm), Từ Hữu Đoàn (tảo vong), Từ Hữu Trừng, Từ Hữu Điền, Từ Hữu Kiên, Từ Hữu Cồng", "", ""),
-                    ("258.04.0.909", "250.03.0.006", "Từ Hữu Đỏ", "", "", "", "", "", "", "Tảo vong", ""),
-                    ("258.04.0.910", "250.03.0.006", "Từ Hữu Đỏ", "", "", "", "", "", "", "Tảo vong", ""),
+                    ("257.04.0.016", "250.03.0.006", "Từ Hữu Linh", "Hữu Thịnh", "Bà Trần Thị Dương", "", "", "", "Con cụ Hùng. Sinh hạ: Từ Hữu Kiệt, Từ Hữu Quýnh, Từ Thị Thước (chết sớm), Từ Hữu Cu (tảo vong), Từ Thị Hinh (tảo vong), Từ Thị Đỏ (tảo một), Từ Thị Ky (tảo một)", "", ""),
+                    ("258.04.0.017", "250.03.0.006", "Từ Hữu Cảo", "", "Bà Trần Thị Phổ", "", "", "", "Con thứ 2 cụ Hùng. Sinh hạ: Từ Hữu Trinh, Từ Hữu Triền (chết sớm), Từ Hữu Liên (chết sớm), Từ Hữu Tranh, Từ Hữu Phối (chết sớm), Từ Hữu Đoàn (tảo vong), Từ Hữu Trừng, Từ Hữu Điều, Từ Hữu Kiên, Từ Hữu Cồng", "", ""),
+                    ("258.04.0.909", "250.03.0.006", "Từ Hữu Đỏ", "", "", "", "", "", "Con cụ Hùng", "Tảo vong", ""),
+                    ("258.04.0.910", "250.03.0.006", "Từ Hữu Đỏ", "", "", "", "", "", "Con cụ Hùng", "Tảo vong", ""),
                      
-                    ("260.04.0.018", "260.03.0.007", "Từ Hữu Niên", "", "Bà Trần Thị Quỵ", "", "", "", "Con cụ Lân. Ông làm lý trưởng, hưởng kỳ thọ. Sinh hạ: Từ Thị Đỏ (tảo vong), Từ Hữu Bộ (tảo vong)", "", ""),
-                    
-                    ("260.04.0.019", "260.03.0.007", "Từ Hữu Điền", "", "Bà Đặng Thị Thành", "", "", "", "Khâm sai đội lệ.", "Không có con", ""),
+                    ("260.04.0.018", "260.03.0.007", "Từ Hữu Niên", "", "Bà Trần Thị Quỵ", "", "", "", "Con cụ Lân. Ông làm lý trưởng. Hưởng Kỳ thọ. Sinh hạ: Từ Thị Đỏ (tảo vong), Từ Hữu Bộ (tảo vong)", "", ""),
+                    ("260.04.0.019", "260.03.0.007", "Từ Hữu Điền", "", "Bà Đặng Thị Thành", "", "", "", "Làm Khâm sai đội lệ.", "Không có con", ""),
                     ("260.04.0.020", "260.03.0.007", "Từ Hữu Trung", "", "", "", "", "", "Con cụ Lân.", "Tảo vong", ""),
-                    ("270.04.0.021", "270.03.0.008", "Từ Hữu Thận", "", "Bà Nguyễn Thị Thề", "", "", "", "Con cụ Lạc. Sinh hạ: Từ Hữu Dinh, Từ Thị Trù (tảo vong)", "", ""),
-                    ("270.04.0.022", "270.03.0.008", "Từ Hữu Thung", "", "", "", "", "", "Con cụ Lạc.", "Tảo vong", ""),
-                    ("270.04.1.023", "270.03.0.008", "Từ Thị Thuyết", "", "", "", "", "", "Con cụ Lạc.", "Tảo vong", ""),
+                    ("270.04.0.021", "270.03.0.008", "Từ Hữu Thận", "", "Bà Nguyễn Thị Chế", "", "", "", "Con cụ Lạc. Sinh hạ: Từ Hữu Dinh, Từ Thị Trù (tảo vong)", "", ""),
+                    ("270.04.0.022", "270.03.0.008", "Từ Hữu Đỏ", "", "", "", "", "", "Con cụ Lạc.", "Tảo một", ""),
+                    ("270.04.1.023", "270.03.0.008", "Từ Thị Đỏ", "", "", "", "", "", "Con cụ Lạc.", "Tảo vong", ""),
+                    ("270.04.0.024", "270.03.0.008", "Từ Hữu Chúng", "", "", "", "", "", "Con cụ Lạc.", "Tảo vong", ""),
+                    ("270.04.1.025", "270.03.0.008", "Từ Thị Thuyết", "", "", "", "", "", "Con cụ Lạc.", "Tảo một", ""),
 
 
                     # ==========================================================
                     # ĐỜI THỨ 5
                     # ==========================================================
-                    ("111.05.0.001", "111.04.0.001", "Từ Hữu Loan", "", "Bà cả Thái Thị Thiều, Bà thứ Ngô Thị Thi", "", "", "", "Con cụ Di. Sinh hạ: Từ Hữu Thư, Từ Hữu Thuyên (chết sớm), Từ Thị Thuế (chết sớm), Từ Thị Bức (chết sớm), Từ Thị Hiến (tảo vong), Từ Thị Đỏ (tảo vong).", "", ""),
+                    ("111.05.0.001", "111.04.0.001", "Từ Hữu Loan", "", "Bà cả Thái Thị Thiềm, Bà thứ Ngô Thị Thi", "", "", "", "Con cụ Di. Sinh hạ: Từ Hữu Thư, Từ Hữu Thuyên (Chết sớm), Từ Thị Thuế (Chết sớm), Từ Thị Bức (Chết sớm), Từ Thị Hiến (tảo vong), Từ Thị Đỏ (tảo vong).", "", ""),
                     ("111.05.0.002", "111.04.0.001", "Từ Hữu Kiệu", "", "Bà cả Trần Thị Sum, Bà thứ Nguyễn Thị Trung", "", "", "", "Con thứ 2 cụ Di. Sinh hạ: Từ Hữu Ngạnh, Từ Thị Sam.", "", ""),               
-                    ("111.05.0.003", "111.04.0.001", "Từ Hữu Phượng", "", "Bà Trần Thị Bỉnh", "", "", "", "Con thứ 3 cụ Di. Sinh hạ: Từ Hữu Khánh, Từ Hữu Xướng (chết), Từ Hữu Sum, Từ Hữu Thậm (chết), Từ Hữu Cội, Từ Hữu Đỏ (tảo vong).", "", ""),
+                    ("111.05.0.003", "111.04.0.001", "Từ Hữu Phượng", "", "Bà Trần Thị Bỉnh", "", "", "", "Con thứ 3 cụ Di. Sinh hạ: Từ Hữu Khánh, Từ Hữu Xướng (chết), Từ Hữu Sum, Từ Hữu Thậm (Chết sớm), Từ Hữu Cội, Từ Thị Đỏ (Tảo vong).", "", ""),
                     ("111.05.0.004", "111.04.0.001", "Từ Hữu Điều", "", "Bà Nguyễn Thị Thiều", "", "", "", "Con thứ 4 cụ Di. Sinh hạ: Từ Thị Kiệm.", "Phạp tự", ""),
+
                     ("122.05.0.005", "122.04.0.002", "Từ Hữu Triển", "", "Bà Nguyễn Thị Kỷ", "", "", "", "Con cụ Kỵ. Sinh hạ: Từ Hữu Toát, Từ Thị Tôi (tảo vong).", "", ""),
                     ("122.05.0.006", "122.04.0.002", "Từ Hữu Thạch", "", "", "", "", "", "Con cụ Kỵ.", "Chết sớm", ""),      
                     ("122.05.0.007", "122.04.0.002", "Từ Hữu Ngọc", "", "", "", "", "", "Con cụ Kỵ.", "Chết sớm", ""),       
                     ("122.05.0.008", "122.04.0.002", "Từ Hữu Ngà", "", "Bà Ngô Thị Quỳ", "", "", "", "Con thứ 2 cụ Kỵ. Sinh hạ: Từ Hữu Giá (tảo một).", "", ""),             
                     ("122.05.0.009", "122.04.0.002", "Từ Hữu Lầu", "", "Bà Trần Thị Đị", "", "", "", "Con cụ Kỵ. Sinh hạ: Từ Hữu Mận, Từ Hữu Yêm (tảo một), Từ Hữu Bạo (tảo một).", "", ""),
                     ("122.05.0.010", "122.04.0.002", "Từ Hữu Ngân", "", "", "", "", "", "Con cụ Kỵ.", "Chết sớm", ""),
-                    ("122.05.0.011", "122.04.0.002", "Từ Chi Cảnh", "", "", "", "", "", "Con cụ Kỵ.", "Chết sớm", ""),
-                    ("123.05.0.012", "123.04.0.003", "Từ Hữu Nghị", "", "Bà cả Đào Thị ?, Bà thứ Nguyễn Thị Chói", "", "", "", "Con đầu cụ Tương. Sinh hạ: Từ Thị Thái (tảo một), Từ Hữu Rượng (chết sớm), Từ Thị ?? (lấy chồng họ Nguyễn Nhim giữa làng), Từ Thị ??? (lấy chồng họ Trần Kép giữa làng).", "Phạp tự", ""),
+                    ("122.05.1.011", "122.04.0.002", "Từ Thị Cảnh", "", "", "", "", "", "Con cụ Kỵ.", "Chết sớm", ""),
+                    ("123.05.0.012", "123.04.0.003", "Từ Hữu Nghị", "", "Bà cả Đào Thị ?, Bà thứ Nguyễn Thị Chói", "", "", "", "Con đầu cụ Tương. Sinh hạ: Từ Thị Thái (tảo một), Từ Hữu Rượng (chết sớm), Từ Thị Huân (lấy chồng họ Nguyễn ở giữa làng), Từ Thị ??? (lấy chồng họ Trần ở giữa làng).", "Phạp tự", ""),
                     ("123.05.0.013", "123.04.0.003", "Từ Hữu Vọ", "", "Bà cả Nguyễn Thị Sắc, Bà thứ Phan Thị Thụ", "", "", "", "Con thứ 2 cụ Tương. Sinh hạ: Từ Thị Chiêm (tảo vong), Từ Dái Chiêm (tảo vong).", "Phạp tự", ""),
                     ("123.05.0.014", "123.04.0.003", "Từ Hữu Toàn", "", "Bà Trần Thị Chẹc", "", "", "", "Con thứ 3 cụ Tương. Sinh hạ: Từ Hữu Vẹn, Từ Hữu Vẹ, Từ Hữu Cu, Từ Thị Chích (tảo vong).", "", ""),
-                    ("120.05.1.015", "120.04.0.004", "Từ Thị Tân", "", "", "", "", "", "Con cụ Tạc.", "tảo vong", ""),
-                    ("120.05.1.016", "120.04.0.004", "Từ Thị Lụ", "", "", "", "", "", "Con cụ Tạc.", "tảo vong", ""),
+                    ("120.05.1.015", "120.04.0.004", "Từ Thị Tân", "", "", "", "", "", "Con cụ Tạc.", "Tảo vong", ""),
+                    ("120.05.1.016", "120.04.0.004", "Từ Thị Lụ", "", "", "", "", "", "Con cụ Tạc.", "Tảo vong", ""),
+                    
                     ("124.05.0.017", "124.04.0.005", "Từ Hữu Bường", "", "", "", "", "", "Con cụ Tỉnh.", "Chết sớm", ""),
-                    ("124.05.1.018", "124.04.0.005", "Từ Thị Bẹn", "", "Trần Song", "", "", "", "Con cụ Tỉnh. Lấy ông Trần Song trong làng", "", ""),
-                    ("124.05.1.019", "124.04.0.005", "Từ Thị Phấn", "", "Trần Ích", "", "", "", "Con cụ Tỉnh. Lấy Trần Ích trong làng", "", ""),
-                    ("124.05.0.020", "124.04.0.005", "Từ Hữu Chấn", "Ông Cố Thoan", "Bà Nguyễn Thị Thuyết", "1847", "1913", "05/03", "Con cụ Tỉnh. Vợ là Bà Nguyễn Thị Thuyết (người họ Nguyễn Văn Hương), (1853-1919, giổ 12/01). Sinh hạ: Từ Thị Mận (Lấy ông Nguyễn Thoan ở Đồng Lộc), Từ Thị Hân (lấy ông Nguyễn Liêm giữa làng), Từ Thị Phú (lấy ông Nguyễn Thẩm giữa làng), Từ Thị Cầm (Lấy ông Nguyễn Ẩm ở Triền Lối), Từ Thị Đích (lấy ông Trần Thọ Bành ở Triền Lối), Từ Thị Túc (lấy ông Trần Định giữa làng), Từ Hữu Đức (tảo một), Từ Hữu Đìch (tảo một), Từ Thị Toa - Thị Đỏ (tảo một).", "Phạp tự", ""),
-                    ("124.05.0.021", "124.04.0.005", "Từ Hữu Nhin", "Cố Điệng", "Bà Nguyễn Thị Xuy", "1861", "1907", "17/09", "Con cụ Tỉnh. Vợ là Bà Nguyễn Thị Xuy (con Cố Xưng),(1862-1942, giổ 13/08). Sinh hạ: Từ Thị Tuần (lấy ông Bang Mỹ ở Yên Vinh, Trảo Nha), Từ Thị Hợi (lấy ông Thái Mạo ở Xuân Mai), Từ Thị Thao (lấy ông Trần Lê Cớt giữa làng), Từ Hữu Chính, Từ Thị Năm (lấy ông Trần Lạc ở Yên Đồng), Từ Hữu Giáo, Từ Hữu Thí.", "", ""),       
+                    ("124.05.1.018", "124.04.0.005", "Từ Thị Bẹn", "", "Trần Song", "", "", "", "Con cụ Tỉnh. Lấy ông Trần Song ở trong làng", "", ""),
+                    ("124.05.1.019", "124.04.0.005", "Từ Thị Phấn", "", "Trần Ích", "", "", "", "Con cụ Tỉnh. Lấy Trần Ích ở trong làng", "", ""),
+                    ("124.05.0.020", "124.04.0.005", "Từ Hữu Chấn", "Ông Cố Thoan", "Bà Nguyễn Thị Thuyết", "1847", "1913", "05/03", "Con cụ Tỉnh. Vợ là Bà Nguyễn Thị Thuyết (người họ Nguyễn Văn ở Hương Đình), (1853-1919, giổ 12/01). Sinh hạ: Từ Thị Mân (Lấy ông Nguyễn Thoan ở Đồng Lộc), Từ Thị Hân (lấy ông Nguyễn Liêm giữa làng), Từ Thị Phú (lấy ông Nguyễn Thẩm giữa làng), Từ Thị Cầm (Lấy ông Nguyễn Ẩm ở Triền Lối), Từ Thị Đích (lấy ông Trần Thọ Bành ở Hương Đình), Từ Thị Túc (lấy ông Trần Định giữa làng), Từ Hữu Đức (tảo một), Từ Hữu Đìch (tảo một), Từ Thị Em (tảo một).", "Phạp tự", ""),
+                    ("124.05.0.021", "124.04.0.005", "Từ Hữu Nhin", "Cố Điệng", "Bà Nguyễn Thị Xuy", "1861", "1907", "17/09", "Con cụ Tỉnh. Vợ là Bà Nguyễn Thị Xuy (con Cố Nguyễn Xưng), (1862-1942, giổ 13/08). Sinh hạ: Từ Thị Tuần (lấy ông Bang Mỹ ở Yên Vinh, Trảo Nha), Từ Thị Hợi (lấy ông Thái Mạo (Hạ) ở Xuân Mai), Từ Thị Thao (lấy ông Trần Lê Cớt giữa làng), Từ Hữu Chính, Từ Thị Năm (lấy ông Trần Lạc ở Yên Đồng), Từ Hữu Giáo, Từ Hữu Thí.", "", ""),       
+
+                    ("124.05.0.919", "124.04.0.005", "Từ Hữu Đỏ", "", "", "", "", "", "Con cụ Tỉnh.", "Tảo vong", ""),
+
                     ("120.05.0.022", "120.04.0.006", "Từ Hữu Hưng", "", "", "", "", "", "Con cụ Ẩm.", "Tảo một", ""),
                     ("120.05.1.023", "120.04.0.006", "Từ Thị Chiêm", "", "", "", "", "", "Con cụ Ẩm.", "Tảo vong", ""),
                     ("120.05.1.024", "120.04.0.006", "Từ Thị Diền", "", "", "", "", "", "Con cụ Ẩm.", "Tảo vong", ""),
-                    ("135.05.0.025", "135.04.0.009", "Từ Hữu Hồng", "", "Bà Trần Thị Côi", "", "", "", "Con cụ Tình. Thi trúng nhị trường - chức vụ tự xã. Sinh hạ: Từ Hữu Thống, Từ Hữu Thính, Từ Thị Thuý (chết sớm).", "", ""),
-                    ("135.05.0.026", "135.04.0.009", "Từ Hữu Bằng", "", "Bà cả Trần Thị Nhuận, Bà thứ Nguyễn Thị Chỉ", "", "", "", "Con thứ 2 cụ Tình. Làm nghề dạy học, kiêm thư ký làng xã. Sinh hạ: Từ Thị Điển (lấy chồng về Khô Nội), Từ Thị ?? (lấy ông Trần Lại trong làng), Từ Thị ??? (lấy ông Lượng Nhạc Trảo Nha), Từ Thị Lạp (lấy ông Trần Bách trong làng), Từ Hữu Bối (ông Phụ), Từ Hữu Triết, Từ Thị Bổn (lấy người Đại Lộc), Từ Thị Cháu (chết).", "", ""),
+                    ("135.05.0.025", "135.04.0.009", "Từ Hữu Hồng", "", "Bà Trần Thị Tơi", "", "", "", "Con cụ Tình. Thi trúng nhị trường - chức vụ Tri xã. Sinh hạ: Từ Hữu Thống, Từ Hữu Thính, Từ Thị Thúy (chết sớm).", "", ""),
+                    ("135.05.0.026", "135.04.0.009", "Từ Hữu Bằng", "", "Bà cả Trần Thị Nhuận, Bà thứ Nguyễn Thị Thỉ", "", "", "", "Con thứ 2 cụ Tình. Làm nghề dạy học, kiêm thư ký làng xã. Sinh hạ: Từ Thị Điển (lấy chồng về Khô Nội), Từ Thị ?? (lấy ông Trần Lại trong làng), Từ Thị ??? (lấy ông Lượng Nhạc Trảo Nha), Từ Thị Lạp (lấy ông Trần Bách trong làng), Từ Hữu Bối (ông Phụ), Từ Hữu Triết, Từ Thị Bổn (lấy người Đại Lộc), Từ Thị Cháu (chết).", "", ""),
                     ("135.05.0.027", "135.04.0.009", "Từ Hữu Lập", "", "Bà chính Trần Thị Tự, bà thứ Bùi Thị Liên", "", "", "", "Con thứ 3 cụ Tình. Làm nghề thầy thuốc kiêm xã hộ giám tri. Sinh hạ: Từ Hữu Quán, Từ Hữu Thường (chết sớm), Từ Hữu Cự (chết sớm), Từ Hữu Kính (chết sớm), Từ Hữu Ngoạn (hán tự thông minh, chết sớm), Từ Hữu Xán (ông Cố Hạo), Từ Hữu Đỏ (tảo vong).", "", ""),
-                    ("135.05.0.028", "135.04.0.009", "Từ Hữu Cống", "", "", "", "", "", "Con cụ Tình", "Chết sớm", ""),   
+                    ("135.05.0.920", "135.04.0.009", "Từ Hữu Đỏ", "", "", "", "", "", "Con cụ Tình", "Tảo vong", ""),
+                    ("135.05.0.028", "135.04.0.009", "Từ Hữu Cống", "", "", "", "", "", "Con cụ Tình", "Chết sớm", ""),
+                    
                     ("246.05.0.029", "246.04.0.011", "Từ Hữu Khảng", "", "Bà cả Nguyễn Thị Sự, Bà thứ Trần Thị Thượng", "", "", "", "Con cụ Hiển. Sinh hạ: Từ Hữu Đỏ (tảo vong). [6 con gái gồm: Đỏ, Hảo, Đỏ, Đỏ, Chẹch, Thông (đều tảo vong)].", "Phạp tự", ""),     
                     ("246.05.0.030", "246.04.0.011", "Từ Hữu Khai", "Cả, Kỳ", "Bà Nguyễn Thị Yến", "", "", "", "Con thứ 2 cụ Hiển. Sinh hạ: Từ Hữu Hoè, Từ Hữu Trấn, Từ Hữu Át, Từ Hữu Dự, Từ Thị ?, Từ Hữu Đỏ, Từ Hữu Vinh, Từ Hữu Bổng. [3 con gái gồm: Thị Đỏ, Đỏ, Đỏ (đều tảo vong)].", "", ""),           
                     ("246.05.1.031", "246.04.0.011", "Từ Thị Hân", "", "", "", "", "", "Con cụ Hiển.", "Chết sớm", ""),
-                    ("257.05.0.032", "257.04.0.016", "Từ Hữu Kiệt", "", "", "", "", "", "Con cụ Linh.", "Phạp tự", ""),
+                    ("257.05.0.032", "257.04.0.016", "Từ Hữu Kiệt", "Tiệt", "", "", "", "", "Con cụ Linh.", "Phạp tự", ""),
                     ("257.05.0.033", "257.04.0.016", "Từ Hữu Quýnh", "", "Bà Nguyễn Thị Cưu", "", "", "", "Con thứ 2 cụ Linh. Sinh hạ: Từ Hữu Thạc, Từ Hữu Đỏ (tảo vong).", "", ""),
                     ("257.05.1.034", "257.04.0.016", "Từ Thị Thước", "", "", "", "", "", "Con cụ Linh", "Chết sớm", ""),                  
                     ("257.05.0.035", "257.04.0.016", "Từ Hữu Cu", "", "", "", "", "", "Con cụ Linh", "Tảo vong", ""),
                     ("257.05.1.036", "257.04.0.016", "Từ Thị Hinh", "", "", "", "", "", "Con cụ Linh", "Tảo vong", ""),
+                    ("257.05.1.921", "257.04.0.016", "Từ Thị Đỏ", "", "", "", "", "", "Con cụ Linh", "Tảo một", ""),       
                     ("257.05.1.037", "257.04.0.016", "Từ Thị Ky", "", "", "", "", "", "Con cụ Linh", "Tảo một", ""), 
-                    ("258.05.0.038", "258.04.0.017", "Từ Hữu Trinh", "", "Bà Trần Thị Thầu", "", "", "", "Con đầu cụ Cảo. Sinh hạ: Từ Hữu Cuộc, Từ Hữu Ức (tảo một), Từ Hữu Tùy, Từ Hữu Khôi (tảo vong), Từ Thị Liên (tảo vong), Từ Thị Cẩm (tảo vong).", "", ""),               
+                    ("258.05.0.038", "258.04.0.017", "Từ Hữu Trinh", "", "Bà Trần Thị Thập", "", "", "", "Con đầu cụ Cảo. Sinh hạ: Từ Hữu Cuộc, Từ Hữu Ức (tảo một), Từ Hữu Tùy, Từ Hữu Khôi (tảo vong), Từ Thị Liên (tảo vong), Từ Thị Tẩm (tảo vong).", "", ""),               
                     ("258.05.0.039", "258.04.0.017", "Từ Hữu Triền", "", "", "", "", "", "Con cụ Cảo.", "Chết sớm", ""),
                     ("258.05.0.040", "258.04.0.017", "Từ Hữu Liên", "", "", "", "", "", "Con cụ Cảo.", "Chết sớm", ""),           
                     ("258.05.0.041", "258.04.0.017", "Từ Hữu Tranh", "", "Bà cả Trần Thị Khoá, bà thứ Trần Thị Tiết", "", "", "", "Con thứ 2 cụ Cảo. Sinh hạ: Từ Hữu Do, Từ Thị Tốn.", "", ""),
                     ("258.05.0.042", "258.04.0.017", "Từ Hữu Phối", "", "", "", "", "", "Con cụ Cảo.", "Chết sớm", ""),
                     ("258.05.0.043", "258.04.0.017", "Từ Hữu Đoàn", "", "", "", "", "", "Con cụ Cảo.", "Tảo vong", ""),
-                    ("258.05.0.044", "258.04.0.017", "Từ Hữu Trừng", "", "Bà Ngô Thị Sung", "", "", "", "Con cụ Cảo. Sinh hạ: Từ Hữu Xuyến (tảo một), Từ Hữu Luyến (tảo một), Từ Hữu Son (tảo một). [7 con gái gồm: Xuân, Biện, Đỏ, Sáu, Thất, Phiến, Ú (đều chết)].", "", ""),
-                    ("258.05.0.045", "258.04.0.017", "Từ Hữu Điền", "", "Bà Ngô Thị Lùc", "", "", "", "Con cụ Cảo. Sinh hạ: Từ Hữu Chuyên, Từ Hữu Chuân, Từ Hữu Đích (tảo một), Từ Hữu Nhận (tảo một).", "", ""),
+                    ("258.05.0.044", "258.04.0.017", "Từ Hữu Trừng", "", "Bà Ngô Thị Sung", "", "", "", "Con cụ Cảo. Sinh hạ: Từ Hữu Xuyến (tảo một), Từ Hữu Quyến (tảo một), Từ Hữu Son (tảo một). [7 con gái gồm: Xuân, Biện, Đỏ, Sáu, Thất, Phiến, Ú (đều chết)].", "", ""),
+                    ("258.05.0.045", "258.04.0.017", "Từ Hữu Điều", "", "Bà Ngô Thị Lùc", "", "", "", "Con cụ Cảo. Sinh hạ: Từ Hữu Chuyên, Từ Hữu Chuân, Từ Hữu Đích (tảo một), Từ Hữu Nhận (tảo một).", "", ""),
                     ("258.05.0.046", "258.04.0.017", "Từ Hữu Kiên", "", "Bà cả Lê Thị Hương, bà thứ Trương Thị Yến", "", "", "", "Con cụ Cảo. Làm phó tổng và dạy học Hán văn. Sinh hạ: Từ Hữu Huân, Từ Hữu Giảng, Từ Hữu Điển, Từ Hữu Dái (tảo một). [4 con gái gồm: Dản, Bẹn, Chẹc, Lục (đều tảo vong)].", "", ""),
                     ("258.05.0.047", "258.04.0.017", "Từ Hữu Cồng", "", "Bà cả Trần Thị Thú, Bà thứ Trần Thị Bình", "", "", "", "Con cụ Cảo. Sinh hạ: Từ Hữu Bồng. [5 con trai gồm: Cốc, Bành, Phùng, Đích, Kiêm]. [3 con gái gồm: Chẹc, Đốc, Kép (đều chết sớm)].", "", ""),
-                    ("260.05.0.048", "260.04.0.018", "Từ Hữu Bộ", "", "", "", "", "", "Con cụ Niên", "Tảo vong", ""),
-                    ("270.05.0.049", "270.04.0.021", "Từ Hữu Dinh", "", "Bà: Không biết rõ", "", "", "", "Con cụ Thận. Làm lý trưởng kiêm chức tri xã, nghỉ việc đi học tổng Cổ Giác. Sinh hạ: [2 con trai (Sau khi Ông và 1 con trai chết, 1 con trai theo mẹ về họ ngoại làm ở đâu tung tích không rõ)].", "di cư, không rõ", ""),
-                    ("270.05.1.050", "270.04.0.021", "Từ Thị Trù", "", "", "", "", "", "Con cụ Thận.", "Tảo vong", ""),
+
+                    ("260.05.1.048", "260.04.0.018", "Từ Thị Đỏ", "", "", "", "", "", "Con cụ Niên", "Tảo vong", ""),
+                    ("260.05.0.049", "260.04.0.018", "Từ Hữu Bộ", "", "", "", "", "", "Con cụ Niên", "Tảo vong", ""),
+                 
+                    ("270.05.0.050", "270.04.0.021", "Từ Hữu Dinh", "", "Bà: Không biết rõ", "", "", "", "Con cụ Thận. Làm lý trưởng kiêm chức Tri xã, nghỉ việc đi học Tổng Cổ Giác. Sinh hạ: [2 con trai (Sau khi Ông và 1 con trai chết, 1 con trai theo mẹ về họ ngoại làm ở đâu tung tích không rõ)].", "di cư, không rõ", ""),
+                    ("270.05.1.051", "270.04.0.021", "Từ Thị Trù", "", "", "", "", "", "Con cụ Thận.", "Tảo vong", ""),
 
                     # ==========================================================
                     # ĐỜI 6
@@ -328,83 +340,95 @@ class KhoDuLieuSQL:
                     # ------------------------------------
                     # CHI 1
                     # ------------------------------------    
-                    ("111.06.0.001", "111.05.0.001", "Từ Hữu Thư", "", "Bà Ngô Thị Kim", "", "", "", "Con cụ Loan. Lý trưởng. Sinh hạ: Từ Hữu Phiệt, Từ Thị ? (lấy ông Trần Cớt trong làng), Từ Thị ?? (lấy ông Trần Chước trong làng), Từ Hữu Vinh (tảo một), Từ Hữu Vượng (tảo một), Từ Hữu Thuận (tảo một), Từ Hữu Đốc (tảo một).", "", ""),                  
+                    ("111.06.0.001", "111.05.0.001", "Từ Hữu Thư", "", "Bà Ngô Thị Kim", "", "", "", "Con cụ Loan. Sinh hạ: Từ Hữu Phiệt, Từ Thị ? (lấy ông Trần Cớt ở trong làng), Từ Thị ?? (lấy ông Trần Chước ở trong làng), Từ Hữu Vinh (Tảo một), Từ Hữu Vượng (Tảo một), Từ Hữu Thuận (Tảo một), Từ Thị Đốc (Tảo một).", "", ""),                  
                     ("111.06.0.002", "111.05.0.001", "Từ Hữu Thuyên", "", "", "", "", "", "Con cụ Loan.", "Chết sớm", ""),
                     ("111.06.1.003", "111.05.0.001", "Từ Thị Thuế", "", "", "", "", "", "Con cụ Loan.", "Chết sớm", ""),                    
                     ("111.06.1.004", "111.05.0.001", "Từ Thị Bức", "", "", "", "", "", "Con cụ Loan.", "Chết sớm", ""),
-                    ("111.06.1.005", "111.05.0.001", "Từ Thị Hiến", "", "", "", "", "", "Con cụ Loan.", "Chết sớm", ""),                 
-                    ("111.06.0.006", "111.05.0.002", "Từ Hữu Ngạnh", "", "Bà Thái Thị Mạnh", "", "", "", "Con cụ Kiệu. Sinh hạ: Từ Hữu Lâm, Từ Hữu Tâm, Từ Hữu Lam (tảo một), Từ Hữu Liêm (tảo một).", "", ""),
+                    ("111.06.1.005", "111.05.0.001", "Từ Thị Hiến", "", "", "", "", "", "Con cụ Loan.", "Tảo vong", ""),
+                    ("111.06.1.922", "111.05.0.001", "Từ Thị Đỏ", "", "", "", "", "", "Con cụ Loan.", "Tảo vong", ""),
+
+                    
+                    ("111.06.0.006", "111.05.0.002", "Từ Hữu Ngạnh", "", "Bà Thái Thị Mạnh", "", "", "", "Con cụ Kiệu. Sinh hạ: Từ Hữu Lâm, Từ Hữu Tâm, Từ Hữu Lam (Tảo một), Từ Hữu Liêm (Tảo một).", "", ""),
                     ("111.06.1.007", "111.05.0.002", "Từ Thị Sam", "", "Không rõ", "", "", "", "Con cụ Kiệu.", "", ""),
-                    ("111.06.0.008", "111.05.0.003", "Từ Hữu Khánh", "", "Bà Trần Thị Câu", "", "", "", "Con cụ Phượng. Sinh hạ: Từ Hữu Sáng, Từ Thị ? (lấy Ông Hiến xã Thạch Liên), Từ Thị Chẹc (tảo một), Từ Thị ?? (lấy chồng về Yên Đồng), Từ Thị Năm (tảo một), Từ Hữu Xích.", "", ""),
+                    ("111.06.0.008", "111.05.0.003", "Từ Hữu Khánh", "", "Bà Trần Thị Câu", "", "", "", "Con cụ Phượng. Sinh hạ: Từ Hữu Sáng, Từ Thị ? (lấy Ông Hiến xã Thạch Liên), Từ Thị Chẹc (Tảo một), Từ Thị ?? (lấy chồng về Yên Đồng), Từ Thị Năm (Tảo một), Từ Hữu Xích.", "", ""),
                     ("111.06.0.009", "111.05.0.003", "Từ Hữu Xướng", "", "", "", "", "", "Con cụ Phượng.", "Chết sớm", ""),
-                    ("111.06.0.010", "111.05.0.003", "Từ Hữu Sum", "", "Bà Trần Thị Cơ", "", "", "", "Con cụ Phượng. Sinh hạ: Từ Hữu Toại, Từ Thị ? (lấy Ông Sị trong làng), Từ Hữu Nghị, Từ Thị ?? (lấy ông cựu Thuyên trong làng), Từ Thị ??? (lấy ông Trần Yểu trong làng), Từ Thị Sáu (lấy ông Cửu Tường trong làng), Từ Thị ???? (lấy ông Trung Hiếu trong làng), Từ Hữu Luận.", "", ""),  
+                    ("111.06.0.010", "111.05.0.003", "Từ Hữu Sum", "", "Bà Trần Thị Cơ", "", "", "", "Con cụ Phượng. Sinh hạ: Từ Hữu Toại, Từ Thị ? (lấy Ông Sị ở trong làng), Từ Hữu Nghị, Từ Thị ?? (lấy ông cựu Thuyên ở trong làng), Từ Thị ??? (lấy ông Trần Yểu ở trong làng), Từ Thị Sáu (lấy ông Cửu Tường ở trong làng), Từ Thị ???? (lấy ông Trung Hiếu ở trong làng), Từ Hữu Luận.", "", ""),  
                     ("111.06.0.011", "111.05.0.003", "Từ Hữu Thậm", "", "", "", "", "", "Con cụ Phượng.", "Chết sớm", ""),
-                    ("111.06.0.012", "111.05.0.003", "Từ Hữu Cội", "", "Bà Trần Thị Dinh", "", "", "", "Con cụ Phượng. Sinh hạ: Từ Thị Dị (lấy ông Trần Đinh trong làng), Từ Hữu Lệ, Từ Thị ? (lấy ông Đặng Cầu trong làng), Từ Thị ?? (lấy ông Trần Thảng trong làng), Từ Hữu Nghĩa, Từ Hữu Khí (chết sớm), Từ Hữu Trề (chết sớm), Từ Thị Tám (lấy ông Trần Hoàn trong làng), Từ Hữu Lộc (tảo vong).", "", ""),
-                    ("111.06.1.013", "111.05.0.004", "Từ Thị Kiệm", "", "Không rõ", "", "", "", "Con cụ Điều.", "", ""),
+                    ("111.06.0.012", "111.05.0.003", "Từ Hữu Cội", "", "Bà Trần Thị Dinh", "", "", "", "Con cụ Phượng. Sinh hạ: Từ Hữu Lọc (tảo vong), Từ Thị Dị (lấy ông Trần Đinh Ở trong làng), Từ Hữu Lệ, Từ Thị Đệ (lấy ông TrầnĐình Sáu (Cố Thảng) Ở trong làng), Từ Thị Bốn (lấy ông Đặng Công Thuật (Cố Cầu) ở trong làng), Từ Hữu Nghĩa, Từ Hữu Khí (chết sớm), Từ Hữu Trề (chết sớm), Từ Thị Tám (lấy ông Trần Hoàn ở trong làng)", "", ""),
+                    ("111.06.1.013", "111.05.0.003", "Từ Thị Đỏ", "", "", "", "", "", "Con cụ Phượng.", "Tảo vong", ""),
+                    ("111.06.1.014", "111.05.0.004", "Từ Thị Kiệm", "", "Không rõ", "", "", "", "Con cụ Điều.", "", ""),
+                    
 
                     # ------------------------------------
                     # CHI 2
                     # ------------------------------------ 
-                    ("122.06.0.014", "122.05.0.005", "Từ Hữu Toát", "", "Bà Trần Thị Năm", "", "", "", "Con cụ Tiển. Sinh hạ: Từ Hữu Duyệt, Từ Thị Em (lấy ông Trần Thế trong làng), Từ Hữu Hợi, Từ Hữu Điếm (tảo vong), Từ Thị Đỏ (tảo vong).", "", ""),
+                    ("122.06.0.014", "122.05.0.005", "Từ Hữu Toát", "", "Bà Trần Thị Náu", "", "", "", "Con cụ Triển. Sinh hạ: Từ Hữu Duyệt, Từ Thị Em (lấy ông Trần Thế ở trong làng), Từ Hữu Hợi, Từ Hữu Điếm (tảo vong), Từ Thị Đỏ (Tảo vong).", "", ""),
                     ("122.06.1.015", "122.05.0.005", "Từ Thị Tôi", "", "", "", "", "", "Con cụ Tiển", "Tảo vong", ""),
                     ("122.06.0.016", "122.05.0.008", "Từ Hữu Giá", "", "", "", "", "", "Con cụ Ngà.", "Tảo một", ""),
-                    ("122.06.0.017", "122.05.0.009", "Từ Hữu Mận", "", "Bà Lê Thị Út", "", "", "", "Con cụ Lầu. Sinh hạ: Từ Thị Mai (lấy Trần Chinh trong làng), Từ Hữu Khai, Từ Hữu Lai, Từ Hữu Đỏ (tảo vong).", "", ""),
+                    ("122.06.0.017", "122.05.0.009", "Từ Hữu Mận", "", "Bà Lê Thị Út", "", "", "", "Con cụ Lầu. Sinh hạ: Từ Thị Mai (lấy Trần Chinh ở trong làng), Từ Hữu Khai, Từ Hữu Lai, Từ Hữu Đỏ (Tảo vong).", "", ""),
                     ("122.06.0.018", "122.05.0.009", "Từ Hữu Yêm", "", "", "", "", "", "Con cụ Lầu.", "Tảo một", ""),
                     ("122.06.0.019", "122.05.0.009", "Từ Hữu Bạo", "", "", "", "", "", "Con cụ Lầu.", "Tảo một", ""),  
                     ("123.06.1.020", "123.05.0.012", "Từ Thị Thái", "", "", "", "", "", "Con cụ Nghị.", "Tảo một", ""),
                     ("123.06.0.021", "123.05.0.012", "Từ Hữu Rượng", "", "", "", "", "", "Con cụ Nghị.", "Chết sớm", ""),
-                    ("123.06.1.022", "123.05.0.012", "Từ Thị ??", "", "", "", "", "", "Con cụ Nghị. Lấy chồng giữa làng", "", ""),
-                    ("123.06.1.023", "123.05.0.012", "Từ Thị ???", "", "", "", "", "", "Con cụ Nghị. Lấy chồng giữa làng", "", ""),
+                    ("123.06.1.022", "123.05.0.012", "Từ Thị Huân", "", "", "", "", "", "Con cụ Nghị. Lấy chồng họ Nguyễn ở giữa làng", "", ""),
+                    ("123.06.1.023", "123.05.0.012", "Từ Thị ???", "", "", "", "", "", "Con cụ Nghị. Lấy chồng họ Trần ở giữa làng", "", ""),
                     ("123.06.1.024", "123.05.0.013", "Từ Thị Chiêm", "", "", "", "", "", "Con cụ Vọ", "Tảo vong", ""),
-                    ("123.06.0.025", "123.05.0.013", "Từ Dái Chiêm", "", "", "", "", "", "Con cụ Vọ", "Chết sớm", ""),
+                    ("123.06.0.025", "123.05.0.013", "Từ Dái Chiêm", "", "", "", "", "", "Con cụ Vọ", "Tảo vong", ""),
                     ("123.06.0.026", "123.05.0.014", "Từ Hữu Vẹn", "", "Bà Trần Thị Diệp", "", "", "", "Con cụ Toàn. Sinh hạ: Từ Hữu Kiệp, Từ Hữu Điệp, Từ Thị Ba (lấy chồng về Thạch Liên), Từ Hữu Dữu (chết sớm), Từ Thị Chút (lấy ông Trần Tuần Dư Nại), Từ Thị Tỷ (lấy chồng về Tiến Lộc).", "", ""),
                     ("123.06.0.027", "123.05.0.014", "Từ Hữu Vẹ", "", "Bà Trần Thị Ba", "", "", "", "Con cụ Toàn. Sinh hạ: Từ Thị Xin (chết sớm).", "Phạp tự", ""),
                     ("123.06.0.028", "123.05.0.014", "Từ Hữu Cu", "", "", "", "", "", "Con cụ Toàn", "Chết sớm", ""),
                     ("123.06.1.029", "123.05.0.014", "Từ Thị Chích", "", "", "", "", "", "Con cụ Toàn", "Tảo vong", ""),                
-                    ("124.06.1.030", "124.05.0.020", "Từ Thị Mận", "", "Nguyễn Thoan", "", "", "", "Con cụ Chấn. Lấy ông Nguyễn Thoan ở Trường Thành - Đồng Lộc", "", ""),
+                    ("124.06.1.030", "124.05.0.020", "Từ Thị Mân", "", "Nguyễn Thoan", "", "", "", "Con cụ Chấn. Lấy ông Nguyễn Thoan ở Trường Thành - Đồng Lộc", "", ""),
                     ("124.06.1.031", "124.05.0.020", "Từ Thị Hân", "", "Nguyễn Liêm", "", "", "", "Con cụ Chấn. Lấy ông Nguyễn Liêm ở giữa làng", "", ""),
                     ("124.06.1.032", "124.05.0.020", "Từ Thị Phú", "", "Nguyễn Thẩm", "", "", "", "Con cụ Chấn. Lấy ông Nguyễn Thẩm ở giữa làng", "", ""),
                     ("124.06.1.033", "124.05.0.020", "Từ Thị Cầm", "", "Nguyễn Ẩm", "", "", "", "Con cụ Chấn. Lấy ông Nguyễn Ẩm ở Triền Lối", "", ""),
-                    ("124.06.1.034", "124.05.0.020", "Từ Thị Đích", "", "Trần Thọ Bành", "", "", "", "Con cụ Chấn. Lấy ông Trần Thọ Bành ở Triền Lối", "", ""),
+                    ("124.06.1.034", "124.05.0.020", "Từ Thị Đích", "", "Trần Thọ Bành", "", "", "", "Con cụ Chấn. Lấy ông Trần Thọ Bành ở Hương Đình", "", ""),
                     ("124.06.1.035", "124.05.0.020", "Từ Thị Túc", "", "Trần Định", "", "", "", "Con cụ Chấn. Lấy ông Trần Định ở giữa làng", "", ""),
                     ("124.06.0.036", "124.05.0.020", "Từ Hữu Đức", "", "", "", "", "", "Con cụ Chấn", "Tảo một", ""),
                     ("124.06.0.037", "124.05.0.020", "Từ Hữu Đìch", "", "", "", "", "", "Con cụ Chấn", "Tảo một", ""),
-                    ("124.06.1.038", "124.05.0.020", "Từ Thị Toa", "", "", "", "", "", "Con cụ Chấn", "Tảo một", ""),
+                    ("124.06.1.038", "124.05.0.020", "Từ Thị Em", "", "", "", "", "", "Con cụ Chấn", "Tảo một", ""),
+                    
                     ("124.06.1.039", "124.05.0.021", "Từ Thị Tuần", "", "Bang Mỵ", "", "", "", "Con cụ Nhin. Lấy ông Bang Mỵ người ở Yên Vinh - Trảo Nha ", "", ""),
-                    ("124.06.1.040", "124.05.0.021", "Từ Thị Hợi", "", "Thái Mạo", "", "", "", "Con cụ Nhin. Lấy ông Thái Mạo(Hạ) ở Xuân Mai", "", ""),
-                    ("124.06.1.041", "124.05.0.021", "Từ Thị Thao", "", "Trần Lê Cớt", "", "", "", "Con cụ Nhin. Lấy ông Trần Lê Cớt giữa làng", "", ""),
-                    ("124.06.0.042", "124.05.0.021", "Từ Hữu Chính", "", "Bà Nguyễn Thị Sương", "1891", "1940", "21/5", "Con cụ Nhin. Làm lý trưởng, thầy thuốc, địa lý, phù thuỷ đạo sỹ. Vợ là Bà Nguyễn Thị Sương (1898-1964, giổ 07/12). Sinh hạ: Từ Quang Diệu, Từ Hữu Bút (liệt sĩ), Từ Thị Tam (lấy ông Khới trong làng), Từ Thị Hảo (lấy ông Trần Ninh trong làng), Từ Hữu Son, Từ Thị Tám (lấy ông Nguyễn Long trong làng), Từ Thị Chín (lấy ông Nhân trong làng). [3 con gái gồm: Thị Tứ, Thị Chút, Thị Mười (đều tảo vong)].", "", ""),
+                    ("124.06.1.040", "124.05.0.021", "Từ Thị Hợi", "", "Thái Mạo", "", "", "", "Con cụ Nhin. Lấy ông Thái Mạo (Hạ) ở Xuân Mai", "", ""),
+                    ("124.06.1.041", "124.05.0.021", "Từ Thị Thao", "", "Trần Lê Cớt", "", "", "", "Con cụ Nhin. Lấy ông Trần Lê Cớt ở giữa làng", "", ""),
+                    ("124.06.0.042", "124.05.0.021", "Từ Hữu Chính", "", "Bà Nguyễn Thị Sương", "1891", "1940", "21/5", "Con cụ Nhin. Làm lý trưởng, thầy thuốc, địa lý, phù thuỷ đạo sỹ. Vợ là Bà Nguyễn Thị Sương (1898-1964, giổ 07/12). Sinh hạ: Từ Quang Diệu, Từ Hữu Bút (liệt sĩ), Từ Thị Tam (lấy ông Khới ở trong làng), Từ Thị Tứ (Tảo vong), Từ Thị Chút (Tảo vong), Từ Thị Hảo (lấy ông Trần Ninh ở trong làng), Từ Hữu Son, Từ Thị Tám (lấy ông Nguyễn Long ở trong làng), Từ Thị Chín (lấy ông Nhân ở trong làng), Từ Thị Mười (Tảo vong)", "", ""),
                     ("124.06.1.043", "124.05.0.021", "Từ Thị Năm", "", "Trần Lạc", "", "", "", "Con cụ Nhin. Lấy ông Trần Lạc ở Yên Đồng (Con cháu là Trần Vựng)", "", ""),
                     ("124.06.0.044", "124.05.0.021", "Từ Hữu Giáo", "", "Bà Thái Thị Thới", "", "", "", "Con cụ Nhin. Sinh hạ: Từ Thị Chắt (Lấy ông Trần Minh ở Quang Lộc), Từ Thị Con (Lấy ông Nguyễn Thủy ở Điền Xá - Đồng Lộc), Từ Hữu Huấn (chết sớm), Từ Hữu Chuột, Từ Hữu Xưng (chết lúc 15 tuổi).", "", ""),
-                    ("124.06.0.045", "124.05.0.021", "Từ Hữu Thí", "", "Bà Trần Thị Ba", "", "", "", "Con cụ Nhin. Sinh hạ: Từ Hữu Nuôi (chết sớm), Từ Hữu Thiện, Từ Thị Tỷ (lấy chồng người Đức Thọ), Từ Thị Quyền (lấy chồng người Thạch Ngọc).", "", ""),
+                    ("124.06.0.045", "124.05.0.021", "Từ Hữu Thí", "", "Bà Trần Thị Ba", "", "", "", "Con cụ Nhin. Sinh hạ: Từ Hữu Nuôi (chết sớm), Từ Hữu Thiện, Từ Thị Tỷ (lấy Ông Trần Văn Sinh ở Đức Thọ), Từ Thị Quyền (lấy Ông Nguyễn Hữu Tuế ở Thạch Ngọc).", "", ""),
 
                     # ------------------------------------
                     # CHI 3
                     # ------------------------------------                     
-                    ("135.06.0.046", "135.05.0.025", "Từ Hữu Thống", "", "Bà Trần Thị Cầu", "", "", "", "Con cụ Hồng. Sinh hạ: Từ Thị Đích, Thị Dy (chết sớm).", "Phạp tự", ""),
-                    ("135.06.0.047", "135.05.0.025", "Từ Hữu Thính", "", "Bà Ngô Thị Điện, Bà thứ Trương Thị Thiện", "", "", "", "Con cụ Hồng. Làm phó lý trưởng. Sinh hạ: Từ Thị ? (lấy Trần Phiếm trong làng), Từ Hữu Mục, Từ Hữu Khoa, Từ Thị Đích (chết sớm).", "", ""),
+                    ("135.06.0.046", "135.05.0.025", "Từ Hữu Thống", "", "Bà Trần Thị Cầu", "", "", "", "Con cụ Hồng. Sinh hạ: Từ Thị Đích (Lấy chồng về Đồng Lộc), Từ Thị Dy (Lấy chồng về Yên Đồng).", "Phạp tự", ""),
+                    ("135.06.0.047", "135.05.0.025", "Từ Hữu Thính", "", "Bà Ngô Thị Điện, Bà thứ Trương Thị Thiện", "", "", "", "Con cụ Hồng. Làm phó lý trưởng. Sinh hạ: Từ Thị ? (lấy ông Trần Phiếm ở trong làng), Từ Hữu Mục, Từ Hữu Khoa, Từ Thị Đích (chết sớm).", "", ""),
                     ("135.06.1.048", "135.05.0.025", "Từ Thị Thúy", "", "", "", "", "", "Con cụ Hồng.", "Chết sớm", ""),
                     ("135.06.1.049", "135.05.0.026", "Từ Thị Điển", "", "Không rõ", "", "", "", "Con cụ Bằng. Lấy chồng về Khô Nội", "", ""),
-                    ("135.06.1.050", "135.05.0.026", "Từ Thị ??", "", "Trần Lại", "", "", "", "Con cụ Bằng. Lấy ông Trần Lại trong làng", "", ""),
-                    ("135.06.1.051", "135.05.0.026", "Từ Thị ???", "", "Lượng Nhạc", "", "", "", "Con cụ Bằng. Lấy Ông Lượng Nhạc Trảo Nha", "", ""),
-                    ("135.06.1.052", "135.05.0.026", "Từ Thị Lạp", "", "Trần Bách", "", "", "", "Con cụ Bằng. Lấy ông Trần Bách trong làng", "", ""),
+                    ("135.06.1.050", "135.05.0.026", "Từ Thị ??", "", "Trần Lại", "", "", "", "Con cụ Bằng. Lấy ông Trần Lại ở trong làng", "", ""),
+                    ("135.06.1.051", "135.05.0.026", "Từ Thị ???", "", "Lượng Nhạc", "", "", "", "Con cụ Bằng. Lấy Ông Lượng Nhạc ở Trảo Nha", "", ""),
+                    ("135.06.1.052", "135.05.0.026", "Từ Thị Lạp", "", "Trần Bách", "", "", "", "Con cụ Bằng. Lấy ông Trần Bách ở trong làng", "", ""),
                     ("135.06.0.053", "135.05.0.026", "Từ Hữu Bối", "Ông Phụ", "Bà Nguyễn Thị Chút", "", "", "", "Con cụ Bằng. Sinh hạ: Từ Hữu Nuôi (chết sớm), Từ Thị Cháu (chết sớm), Từ Hữu Mậu.", "", ""),
                     ("135.06.0.054", "135.05.0.026", "Từ Hữu Triết", "", "Bà lấy chồng khác", "", "", "", "Con cụ Bằng. Sinh hạ: Từ Hữu Cháu (chết sớm), Từ Hữu Cước (chết sớm), Từ Hữu Quằt (chết sớm), Từ Thị Quỳ (lấy chồng về Trường Lộc).", "", ""),
-                    ("135.06.1.055", "135.05.0.026", "Từ Thị Bổn", "", "Không rõ", "", "", "", "Con cụ Bằng. Lấy người Đại lộc", "", ""),
-                    ("135.06.0.056", "135.05.0.027", "Từ Hữu Quán", "", "Bà Trần Thị Tuy", "", "", "", "Con cụ Lập. Sinh hạ: Từ Thị Khoách (Lấy ông Nguyễn Thiềng giữa làng), Từ Thị Hai (lấy ông Nguyễn Điểm giữa làng), Từ Thị Chự (lấy người họ Nguyễn Thế Kẻ Mòi), Từ Thị Em Nậy (lấy ông Trần Tuệ giữa làng), Từ Thị Em Con (lấy ông Trần Bệ giữa làng), Từ Hữu Trù, Từ Thị Chút (lấy ông Trần Bản giữa làng), Từ Thị Tám (lấy ông Trần Dê giữa làng).", "", ""),
+                    ("135.06.1.055", "135.05.0.026", "Từ Thị Bổn", "", "Không rõ", "", "", "", "Con cụ Bằng. Lấy chồng về Đại lộc", "", ""),
+                    ("135.06.1.923", "135.05.0.026", "Từ Thị Cháu", "", "", "", "", "", "Con cụ Bằng", "Chết sớm", ""),                  
+                    ("135.06.0.056", "135.05.0.027", "Từ Hữu Quán", "", "Bà Trần Thị Tuy", "", "", "", "Con cụ Lập. Sinh hạ: Từ Thị Khoách (Lấy ông Nguyễn Thiềng ở trong làng), Từ Thị Hai (lấy ông Nguyễn Điểm ở trong làng), Từ Thị Chự (lấy người họ Nguyễn Thế ở Kẻ Mòi), Từ Thị Em Nậy (lấy ông Trần Tuệ ở trong làng), Từ Thị Em Con (lấy ông Trần Bệ ở trong làng), Từ Hữu Trù, Từ Thị Chút (lấy ông Trần Bản ở trong làng), Từ Thị Tám (lấy ông Trần Dê ở trong làng).", "", ""),
                     ("135.06.0.057", "135.05.0.027", "Từ Hữu Thường", "", "", "", "", "", "Con cụ Lập", "Chết sớm", ""),
                     ("135.06.0.058", "135.05.0.027", "Từ Hữu Cự", "", "", "", "", "", "Con cụ Lập", "Chết sớm", ""),
                     ("135.06.0.059", "135.05.0.027", "Từ Hữu Kính", "", "", "", "", "", "Con cụ Lập", "Chết sớm", ""),
-                    ("135.06.0.060", "135.05.0.027", "Từ Hữu Ngoạn", "", "Không có vợ", "", "", "", "Con ông Từ Hữu Lập. Hán tự thông minh. Mất lúc khoảng 20 tuổi.", "Không có con", ""),
+                    ("135.06.0.060", "135.05.0.027", "Từ Hữu Ngoạn", "", "Không có vợ", "", "", "", "Con ông Từ Hữu Lập. Hán tự thông minh. Mất lúc khoảng 20 tuổi.", "Mất sớm", ""),
                     ("135.06.0.061", "135.05.0.027", "Từ Hữu Xán", "", "Bà Nguyễn Thị Tửu", "", "", "", "Con cụ Lập. Sinh hạ: Từ Thị Bẹn (đã lấy chồng, chết sớm), Từ Thị Em (Lấy ông Trần Đình Bút ở Yên Đồng), Từ Thị Tam (chết đuối), Từ Thị Tứ (chết sớm), Từ Hữu Năm, Từ Hữu Lục, Từ Thị Bảy (chết sớm), Từ Hữu Tám.", "", ""),
+                    ("135.06.1.924", "135.05.0.027", "Từ Thị Đỏ", "", "", "", "", "", "Con cụ Lập", "Tảo vong", ""),
 
                     # ------------------------------------
                     # CHI 4
                     # ------------------------------------        
+                  
+                    ("246.05.0.927", "246.05.0.029", "Từ Hữu Đỏ", "", "", "", "", "", "Từ Hữu Khảng", "Tảo vong", ""),  
                     ("246.06.0.062", "246.05.0.030", "Từ Hữu Hoè", "", "Bà Trần Thị Cát", "", "", "", "Con cụ Khai. Sinh hạ: Từ Hữu Đỏ, Từ Hữu Đốc, Từ Hữu Lường (đều chết sớm).", "", ""),
                     ("246.06.0.063", "246.05.0.030", "Từ Hữu Trấn", "", "Bà Trần Thị Tình", "", "", "", "Con cụ Khai. Ông trước làm quyền suất đội – Sắc phong phó Đô đốc. Sinh hạ: Từ Hữu Bạt, Từ Thị Đệ (Lấy ông Trần Hùng giữa làng), Từ Hữu Nhiếp.", "", ""),
                     ("246.06.0.064", "246.05.0.030", "Từ Hữu Át", "", "Bà Trần Thị Thưởng", "", "", "", "Con cụ Khai. Sinh hạ: Từ Hữu Xỉ, Từ Hữu Dỵ, Từ Thị Em (lấy ông Trần Vịnh giữa làng), Từ Thị Dị (tảo vong), Từ Thị Đỏ (tảo vong).", "", ""),
                     ("246.06.0.065", "246.05.0.030", "Từ Hữu Dự", "", "Bà Nguyễn Thị Tông, Bà thứ Nguyễn Thị Sáu", "", "", "", "Con cụ Khai.", "Không có con", ""),
+                    ("246.06.0.928", "246.05.0.030", "Từ Thị ?", "", "", "", "", "", "Con cụ Khai", "Chết sớm", ""),
+                    ("246.06.0.929", "246.05.0.030", "Từ Hữu Đỏ", "", "", "", "", "", "Con cụ Khai", "Chết sớm", ""),
                     ("246.06.0.066", "246.05.0.030", "Từ Hữu Vinh", "", "", "", "", "", "Con cụ Khai", "Chết sớm", ""),
                     ("246.06.0.067", "246.05.0.030", "Từ Hữu Bổng", "", "", "", "", "", "Con cụ Khai", "Chết sớm", ""),
 
@@ -412,12 +436,16 @@ class KhoDuLieuSQL:
                     # CHI 5
                     # ------------------------------------                           
                     ("257.06.0.068", "257.05.0.033", "Từ Hữu Thạc", "", "Bà Nguyễn Thị Thẩm", "", "", "", "Con cụ Quýnh. Sinh hạ: Từ Thị Đạc (tảo vong), Từ Thị Đô (tảo một). [Ông bà này cuối thế kỷ 18, khoảng triều đại Thành Thái di cư ra Hoàng Mai, Nghệ An ở. Tông tích không rõ].", "di cư, không rõ", ""),
+                    ("257.06.0.930", "257.05.0.033", "Từ Hữu Đỏ", "", "", "", "", "", "Con cụ Quýnh", "Tảo vong", ""),
+
+
+
                     ("258.06.0.069", "258.05.0.038", "Từ Hữu Cuộc", "", "Bà Trần Thị Khanh", "", "", "", "Con cụ Trinh. Sinh hạ: Từ Thị Tấn (tảo vong), Từ Hữu Đỏ (tảo vong), Từ Thị Đức (tảo vong), Từ Hữu Cu.", "", ""),
                     ("258.06.0.070", "258.05.0.038", "Từ Hữu Ức", "", "", "", "", "", "Con cụ Trinh.", "Tảo một", ""),
                     ("258.06.0.071", "258.05.0.038", "Từ Hữu Tùy", "", "Bà Trần Thị Trúc", "", "", "", "Con thứ 2 cụ Trinh. Sinh hạ: Từ Hữu Hoài, Từ Thị Láng (Lấy ông Láng giữa làng), Từ Thị Chích (tảo một), Từ Hữu Liên (tảo một).", "", ""),
                     ("258.06.0.072", "258.05.0.038", "Từ Hữu Khôi", "", "", "", "", "", "Con cụ Trinh.", "Tảo vong", ""),
                     ("258.06.1.073", "258.05.0.038", "Từ Thị Liên", "", "", "", "", "", "Con cụ Trinh.", "Tảo vong", ""),
-                    ("258.06.1.074", "258.05.0.038", "Từ Thị Cẩm", "", "", "", "", "", "Con cụ Trinh.", "Tảo vong", ""),
+                    ("258.06.1.074", "258.05.0.038", "Từ Thị Tẩm", "", "", "", "", "", "Con cụ Trinh.", "Tảo vong", ""),
                     ("258.06.0.075", "258.05.0.041", "Từ Hữu Do", "", "Bà Ngô Thị Dị", "", "", "", "Con cụ Tranh. Sinh hạ: Từ Hữu Nha, Từ Thị Nhạ (tảo vong), Từ Thị Nhỏ (tảo vong).", "", ""),
                     ("258.06.1.076", "258.05.0.041", "Từ Thị Tốn", "", "Không rõ", "", "", "", "Con cụ Tranh", "", ""),
                     ("258.06.0.077", "258.05.0.044", "Từ Hữu Xuyến", "", "", "", "", "", "Con cụ Trừng.", "Tảo một", ""),
@@ -441,22 +469,25 @@ class KhoDuLieuSQL:
                     # CHI 1
                     # ------------------------------------
                     ("111.07.0.001", "111.06.0.001", "Từ Hữu Phiệt", "", "Bà cả Trần Thị Hán, bà thứ Trần Thị Thoả", "", "", "", "Con cụ Thư. Ông trước làm lý trưởng, chết ngày 25 tháng 7 âm lịch. Sinh hạ: Từ Thị ? (lấy 2 lần chồng, chồng sau là ông Cửu Bẹn ở Vĩnh Lộc), Từ Hữu Điệt, Từ Thị Đém (tảo một), Từ Hữu Việt, Từ Hữu Huyền, Từ Hữu Ca (tảo một), Từ Thị Bảy (Lấy ông Ba Điêm trong làng), Từ Thị Bát (tảo vong), Từ Hữu Đỏ (tảo vong), Từ Hữu Đỏ (tảo vong).", "", ""),
-                    ("111.07.1.002", "111.06.0.001", "Từ Thị ?", "", "Trần Cớt", "", "", "", "Con cụ Thư. Lấy ông Trần Cớt trong làng", "", ""),
-                    ("111.07.1.003", "111.06.0.001", "Từ Thị ??", "", "Trần Chước", "", "", "", "Con cụ Thư. Lấy ông Trần Chước trong làng", "", ""),
+                    ("111.07.1.002", "111.06.0.001", "Từ Thị ?", "", "Trần Cớt", "", "", "", "Con cụ Thư. Lấy ông Trần Cớt ở trong làng", "", ""),
+                    ("111.07.1.003", "111.06.0.001", "Từ Thị ??", "", "Trần Chước", "", "", "", "Con cụ Thư. Lấy ông Trần Chước ở trong làng", "", ""),
                     ("111.07.0.004", "111.06.0.001", "Từ Hữu Vinh", "", "", "", "", "", "Con cụ Thư.", "Tảo một", ""),
                     ("111.07.0.005", "111.06.0.001", "Từ Hữu Vượng", "", "", "", "", "", "Con cụ Thư.", "Tảo một", ""),
                     ("111.07.0.006", "111.06.0.001", "Từ Hữu Thuận", "", "", "", "", "", "Con cụ Thư.", "Tảo một", ""),
-                    ("111.07.0.007", "111.06.0.001", "Từ Hữu Đốc", "", "", "", "", "", "Con cụ Thư.", "Tảo một", ""),
+                    ("111.07.1.007", "111.06.0.001", "Từ Thị Đốc", "", "", "", "", "", "Con cụ Thư.", "Tảo một", ""),
                     ("111.07.0.008", "111.06.0.006", "Từ Hữu Lâm", "", "Bà Trần Thị Nhỏ", "", "", "", "Con cụ Ngạnh. Sinh hạ: Từ Thị Mực (Lấy ông Cu Láng trong làng), Từ Thị Ba (lấy chồng, 3 chồng), Từ Hữu Đồng, Từ Hữu Địch (tảo vong), Từ Hữu Kế, Từ Thị Chút (chết sớm), Từ Hữu Thịnh (chết sớm).", "", ""),
                     ("111.07.0.009", "111.06.0.006", "Từ Hữu Tâm", "", "Bà Thái Thị Hai", "", "", "", "Con thứ 2 cụ Ngạnh. Được cấp bằng Phó tổng dụng. Sinh hạ: Từ Hữu Điệng (chết sớm), Từ Hữu Tiệng, Từ Thị Em (chết đuối), Từ Hữu Thiện (tảo một).", "", ""),
                     ("111.07.0.010", "111.06.0.006", "Từ Hữu Lam", "", "", "", "", "", "Con cụ Ngạnh", "Tảo một", ""),
                     ("111.07.0.011", "111.06.0.006", "Từ Hữu Liêm", "", "", "", "", "", "Con cụ Ngạnh", "Tảo một", ""),
+
                     ("111.07.0.012", "111.06.0.008", "Từ Hữu Sáng", "", "Bà Trần Thị Bộ", "", "", "", "Con đầu cụ Khánh. Sinh hạ: Từ Hữu Nghiệp (tảo một), Từ Hữu Xuân (tảo vong), Từ Hữu Vên (tảo vong), Từ Thị Út (tảo một), Từ Thị Xin (tảo một), Từ Thị Mức (lấy chồng không có con, chết).", "", ""),
                     ("111.07.1.013", "111.06.0.008", "Từ Thị ?", "", "Ông Hiến", "", "", "", "Con cụ Khánh. Lấy Ông Hiến  xã Thạch Liên.", "", ""),
                     ("111.07.1.014", "111.06.0.008", "Từ Thị Chẹc", "", "", "", "", "", "Con cụ Khánh", "Tảo một", ""),
+
                     ("111.07.1.015", "111.06.0.008", "Từ Thị ??", "", "Không rõ", "", "", "", "Con cụ Khánh. Lấy chồng về Yên đồng.", "", ""),
                     ("111.07.1.016", "111.06.0.008", "Từ Thị Năm", "", "", "", "", "", "Con cụ Khánh", "Tảo một", ""),
                     ("111.07.0.017", "111.06.0.008", "Từ Hữu Xích", "", "Bà cả Trần Thị Phương, bà thứ Nguyễn Thị Thiu", "", "", "", "Con cụ Khánh. Sinh hạ: Từ Thị Tuất (lấy người miền Nam), Từ Thị Thảo (lấy người Sơn Lộc). [3 trai: Nghiêm, Linh, Tấn đều tảo vong].", "Phạp tự", ""),
+
                     ("111.07.0.018", "111.06.0.010", "Từ Hữu Toại", "", "Bà cả Trần Thị Khai, bà thứ Nguyễn Thị Kiềm", "", "", "", "Con cụ Sum. Ông trước làm lý trưởng lên chánh tổng. Sinh hạ: Từ Hữu Hào, Từ Thị Em nậy (lấy ông Thực Dư ở Đại Lộc), Từ Thị Em Con (lấy ông Nguyễn Khiêm), Từ Hữu Bốn, Từ Hữu Niêm (chết sớm).", "", ""),
                     ("111.07.1.019", "111.06.0.010", "Từ Thị ?", "", "Ông Sị", "", "", "", "Con cụ Sum. Lấy Ông Sị trong làng", "", ""),
                     ("111.07.0.020", "111.06.0.010", "Từ Hữu Nghị", "", "Bà Lê Thị Hai", "", "", "", "Con thứ 2 cụ Sum. Sinh hạ: Từ Hữu Nghi (chết lúc khoảng 20 tuổi), Từ Thị Em (lấy ông Trần Hải trong làng), Từ Hữu Lợi (tảo một), Từ Hữu Lộc.", "", ""),
@@ -464,16 +495,18 @@ class KhoDuLieuSQL:
                     ("111.07.1.022", "111.06.0.010", "Từ Thị ???", "", "Trần Yểu", "", "", "", "Con cụ Sum. Lấy ông Trần Yểu trong làng", "", ""),
                     ("111.07.1.023", "111.06.0.010", "Từ Thị Sáu", "", "Cửu Tường", "", "", "", "Con cụ Sum. Lấy ông Cửu Tường trong làng", "", ""),
                     ("111.07.1.024", "111.06.0.010", "Từ Thị ????", "", "Trung Hiếu", "", "", "", "Con cụ Sum. Lấy ông Trung Hiếu trong làng", "", ""),
-                    ("111.07.0.025", "111.06.0.010", "Từ Hữu Luận", "", "Bà Trần Thị, bà thứ Trần Thị Kép", "", "", "", "Con thứ 3 cụ Sum. Sinh hạ: Từ Thị Xin (lấy ông Trần Phúc trong làng), Từ Hữu Trợ, Từ Hữu Trự, Từ Hữu Ngự (tảo một), Từ Hữu Sáu, Từ Thị Tựu (Lấy ông Nhàn xã Vĩnh Lộc), Từ Hữu Kế, Từ Thị Đỏ (tảo vong), Từ Hữu Chín (tảo một).", "", ""),
-                    ("111.07.1.026", "111.06.0.012", "Từ Thị Dị", "", "Trần Đinh", "", "", "", "Con cụ Cội. Lấy ông Trần Đinh trong làng", "", ""),
+                    ("111.07.0.025", "111.06.0.010", "Từ Hữu Luận", "", "Bà Trần Thị Ngợi, bà thứ Trần Thị Kép", "", "", "13/06 AL", "Con thứ 3 cụ Sum. Sinh hạ: Từ Thị Ngợ (lấy ông Trần Phúc ở trong làng), Từ Hữu Trợ, Từ Hữu Trự (Thú), Từ Hữu Tứ (tảo một), Từ Hữu Ngụ (tảo một), Từ Hữu Sáu, Từ Thị Tưu (Lấy ông Nhàn xã Vĩnh Lộc), Từ Hữu Kế, Từ Thị Đỏ (Tảo vong), Từ Hữu Chín (Tảo một).", "", ""),
+
+                    ("111.07.0.938", "111.06.0.012", "Từ Hữu Lọc", "", "", "", "", "", "Con cụ Cội.", "Tảo vong", ""),
+                    ("111.07.1.026", "111.06.0.012", "Từ Thị Dị", "", "Trần Đinh", "", "", "", "Con cụ Cội. Lấy ông Trần Đinh ở trong làng", "", ""),
                     ("111.07.0.027", "111.06.0.012", "Từ Hữu Lệ", "", "Bà Trần Thị Cầy (út)", "", "", "", "Con đầu cụ Cội. Sinh hạ: Từ Hữu Số, Từ Hữu Nhuyến, Từ Hữu Tam (mất sớm).", "", ""),
-                    ("111.07.1.028", "111.06.0.012", "Từ Thị ?", "", "Đặng Cầu", "", "", "", "Con cụ Cội. Lấy ông Đặng Cầu trong làng", "", ""),
-                    ("111.07.1.029", "111.06.0.012", "Từ Thị ??", "", "Trần Thảng", "", "", "", "Con cụ Cội. Lấy ông Trần Thảng trong làng", "", ""),
+                    ("111.07.1.028", "111.06.0.012", "Từ Thị Đệ", "", "Trần Đình Sáu", "", "", "", "Con cụ Cội. Lấy ông Trần Đình Sáu (Cố Thảng) ở trong làng", "", ""),
+                    ("111.07.1.029", "111.06.0.012", "Từ Thị Bốn", "", "Đặng Công Thuật", "", "", "", "Con cụ Cội. Lấy ông Đặng Công Thuật (Cố Cầu) ở trong làng", "", ""),
                     ("111.07.0.030", "111.06.0.012", "Từ Hữu Nghĩa", "", "Bà Ngô Thị Ứng", "", "", "", "Con thứ 2 cụ Cội. Sinh hạ: Từ Hữu Nhường, Từ Thị Em (lấy ông Trần Đình Quỳ trong làng), Từ Hữu Thường, Từ Thị Chút (lấy ông Trình trong làng), Từ Hải Tường, Từ Âu, Từ Hữu Dái (tảo một).", "", ""),
                     ("111.07.0.031", "111.06.0.012", "Từ Hữu Khí", "", "", "", "", "", "Con cụ Cội.", "Chết sớm", ""),
                     ("111.07.0.032", "111.06.0.012", "Từ Hữu Trề", "", "", "", "", "", "Con cụ Cội.", "Chết sớm", ""),
-                    ("111.07.1.033", "111.06.0.012", "Từ Thị Tám", "", "Trần Hoàn", "", "", "", "Con cụ Cội. Lấy ông Trần Hoàn trong làng", "", ""),
-                    ("111.07.0.034", "111.06.0.012", "Từ Hữu Lộc", "", "", "", "", "", "Con cụ Cội.", "Tảo vong", ""),
+                    ("111.07.1.033", "111.06.0.012", "Từ Thị Tám", "", "Trần Hoàn", "", "", "", "Con cụ Cội. Lấy ông Trần Hoàn ở trong làng", "", ""),
+                    
 
                     # ------------------------------------
                     # CHI 2
@@ -482,9 +515,11 @@ class KhoDuLieuSQL:
                     ("122.07.1.036", "122.06.0.014", "Từ Thị Em", "", "Trần Thế", "", "", "", "Con cụ Toát. Lấy ông Trần Thế trong làng", "", ""),
                     ("122.07.0.037", "122.06.0.014", "Từ Hữu Hợi", "", "Bà Nguyễn Thị Đình", "", "", "", "Con thứ 2 cụ Toát. Sinh hạ: Từ Xuân Cảnh, Từ Hữu Quý (liệt sĩ), Từ Thị Tỷ (lấy ông Phan Đàn Xóm Mới), Từ Hữu Tư, Từ Thị Ngụ (lấy chồng về Đức Lâm, Đức Thọ), Từ Thị Lục (lấy chồng về Kỳ Anh).", "", ""),
                     ("122.07.0.038", "122.06.0.014", "Từ Hữu Điếm", "", "", "", "", "", "Con cụ Toát", "Tảo vong", ""),
+                    ("122.07.1.931", "122.06.0.014", "Từ Thị Đỏ", "", "", "", "", "", "Con cụ Toát", "Tảo vong", ""),
                     ("122.07.1.039", "122.06.0.017", "Từ Thị Mai", "", "Trần Chinh", "", "", "", "Con cụ Mận. Lấy Trần Chinh trong làng", "", ""),
                     ("122.07.0.040", "122.06.0.017", "Từ Hữu Khai (Đoài)", "", "Bà Nguyễn Thị Chắt", "", "", "", "Con cụ Mận. Sinh hạ: Từ Thị Đoài (lấy ông Trần Đại trữa làng), Từ Hữu Lương, Từ Thị Đỏ (tảo một).", "", ""),
                     ("122.07.0.041", "122.06.0.017", "Từ Hữu Lai", "Như", "Bà Trần Thị Em", "", "", "", "Con thứ 2 cụ Mận. Sinh hạ: Từ Thị Xuân (Lấy chồng người ở Sơn Lộc), Từ Thị Tâm (lấy Ông Tịnh), Từ Hữu Tương.", "", ""),
+                    ("122.07.0.933", "122.06.0.017", "Từ Hữu Đỏ", "", "", "", "", "", "Con cụ Mận", "Tảo vong", ""),
                     ("123.07.0.042", "123.06.0.026", "Từ Hữu Kiệp", "", "Bà Trần Thị Tráng", "", "", "", "Con đầu cụ Vẹn. Sinh hạ: Từ Hữu Đa (tảo một), Từ Hữu Số, Từ Hữu Yêm, Từ Hữu Niềm, Từ Thị Xuân (lấy ông Nguyễn Cầu, Trung Xá), Từ Hữu Xanh, Từ Thị Thanh (lấy ông Nguyễn Tứ (Xà) trong làng).", "", ""),
                     ("123.07.0.043", "123.06.0.026", "Từ Hữu Điệp", "", "Bà Nguyễn Thị Ba", "", "", "", "Con thứ 2 cụ Vẹn. Sinh hạ: Từ Hữu Nuôi, Từ Hữu Nuôi Em (Tiếp). ", "", ""),
                     ("123.07.1.044", "123.06.0.026", "Từ Thị Ba", "", "Không rõ", "", "", "", "Con cụ Vẹn. Lấy chồng về Thạch Liên", "", ""),         
@@ -494,13 +529,13 @@ class KhoDuLieuSQL:
                     ("123.07.1.048", "123.06.0.027", "Từ Thị Xin", "", "", "", "", "", "Con cụ Vẹ", "Chết sớm", ""),
                     ("124.07.0.049", "124.06.0.042", "Từ Quang Diệu", "", "Bà Trần Thị Thái", "1920", "1992", "01/05 AL", "Con đầu cụ Chính. Cán bộ xã, huyện, tỉnh liên khu 4; Huân, Huy chương kháng chiến hạng Nhất. Vợ là Bà Trần Thị Thái (1934-2012, giỗ 15/01). Sinh hạ: Từ Hữu Chắt (Chết sớm), Từ Thị Lý (Chết sớm), Từ Hữu Hạnh (tảo vong), Từ Thị Đào (tảo vong), Từ Quang Viện, Từ Quang Xá, Từ Quang Khánh, Từ Quang Thuỳ, Từ Thị Đỏ (tảo vong).", "", ""),
                     ("124.07.0.050", "124.06.0.042", "Từ Quang Bút", "", "", "", "", "", "Con cụ Chính. Liệt sĩ chống Pháp", "Liệt sĩ", ""),
-                    ("124.07.1.051", "124.06.0.042", "Từ Thị Tam", "", "Trần Khới", "", "", "", "Con cụ Chính. Lấy ông Trần Khới trong làng (Con cháu hiện nay là Trần Khởi)", "", ""),
+                    ("124.07.1.051", "124.06.0.042", "Từ Thị Tam", "", "Trần Khới", "", "", "", "Con cụ Chính. Lấy ông Trần Khới ở trong làng (Con cháu hiện nay là Trần Khởi)", "", ""),
                     ("124.07.1.052", "124.06.0.042", "Từ Thị Tứ", "", "", "", "", "", "Con cụ Chính", "Tảo vong", ""),
                     ("124.07.1.053", "124.06.0.042", "Từ Thị Chút", "", "", "", "", "", "Con cụ Chính", "Tảo vong", ""),             
                     ("124.07.1.054", "124.06.0.042", "Từ Thị Hảo", "", "Trần Ninh", "", "", "", "Con cụ Chính. Lấy ông Trần Ninh trong làng (Con cháu hiện nay là Trần Đình Sâm)", "", ""),             
                     ("124.07.0.055", "124.06.0.042", "Từ Quang Son", "Phú", "Bà Trần Thị Tỷ", "", "", "", "Con thứ 3 cụ Chính. Ông làm cán bộ hợp tác xã. Sinh hạ: Từ Hữu Phú, Từ Thị Ngư (lấy ông Thái Kỳ xóm mới), Từ Thị Nhung (lấy chồng), Từ Hữu Huy, Từ Thị Quy (Lấy ông Trần Hải (Xứ) trong làng), Từ Hữu Quý.", "", ""),
-                    ("124.07.1.056", "124.06.0.042", "Từ Thị Tám", "", "Nguyễn Long", "", "", "", "Con cụ Chính. Lấy ông Nguyễn Long trong làng (Con cháu hiện nay là Nguyễn Thị Thanh)", "", ""),
-                    ("124.07.1.057", "124.06.0.042", "Từ Thị Chín", "", "Ông Nhân", "", "", "", "Con cụ Chính. Lấy ông Nhân trong làng (Con cháu hiện nay là Chắt Nhân)", "", ""),
+                    ("124.07.1.056", "124.06.0.042", "Từ Thị Tám", "", "Nguyễn Long", "", "", "", "Con cụ Chính. Lấy ông Nguyễn Long ở trong làng (Con cháu hiện nay là Nguyễn Thị Thanh)", "", ""),
+                    ("124.07.1.057", "124.06.0.042", "Từ Thị Chín", "", "Ông Nhân", "", "", "", "Con cụ Chính. Lấy ông Nhân ở trong làng (Con cháu hiện nay là Chắt Nhân)", "", ""),
                     ("124.07.1.058", "124.06.0.042", "Từ Thị Mười", "", "", "", "", "", "Con cụ Chính", "Tảo vong", ""),
                     ("124.07.1.059", "124.06.0.044", "Từ Thị Chắt", "", "Trần Minh", "", "", "", "Con ông Giáo. Lấy ông Trần Minh ở Quang Lộc", "", ""),
                     ("124.07.1.060", "124.06.0.044", "Từ Thị Con", "", "Nguyễn Thủy", "", "", "", "Con ông Giáo. Lấy ông Nguyễn Thủy ở Điền Xá - Đồng Lộc", "", ""),                  
@@ -509,17 +544,19 @@ class KhoDuLieuSQL:
                     ("124.07.0.063", "124.06.0.044", "Từ Hữu Xưng", "", "", "", "", "", "Con ông Giáo. Chết lúc 15 tuổi ", "Chết sớm", ""),
                     ("124.07.0.064", "124.06.0.045", "Từ Hữu Nuôi", "", "", "", "", "", "Con cụ Thí", "Chết sớm", ""),
                     ("124.07.0.065", "124.06.0.045", "Từ Hữu Thiện", "", "Bà cả Trần Thị Xuân, Bà thứ Nguyễn Thị Quế", "", "", "", "Con cụ Thí. Ông trước làm nghề dạy học, giáo viên cấp 1. Sinh hạ: Từ Hữu Giáp (mất sớm), Từ Hữu Cường, Từ Hữu Thành (Chết sớm), Từ Hữu Mạnh (đi làm con nuôi ở Thạch Ngọc).", "", ""),
-                    ("124.07.1.066", "124.06.0.045", "Từ Thị Tỷ", "Liên", "ông Trần Văn Sinh", "", "", "", "Con cụ Thí. Lấy ông Trần Văn Sinh người Đức Thọ", "", ""),
-                    ("124.07.1.067", "124.06.0.045", "Từ Thị Quyền", "", "ông Nguyễn Hữu Tuế", "", "", "", "Con cụ Thí. Lấy ông Nguyễn Hữu Tuế người Thạch Ngọc", "", ""),
+                    ("124.07.1.066", "124.06.0.045", "Từ Thị Tỷ", "Liên", "ông Trần Văn Sinh", "", "", "", "Con cụ Thí. Lấy ông Trần Văn Sinh ở Đức Thọ", "", ""),
+                    ("124.07.1.067", "124.06.0.045", "Từ Thị Quyền", "", "ông Nguyễn Hữu Tuế", "", "", "", "Con cụ Thí. Lấy ông Nguyễn Hữu Tuế ở Thạch Ngọc", "", ""),
 
                     # ------------------------------------
                     # CHI 3
-                    # ------------------------------------      
+                    # ------------------------------------
                     ("135.07.1.068", "135.06.0.046", "Từ Thị Đích", "", "Không rõ", "", "", "", "Con cụ Thống. Lấy chồng về Đồng Lộc.", "", ""),
-                    ("135.07.1.069", "135.06.0.046", "Từ Thị Dy", "", "", "", "", "", "Con cụ Thống.", "Chết sớm", ""),
-                    ("135.07.1.070", "135.06.0.047", "Từ Thị ?", "", "Trần Phiếm", "", "", "", "Con cụ Thính. Lấy ông Trần Phiếm trong làng", "", ""),
+                    ("135.07.1.069", "135.06.0.046", "Từ Thị Dy", "", "", "", "", "", "Con cụ Thống.", "Lấy chồng về Yên Đồng", ""),
+                    ("135.07.1.070", "135.06.0.047", "Từ Thị ?", "", "Trần Phiếm", "", "", "", "Con cụ Thính. Lấy ông Trần Phiếm ở trong làng", "", ""),
                     ("135.07.0.071", "135.06.0.047", "Từ Hữu Mục", "", "Bà Trần Thị Dản", "", "", "", "Con cụ Thính. Sinh hạ: Từ Thị Thộ (mất do thiên lôi), Từ Hữu Thự.", "", ""),
                     ("135.07.0.072", "135.06.0.047", "Từ Hữu Khoa", "", "Không có vợ", "", "", "", "Con cụ Thính. Sống già nhưng không có vợ con.", "Không có con", ""),
+                    ("135.07.1.935", "135.06.0.047", "Từ Thị Đích", "", "", "", "", "", "Con cụ Thính.", "Chết sớm", ""),
+                    
                     ("135.07.0.073", "135.06.0.053", "Từ Hữu Nuôi", "", "", "", "", "", "Con ông Bối(ông Phụ)", "Chết sớm", ""),
                     ("135.07.1.074", "135.06.0.053", "Từ Thị Cháu", "", "", "", "", "", "Con ông Bối(ông Phụ)", "Chết sớm", ""),
                     ("135.07.0.075", "135.06.0.053", "Từ Hữu Mậu", "", "Hai vợ đều bỏ", "", "", "", "Con ông Bối (ông Phụ). Sinh hạ: Từ Thị Xanh (lấy chồng Miền Nam), Từ Thị Dần (không chồng con), Từ Thị Tam (mất sớm), Từ Thị Tứ (không chồng con).", "", ""),
@@ -527,14 +564,14 @@ class KhoDuLieuSQL:
                     ("135.07.0.077", "135.06.0.054", "Từ Hữu Cước", "", "", "", "", "", "Con ông Triết", "Chết sớm", ""),
                     ("135.07.0.078", "135.06.0.054", "Từ Hữu Quằt", "", "", "", "", "", "Con ông Triết", "Chết sớm", ""),
                     ("135.07.1.079", "135.06.0.054", "Từ Thị Quỳ", "", "Không rõ", "", "", "", "Con ông Triết. Lấy chồng về Trường Lộc", "", ""),
-                    ("135.07.1.080", "135.06.0.056", "Từ Thị Khoách", "", "Nguyễn Thiềng", "", "", "", "Con cụ Quán. Lấy ông Nguyễn Thiềng giữa làng", "", ""),
-                    ("135.07.1.081", "135.06.0.056", "Từ Thị Hai", "", "Nguyễn Điểm", "", "", "", "Con cụ Quán. Lấy ông Nguyễn Điểm giữa làng", "", ""),
+                    ("135.07.1.080", "135.06.0.056", "Từ Thị Khoách", "", "Nguyễn Thiềng", "", "", "", "Con cụ Quán. Lấy ông Nguyễn Thiềng ở trong làng ", "", ""),
+                    ("135.07.1.081", "135.06.0.056", "Từ Thị Hai", "", "Nguyễn Điểm", "", "", "", "Con cụ Quán. Lấy ông Nguyễn Điểm ở trong làng ", "", ""),
                     ("135.07.1.082", "135.06.0.056", "Từ Thị Chự", "", "Nguyễn Thế", "", "", "", "Con cụ Quán. Lấy ông Nguyễn Thế ở Kẻ Mòi", "", ""),
-                    ("135.07.1.083", "135.06.0.056", "Từ Thị Em Nậy", "", "Trần Tuệ", "", "", "", "Con cụ Quán. Lấy ông Trần Tuệ giữa làng", "", ""),
-                    ("135.07.1.084", "135.06.0.056", "Từ Thị Em Con", "", "Trần Bệ", "", "", "", "Con cụ Quán. Lấy ông Trần Bệ giữa làng", "", ""),            
+                    ("135.07.1.083", "135.06.0.056", "Từ Thị Em Nậy", "", "Trần Tuệ", "", "", "", "Con cụ Quán. Lấy ông Trần Tuệ ở trong làng ", "", ""),
+                    ("135.07.1.084", "135.06.0.056", "Từ Thị Em Con", "", "Trần Bệ", "", "", "", "Con cụ Quán. Lấy ông Trần Bệ ở trong làng ", "", ""),            
                     ("135.07.0.085", "135.06.0.056", "Từ Hữu Trù", "", "Bà Nguyễn Thị Ngoéc", "", "", "", "Con cụ Quán. Vợ là Bà Nguyễn Thị Ngoéc (người Tiền Lối, Quang Lộc). Sinh hạ: Từ Hữu Trì, Từ Hữu Thái, Từ Thị Chiu (lấy chồng về Đại Lộc), Từ Thị Kẹm (chết sớm), Từ Hữu Ô (chết sớm), Từ Hữu Mạ (chết sớm).", "", ""),
-                    ("135.07.1.086", "135.06.0.056", "Từ Thị Chút", "", "Trần Bản", "", "", "", "Con cụ Quán. Lấy ông Trần Bản giữa làng", "", ""),
-                    ("135.07.1.087", "135.06.0.056", "Từ Thị Tám", "", "Trần Dê", "", "", "", "Con cụ Quán. Lấy ông Trần Dê giữa làng", "", ""),
+                    ("135.07.1.086", "135.06.0.056", "Từ Thị Chút", "", "Trần Bản", "", "", "", "Con cụ Quán. Lấy ông Trần Bản ở trong làng ", "", ""),
+                    ("135.07.1.087", "135.06.0.056", "Từ Thị Tám", "", "Trần Dê", "", "", "", "Con cụ Quán. Lấy ông Trần Dê ở trong làng ", "", ""),
                     ("135.07.1.088", "135.06.0.061", "Từ Thị Bẹn", "", "Không rõ", "", "", "", "Con ông Xán. Đã lấy chồng chết sớm", "", ""),
                     ("135.07.1.089", "135.06.0.061", "Từ Thị Em", "", "Trần Đình Bút", "", "", "", "Con ông Xán. Lấy ông Trần Đình Bút ở Yên Đồng", "", ""),
                     ("135.07.1.090", "135.06.0.061", "Từ Thị Tam", "", "", "", "", "", "Con ông Xán. Chết đuối", "Chết sớm", ""),
@@ -636,14 +673,20 @@ class KhoDuLieuSQL:
                     ("111.08.1.033", "111.07.0.020", "Từ Thị Em", "", "", "", "", "", "Con ông Nghị. Lấy ông Trần Hải trong làng", "", ""),
                     ("111.08.0.034", "111.07.0.020", "Từ Hữu Lợi", "", "", "", "", "", "Con ông Nghị", "Tảo một", ""),
                     ("111.08.0.035", "111.07.0.020", "Từ Hữu Lộc", "", "", "", "", "", "Con ông Nghị", "Chết sớm", ""),
-                    ("111.08.1.036", "111.07.0.025", "Từ Thị Xin ", "", "Trần Phúc", "", "", "", "Con ông Luận. Lấy ông Trần Phúc trong làng", "", ""),                   
-                    ("111.08.0.037", "111.07.0.025", "Từ Hữu Trợ", "", "Bà Trần Thị Đửu", "", "", "", "Con ông Luận. Sinh hạ: Từ Hữu Khương (Liệt sĩ), Từ Thị Thương (lấy Nguyễn Cược trong làng), Từ Hữu Sâm (Ở Hà Nội).", "", ""),
-                    ("111.08.0.038", "111.07.0.025", "Từ Hữu Trự", "Thú", "Bà Trần Thị", "", "", "", "Con ông Luận. Sinh hạ: Từ Thị Tuyết (lấy Trần Chắt (Hoàn) trong làng), Từ Hữu Hợp, Từ Thị Bình.", "", ""),
-                    ("111.08.0.039", "111.07.0.025", "Từ Hữu Ngự", "", "", "", "", "", "Con ông Luận", "Tảo một", ""),
-                    ("111.08.0.040", "111.07.0.025", "Từ Hữu Sáu", "", "Bà Trần Thị Quế", "", "", "", "Con thứ 3 ông Luận. Đại tá Quân đội. Vợ ở Đức Thuỷ, Đức Thọ. Sinh hạ: Từ Thị Thuỷ, Từ Thị Hà, Từ Thị Hải, Từ Hữu Đạt.", "", ""),
-                    ("111.08.1.041", "111.07.0.025", "Từ Thị Tựu", "", "ông Nhàn", "", "", "", "Con ông Luận. Lấy ông Nhàn xã Vĩnh lộc", "", ""),   
-                    ("111.08.0.042", "111.07.0.025", "Từ Hữu Kế", "", "Bà Phạm Thị Man", "", "", "", "Con ông Luận. Bộ đội chuyển sang công nhân nhà nước, nghỉ việc. Sinh hạ: Từ Hữu Hùng, Từ Thị Dũng, Từ Thị Hoà, Từ Hữu Côi.", "", ""),
-                    ("111.08.0.043", "111.07.0.025", "Từ Hữu Chín ", "", "", "", "", "", "Con ông Luận", "Tảo một", ""),            
+
+                    ("111.08.1.036", "111.07.0.025", "Từ Thị Ngợ", "", "Trần Phúc", "", "", "", "Con ông Luận. Lấy ông Trần Phúc ở trong làng", "", ""),                   
+                    ("111.08.0.037", "111.07.0.025", "Từ Hữu Trợ", "", "Bà Trần Thị Đửu", "", "1962", "01/08 AL", "Con ông Luận. Sinh hạ: Từ Hữu Khương (Liệt sĩ), Từ Thị Thương (lấy Nguyễn Cược ở trong làng), Từ Hữu Sâm (Ở Hà Nội).", "", ""),
+                    ("111.08.0.038", "111.07.0.025", "Từ Hữu Trự", "Thú", "Bà Trần Thị Tỷ", "", "1963", "29/11", "Con ông Luận. Vợ là Bà Trần Thị Tỷ, Mất 1996, Giổ: 09/10 AL. Sinh hạ: Từ Thị Tuyết (lấy Trần Chắt (Hoàn) trong làng), Từ Hữu Hợp, Từ Thị Bình.", "", ""),
+
+                    ("111.08.0.936", "111.07.0.025", "Từ Hữu Tứ", "", "", "", "", "", "Con ông Luận", "Tảo một", ""),
+                    ("111.08.0.039", "111.07.0.025", "Từ Hữu Ngụ", "", "", "", "", "", "Con ông Luận", "Tảo một", ""),
+                    ("111.08.0.040", "111.07.0.025", "Từ Hữu Sáu", "", "Bà Nguyễn Thị Quế", "1931", "1984", "08/10 AL", "Con ông Luận. Đại tá Quân đội. Vợ ở Đức Thuỷ, Đức Thọ. Sinh hạ: Từ Thị Thuỷ, Từ Thị Hà, Từ Thị Hải, Từ Hữu Đạt.", "", ""),
+                    ("111.08.1.041", "111.07.0.025", "Từ Thị Tưu", "", "ông Nhàn", "", "", "", "Con ông Luận. Lấy ông Nhàn ở Vĩnh lộc", "", ""),   
+                    ("111.08.0.042", "111.07.0.025", "Từ Hữu Kế", "", "Bà Phạm Thị Man", "", "1985", "19/04", "Con ông Luận. Bộ đội chuyển sang công nhân nhà nước, nghỉ việc. Vợ là Bà Phạm Thị Man, Sinh năm 1947. Sinh hạ: Từ Hữu Hùng, Từ Thị Dũng, Từ Thị Hoà, Từ Hữu Côi.", "", ""),
+
+                    ("111.08.1.937", "111.07.0.025", "Từ Thị Đỏ", "", "", "", "", "", "Con ông Luận", "Tảo một", ""),
+                    ("111.08.0.043", "111.07.0.025", "Từ Hữu Chín", "", "", "", "", "", "Con ông Luận", "Tảo một", ""),
+                    
                     ("111.08.0.044", "111.07.0.027", "Từ Hữu Số", "", "Bà Trần Thị Khuyển", "", "", "", "Con ông Lệ. Ông chết, bà đi lấy chồng khác. Sinh hạ: Từ Thị Hương (lấy ông Nguyễn Trọng Ngụ, Kỹ sư địa chất ở Đức Thọ), Từ Thị Em (Chết sớm).", "Phạp tự", ""),
                     ("111.08.0.045", "111.07.0.027", "Từ Hữu Nhuyến", "Thanh", "Bà Nguyễn Thị Hồng", "", "", "", "Con thứ 2 ông Lệ. Cán bộ xã, huyện, tỉnh (đã nghỉ hưu). Vợ là Bà Nguyễn Thị Hồng ở Nghi Xuân. Sinh hạ: Từ Ngọc Lương, Từ Ngọc Long, Từ Thị Lam (Lấy ông Phạm Hồng Quế), Từ Thị Lê (lấy ông Nguyễn Văn Hùng), Từ Ngọc Lĩnh, Từ Thị Lộc (lấy ông Phạm Xuân Long).", "", ""),
                     ("111.08.0.046", "111.07.0.027", "Từ Hữu Tam", "", "", "", "", "", "Con ông Lệ", "Chết sớm", ""),
@@ -844,14 +887,17 @@ class KhoDuLieuSQL:
                     ("111.09.1.027", "111.08.0.017", "Từ Thị Hợp", "", "Không lấy chồng", "", "", "", "Con ông Tiệng. Sống đến già, không lấy chồng.", "Không lấy chồng", ""),
                     ("111.09.1.916", "111.08.0.017", "Từ Thị Lý Thiên", "", "", "", "", "", "Con ông Tiệng", "Chết sớm", ""),
                      
-                    ("111.09.0.028", "111.08.0.027", "Từ Hữu Lượng", "Nghiệm", "Bà Nguyễn Thị Ngóec ", "", "", "", "Con ông Hào. Lấy Bà Nguyễn Thị Ngóec ở Đại Lộc. Sinh hạ: Từ Hữu Cháu (tảo vong), Từ Thị Nghiệm, Từ Hữu Sơn, Từ Hữu Thân, Từ Hữu Thìn (Liệt sĩ), Từ Hữu Hải, Từ Thị Hà, Từ Hữu Nga.", "", ""),
+                    ("111.09.0.028", "111.08.0.027", "Từ Hữu Lượng", "Nghiệm", "Bà Nguyễn Thị Ngóec ", "", "", "", "Con ông Hào. Lấy Bà Nguyễn Thị Ngóec ở Đại Lộc. Sinh hạ: Từ Hữu Cháu (tảo vong), Từ Thị Nghiệm, Từ Hữu Sơn, Từ Hữu Thân, Từ Hữu Thuần (Thìn) (Liệt sĩ), Từ Hữu Hải, Từ Thị Hà, Từ Hữu Nga.", "", ""),
                     ("111.09.1.029", "111.08.0.027", "Từ Thị Em", "", "Trần Thường", "", "", "", "Con ông Hào. Lấy ông Trần Thường ở trong làng", "", ""),
                     ("111.09.1.030", "111.08.0.027", "Từ Thị Tựu", "", "Nguyễn Ngơi", "", "", "", "Con ông Hào. Lấy ông Nguyễn Ngơi ở Thượng xuân", "", ""),
                     ("111.09.0.031", "111.08.0.027", "Từ Hữu Dự", "", "", "", "", "", "Con ông Hào", "Tảo vong", ""),
                     ("111.09.1.032", "111.08.0.027", "Từ Thị Thương", "", "", "", "", "", "Con ông Hào", "Tảo một", ""),
-                    ("111.09.0.033", "111.08.0.037", "Từ Hữu Khương", "", "", "", "", "", "Con ông Trợ", "Liệt sĩ", ""),
+
+                    ("111.09.0.033", "111.08.0.037", "Từ Hữu Khương", "", "", "1950", "1971", "23/10", "Con ông Trợ. Ông ở đơn vị Đơn vị: d2 KB (Theo giấy báo tử), c1d5f5b2(Theo Tĩnh đội Hà Tĩnh), c15e1f5(Theo sư đoàn 5); Hy sinh 10/12/1971 tại chùa Át thơ mây(Mai táng tại phía Tây Nam chùa Wat Thmei, huyện Dambae, tỉnh Tboung Khmum, CPC)", "Liệt sĩ", ""),
+                    
                     ("111.09.1.034", "111.08.0.037", "Từ Thị Thương", "", "Nguyễn Cược", "", "", "", "Con ông Trợ. Lấy ông Nguyễn Cược ở trong làng", "", ""),
-                    ("111.09.0.035", "111.08.0.037", "Từ Hữu Sâm", "", "Bà Lê Thị Hằng", "", "", "", "Con ông Trợ. Kỹ sư, cán bộ nhà nước. ở Hà Nội. Sinh hạ 3 người con gái: Từ Minh Nguyệt, Từ Nguyệt Nga, Từ Lê Nguyệt Ánh.", "", ""),
+                    
+                    ("111.09.0.035", "111.08.0.037", "Từ Hữu Sâm", "", "Bà Lê Thị Hằng", "", "", "", "Con ông Trợ. Kỹ sư, cán bộ nhà nước, ở Hà Nội. Sinh hạ: Từ Minh Nguyệt, Từ Nguyệt Nga, Từ Lê Nguyệt Ánh", "", ""),
                     ("111.09.1.036", "111.08.0.038", "Từ Thị Tuyết", "", "Trần Chắt", "", "", "", "Con ông Thú. Lấy ông Trần Chắt (Hoàn) ở trong làng", "", ""),
                     ("111.09.0.037", "111.08.0.038", "Từ Hữu Hợp", "", "Bà Đào Thị Liên", "", "", "", "Con ông Thú. Lấy Bà Đào Thị Liên ở Quang Lộc. Sinh hạ: Từ Thị Hường, Từ Hữu Định, Từ Hữu Tuấn.", "", ""),
                     ("111.09.1.038", "111.08.0.038", "Từ Thị Bình", "", "Ông Trường", "", "", "", "Con ông Thú.", "", ""),
@@ -866,7 +912,7 @@ class KhoDuLieuSQL:
                     ("111.09.0.043", "111.08.0.042", "Từ Hữu Hùng", "", "Phạm Thị Hồng Hiên", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
                     ("111.09.1.044", "111.08.0.042", "Từ Thị Dũng", "", "đang cập nhật", "", "", "", "Con ông Kế.", "", ""),
                     ("111.09.1.045", "111.08.0.042", "Từ Thị Hòa", "", "đang cập nhật", "", "", "", "Con ông Kế.", "", ""),
-                    ("111.09.0.046", "111.08.0.042", "Từ Hữu Côi", "Thanh", "Nguyễn Thị Linh", "", "", "", "Con ông Kế. Sinh hạ: Từ Nguyễn Minh Hiếu, Từ Nguyễn Minh Khang.", "", ""),
+                    ("111.09.0.046", "111.08.0.042", "Từ Hữu Thanh", "Côi", "Nguyễn Thị Linh", "", "", "", "Con ông Kế. Sinh hạ: Từ Nguyễn Minh Hiếu, Từ Nguyễn Minh Khang, Từ Nguyễn Minh Trang, Từ Nguyễn Minh Anh.", "", ""),
 
 
                     ("111.09.0.047", "111.08.0.045", "Từ Ngọc Lương", "", "Bà Nguyễn Thị Huệ", "", "", "", "Con ông Thanh. Trung tướng, Phó Giáo sư, Tiến sỹ. Vợ là Bà Nguyễn Thị Huệ làm Công nhân Nhà máy Cộc Sợi, nghỉ hưu tại TP.HCM. Ông bà có công lao to lớn, đóng góp nhiều công sức và tài lực xây dựng dòng họ. Sinh hạ: Từ Ngọc Nhân, Từ Ngọc Vỵ.", "", ""),
@@ -1202,27 +1248,34 @@ class KhoDuLieuSQL:
                     ("111.10.0.064", "111.09.0.025", "Từ Hữu Luật", "", "Lê Thị Thân", "", "", "", "Con ông Từ Hữu Lai. Sinh hạ: Từ Thị Ngọc Linh, Từ Thị Ngọc Hà.", "", ""),
                     ("111.10.1.065", "111.09.0.025", "Từ Thị Luận", "", "Nguyễn Doãn Thuấn", "", "", "", "Con ông Từ Hữu Lai. Lấy ông Nguyễn Doãn Thuấn.", "", ""),
                     ("111.10.0.066", "111.09.0.025", "Từ Hữu Duẫn", "", "Nguyễn Thị Vân", "", "", "", "Con ông Từ Hữu Lai. Sinh hạ: Từ Hữu Phong, Từ Việt Anh, Từ Thị Như Ý.", "", ""),
+
                     ("111.10.0.067", "111.09.0.028", "Từ Hữu Cháu", "", "", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm)..", "Tảo vong", ""),
-                    ("111.10.1.068", "111.09.0.028", "Từ Thị Nghiệm", "", "Không rõ", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm).", "", ""),
-                    ("111.10.0.069", "111.09.0.028", "Từ Hữu Sơn", "", "Bà Trần Thị Liên", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Hữu Trường, Từ Thị Vân, Từ Hữu Lý, Từ Hữu Tài, Từ Thị Tình (Chết sớm), Từ Hữu Giang.", "", ""),
-                    ("111.10.0.070", "111.09.0.028", "Từ Hữu Thân", "", "Bà Trần Thị Diên, Bà Trần Thị Liên", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Hữu Bản, Từ Hữu Mạnh, Từ Thị Cần, Từ Hữu Thành.", "", ""),
-                    ("111.10.0.071", "111.09.0.028", "Từ Hữu Thìn", "", "", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm)", "Liệt sĩ", ""),
-                    ("111.10.0.072", "111.09.0.028", "Từ Hữu Hải", "", "Bà Trần Thị Hường", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Hữu Thuận.", "", ""),
-                    ("111.10.1.073", "111.09.0.028", "Từ Thị Hà", "", "Không rõ", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm).", "", ""),
+                    
+                    ("111.10.1.068", "111.09.0.028", "Từ Thị Nghiệm", "", "Không lấy  chồng", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm).", "", ""),
+                    
+                    ("111.10.0.069", "111.09.0.028", "Từ Hữu Sơn", "", "Bà Trần Thị Liên", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Hữu Trường, Từ Hữu Lý, Từ Thị Vân, Từ Hữu Tài, Từ Thị Tình, Từ Hữu Giang.", "", ""),
+                    ("111.10.0.070", "111.09.0.028", "Từ Hữu Thân", "", "Bà Trần Thị Diên, Bà Trần Thị Liên", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Hữu Bản, Từ Hữu Mạnh, Từ Thị Cần, Từ Thị Mận, Từ Hữu Thành.", "", ""),
+                    ("111.10.0.071", "111.09.0.028", "Từ Hữu Thuần", "Thìn", "", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm)", "Liệt sĩ", ""),
+                    ("111.10.0.072", "111.09.0.028", "Từ Hữu Hải", "", "Bà Trần Thị Hường", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Thị Hằng, Từ Hữu Thuận, Từ Thị Thúy.", "", ""),
+                    ("111.10.1.073", "111.09.0.028", "Từ Thị Hà", "", "Trần Đình Hùng", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm).", "", ""),
                     ("111.10.0.074", "111.09.0.028", "Từ Hữu Nga", "", "Bà Trần Thị Cúc", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Hữu Anh, Từ Hữu Hoàng.", "", ""),
                     ("111.10.1.075", "111.09.0.035", "Từ Minh Nguyệt", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sâm.", "", ""),
                     ("111.10.1.076", "111.09.0.035", "Từ Nguyệt Nga", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sâm.", "", ""),
                     ("111.10.1.077", "111.09.0.035", "Từ Lê Nguyệt Ánh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sâm.", "", ""),        
 
                     ("111.10.1.078", "111.09.0.037", "Từ Thị Hường", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hợp.", "", ""),
-                    ("111.10.0.079", "111.09.0.037", "Từ Hữu Định", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hợp. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.0.080", "111.09.0.037", "Từ Hữu Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hợp. Đang cập nhật thông tin vợ con.", "", ""),
+                    ("111.10.0.079", "111.09.0.037", "Từ Hữu Định", "", "Phạm Thu Hà", "", "", "", "Con ông Từ Hữu Hợp.", "", ""),
+                    ("111.10.0.080", "111.09.0.037", "Từ Hữu Tuấn", "", "Nguyễn Thị Huyền", "", "", "", "Con ông Từ Hữu Hợp.", "", ""),
                     ("111.10.1.907", "111.09.0.037", "Từ Thị Thanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hợp.", "", ""),
                     
                     ("111.10.0.081", "111.09.0.042", "Từ Hải Minh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đạt. Đang cập nhật thông tin vợ con.", "", ""),
                     ("111.10.1.082", "111.09.0.042", "Từ Ngân Khánh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đạt.", "", ""),              
-                    ("111.10.0.090", "111.09.0.046", "Từ Nguyễn Minh Hiếu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Côi.", "", ""),
-                    ("111.10.0.091", "111.09.0.046", "Từ Nguyễn Minh Khang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Côi.", "", ""),
+
+                    ("111.10.0.089", "111.09.0.046", "Từ Nguyễn Minh Hiếu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
+                    ("111.10.0.090", "111.09.0.046", "Từ Nguyễn Minh Khang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
+                    ("111.10.1.091", "111.09.0.046", "Từ Nguyễn Minh Trang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
+                    ("111.10.1.092", "111.09.0.046", "Từ Nguyễn Minh Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
+                    
                     ("111.10.0.093", "111.09.0.047", "Từ Ngọc Nhân", "", "Lê Thị Thu Hương", "", "", "", "Con ông Từ Ngọc Lương. Sinh hạ: Từ Ngọc Khánh Linh, Từ Ngọc Khánh Ngân, Từ Ngọc Khánh Vân.", "", ""),
                     ("111.10.0.094", "111.09.0.047", "Từ Ngọc Vĩ", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Lương. Đang cập nhật thông tin vợ con.", "", ""),
                     ("111.10.1.095", "111.09.0.048", "Từ Thị Ngọc Mai", "", "Vương Trung Anh", "", "", "", "Con ông Từ Ngọc Long.", "", ""),
@@ -1458,7 +1511,7 @@ class KhoDuLieuSQL:
                     ("258.10.0.104", "258.09.0.066", "Từ Hữu Phú", "", "Trần Thị Hằng", "", "", "", "Con ông Từ Hữu Chất. Sinh hạ: Từ Hữu An, Từ Hữu Huy, Từ Ánh Tuyết", "", ""),
                     ("258.10.0.105", "258.09.0.066", "Từ Hữu Dũng", "", "Nguyễn Thị Minh", "", "", "", "Con ông Từ Hữu Chất. Sinh hạ: Từ Hữu Hiếu, Từ Hữu Phúc.", "", ""),
                     ("258.10.1.110", "258.09.0.067", "Từ Thị Xuân", "", "Phạm Trọng Thư", "", "", "", "Con ông Từ Hữu Tạo.", "", ""),
-                    ("258.10.0.111", "258.09.0.067", "Từ Hữu Hạnh", "", "Nguyễn Thị Oanh", "", "", "", "Con ông Từ Hữu Tạo. Sinh hạ: Từ Nguyễn Khánh Vy, Từ Nguyễn Khánh Lê, Từ Nguyễn Tâm Đan, Từ Nguyễn Trà My.", "", ""),
+                    ("258.10.0.111", "258.09.0.067", "Từ Hữu Hạnh", "", "Nguyễn Thị Oanh", "", "", "", "Con ông Từ Hữu Tạo. Sinh hạ: Từ Nguyễn Khánh Vy, Từ Nguyễn Khánh Lê, Từ Nguyễn Tâm Đan, Từ Nguyễn Hà My.", "", ""),
                     ("258.10.1.112", "258.09.0.067", "Từ Thị Hà", "", "Lưu Đức Thuấn", "", "", "", "Con ông Từ Hữu Tạo.", "", ""),
                     ("258.10.1.115", "258.09.0.068", "Từ Thị Thúy", "", "Bùi Hưng Anh Vũ", "", "", "", "Con ông Từ Hữu Bình", "", ""),
                     ("258.10.1.116", "258.09.0.068", "Từ Thị Nga", "", "Trần Đình Vấn", "", "", "", "Con ông Từ Hữu Bình", "", ""),
@@ -1512,8 +1565,8 @@ class KhoDuLieuSQL:
                     ("111.11.1.037", "111.10.0.013", "Từ Thị Thúy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bính", "", ""),
                     ("111.11.0.038", "111.10.0.013", "Từ Hữu Phương", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bính", "", ""),
                      
-                    ("111.11.1.045", "111.10.0.015", "Từ Thị Thảo", "", "Đang cập nhật", "", "", "", "Con ông Từ Quang Đạt", "", ""),
-                    ("111.11.1.046", "111.10.0.015", "Từ Thị Hiền", "", "Đang cập nhật", "", "", "", "Con ông Từ Quang Đạt", "", ""),
+                    ("111.11.1.045", "111.10.0.015", "Từ Thị Thảo", "", "Nguyễn Hiến Pháp", "", "", "", "Con ông Từ Quang Đạt", "", ""),
+                    ("111.11.1.046", "111.10.0.015", "Từ Thị Hiền", "", "Phan Hùng Việt", "", "", "", "Con ông Từ Quang Đạt", "", ""),
                     ("111.11.0.047", "111.10.0.015", "Từ Hữu Trung", "", "Trần Thị Thu Phương", "", "", "", "Con ông Từ Quang Đạt. Sinh hạ: Từ Minh Hoàng", "", ""),
 
                     ("111.11.0.054", "111.10.0.018", "Từ Hữu Tuấn", "", "Bà Nguyễn Thị Hồng Ngọc", "", "", "", "Con ông Từ Hữu Huề. Sinh hạ: Từ Hữu Ngọc Khang", "", ""),
@@ -1551,24 +1604,26 @@ class KhoDuLieuSQL:
                     ("111.11.0.143", "111.10.0.066", "Từ Việt Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Duẫn.", "", ""),
                     ("111.11.1.144", "111.10.0.066", "Từ Thị Như Ý", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Duẫn.", "", ""),    
 
-                    ("111.11.0.179", "111.10.0.069", "Từ Hữu Trường", "", "Nguyễn Anh Đào", "", "", "", "Con ông Từ Hữu Sơn. Sinh hạ: Từ Hữu Long", "", ""),
-                    ("111.11.1.180", "111.10.0.069", "Từ Thị Vân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sơn", "", ""),
-                    ("111.11.0.181", "111.10.0.069", "Từ Hữu Lý", "", "Nguyễn Thị Sao", "", "", "", "Con ông Từ Hữu Sơn", "", ""),
-                    ("111.11.0.183", "111.10.0.069", "Từ Hữu Tài", "", "Hoàng Thị Tâm", "", "", "", "Con ông Từ Hữu Sơn", "", ""),
-                    ("111.11.1.182", "111.10.0.069", "Từ Thị Tình", "", "", "", "", "", "Con ông Từ Hữu Sơn", "", ""), 
+                    ("111.11.0.179", "111.10.0.069", "Từ Hữu Trường", "", "Nguyễn Anh Đào", "", "", "", "Con ông Từ Hữu Sơn. Sinh hạ: Từ Thị Khánh Thư, Từ Thị Khánh Linh, Từ Hữu Long", "", ""),
+                    ("111.11.0.180", "111.10.0.069", "Từ Hữu Lý", "", "Nguyễn Thị Sao", "", "", "", "Con ông Từ Hữu Sơn. Sinh hạ: Từ Thị Kim Ngân, Từ Thị Ánh Mai, Từ Thị Tâm An", "", ""),
+                    ("111.11.1.181", "111.10.0.069", "Từ Thị Vân", "", "Nguyễn Hiệp", "", "", "", "Con ông Từ Hữu Sơn", "", ""),
+                    ("111.11.0.182", "111.10.0.069", "Từ Hữu Tài", "", "Hoàng Thị Tâm", "", "", "", "Con ông Từ Hữu Sơn", "", ""),
+                    ("111.11.1.183", "111.10.0.069", "Từ Thị Tình", "", "Ông Toản", "", "", "", "Con ông Từ Hữu Sơn", "", ""), 
                     ("111.11.0.184", "111.10.0.069", "Từ Hữu Giang", "", "Nguyễn Thị Thảo", "", "", "", "Con ông Từ Hữu Sơn", "", ""), 
 
                     ("111.11.0.185", "111.10.0.070", "Từ Hữu Bản", "", "Bà Võ Thị Hằng", "", "", "", "Con ông Từ Hữu Thân. Sinh hạ: Từ Hải Đăng, Từ Hải Lâm.", "", ""),
                     ("111.11.0.186", "111.10.0.070", "Từ Hữu Mạnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân.", "", ""),
                     ("111.11.1.187", "111.10.0.070", "Từ Thị Cần", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân", "", ""),
-                    ("111.11.0.188", "111.10.0.070", "Từ Hữu Thành", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân", "", ""),
-
-                    ("111.11.1.189", "111.10.0.072", "Từ Thị Hằng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải", "", ""),
-                    ("111.11.0.190", "111.10.0.072", "Từ Hữu Thuận", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải", "", ""),
-                    ("111.11.1.191", "111.10.0.072", "Từ Thị Thúy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải", "", ""),
+                    ("111.11.1.188", "111.10.0.070", "Từ Thị Mận", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân", "", ""),
                     
-                    ("111.11.0.192", "111.10.0.074", "Từ Hữu Anh", "", "Mạc Thị Quỳnh Anh", "", "", "", "Con ông Từ Hữu Nga. Sinh hạ: Từ Quang Vinh.", "", ""),
-                    ("111.11.0.193", "111.10.0.074", "Từ Hữu Hoàng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nga", "", ""),
+                    ("111.11.0.189", "111.10.0.070", "Từ Hữu Thành", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân", "", ""),
+
+                    ("111.11.1.190", "111.10.0.072", "Từ Thị Hằng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải", "", ""),
+                    ("111.11.0.191", "111.10.0.072", "Từ Hữu Thuận", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải", "", ""),
+                    ("111.11.1.192", "111.10.0.072", "Từ Thị Thúy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải", "", ""),
+                    
+                    ("111.11.0.193", "111.10.0.074", "Từ Hữu Anh", "", "Mạc Thị Quỳnh Anh", "", "", "", "Con ông Từ Hữu Nga. Sinh hạ: Từ Quang Vinh.", "", ""),
+                    ("111.11.0.194", "111.10.0.074", "Từ Hữu Hoàng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nga", "", ""),
                     ("111.11.1.210", "111.10.0.093", "Từ Ngọc Khánh Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Nhân.", "", ""),
                     ("111.11.1.211", "111.10.0.093", "Từ Ngọc Khánh Ngân", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Nhân.", "", ""),
                     ("111.11.1.212", "111.10.0.093", "Từ Ngọc Khánh Vân", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Nhân.", "", ""),
@@ -1742,10 +1797,23 @@ class KhoDuLieuSQL:
                     ("111.12.0.090", "111.11.0.047", "Từ Minh Hoàng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trung", "", ""),
                     ("111.12.0.120", "111.11.0.054", "Từ Hữu Ngọc Khang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuấn.", "", ""),
                     ("111.12.0.250", "111.11.0.133", "Từ Vương Minh Nguyên", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thắng.", "", ""),
-                    ("111.12.0.300", "111.11.0.179", "Từ Hữu Long", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường.", "", ""),
+
+
+                    ("111.12.1.290", "111.11.0.179", "Từ Thị Khánh Thư", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường.", "", ""),
+                    ("111.12.1.291", "111.11.0.179", "Từ Thị Khánh Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường.", "", ""),
+                    ("111.12.0.292", "111.11.0.179", "Từ Hữu Long", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường.", "", ""),
+
+
+                    ("111.12.1.295", "111.11.0.180", "Từ Thị Kim Ngân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý", "", ""),
+                    ("111.12.1.296", "111.11.0.180", "Từ Thị Ánh Mai", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý", "", ""),
+                    ("111.12.1.297", "111.11.0.180", "Từ Thị Tâm An", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý", "", ""),
+
+
+                    
+                    
                     ("111.12.0.310", "111.11.0.185", "Từ Hải Đăng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bản.", "", ""),
                     ("111.12.0.312", "111.11.0.185", "Từ Hải Lâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bản", "", ""),        
-                    ("111.12.0.350", "111.11.0.192", "Từ Quang Vinh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Anh.", "", ""),
+                    ("111.12.0.350", "111.11.0.193", "Từ Quang Vinh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Anh.", "", ""),
 
 
                     # ------------------------------------
@@ -2073,11 +2141,16 @@ class KyThuatBanVeGiaPha:
         if doi_num == 1:
             hien_tu = f" (Tự: {ten_tu})" if ten_tu else " (Tự: Huy Cán)"
             return f"Từ Dương Đốc {doi_khoanh}\n(Thủy Tổ{hien_tu}){di_cu_tag}{con_nuoi_tag}"
+
+
         elif doi_num == 2:
             ten_rut_gon = ho_ten.split("(")[0].strip()
-            if member_id == "000.02.1.003":
+            if member_id == "000.02.1.003" or "lấy chồng" in str(member.get('GhiChu', '')).lower():
                 return f"{ten_rut_gon} {doi_khoanh}\n(Lấy chồng)"
-            return f"{ten_rut_gon} {doi_khoanh}\n(Đứng đầu Cửa {cua}){di_cu_tag}{con_nuoi_tag}"
+            elif any(kw in tinh_trang.lower() for kw in ["tảo vong", "tảo một", "chết sớm"]):
+                return f"{ten_rut_gon} {doi_khoanh}\n({tinh_trang.capitalize()})"
+            return f"{ten_rut_gon} {doi_khoanh}\n(Đứng đầu {cua}){di_cu_tag}{con_nuoi_tag}"
+
         elif doi_num == 3:
             ten_rut_gon = ho_ten.split("(")[0].strip()
             if member_id == "100.03.0.004" or "con nuôi" in tinh_trang.lower():
@@ -2284,11 +2357,16 @@ class KyThuatBanVeGiaPha:
                 if doi_num == 1:
                     hien_tu = f" (Tự: {ten_tu})" if ten_tu else " (Tự: Huy Cán)"
                     label = f"Từ Dương Đốc {doi_khoanh}\n(Thủy Tổ{hien_tu}){di_cu_tag}{con_nuoi_tag}"
+
+
                 elif doi_num == 2:
-                    if node_id == "000.02.1.003":
+                    if node_id == "000.02.1.003" or "lấy chồng" in str(row.get('GhiChu', '')).lower():
                         label = f"{ho_ten} {doi_khoanh}\n(Lấy chồng)"
+                    elif any(kw in tinh_trang.lower() for kw in ["tảo vong", "tảo một", "chết sớm"]):
+                        label = f"{ho_ten} {doi_khoanh}\n({tinh_trang.capitalize()})"
                     else:
-                        label = f"{ho_ten} {doi_khoanh}\n(Đứng đầu Cửa {cua}){di_cu_tag}{con_nuoi_tag}"
+                        label = f"{ho_ten} {doi_khoanh}\n(Đứng đầu {cua}){di_cu_tag}{con_nuoi_tag}"
+
                 elif doi_num == 3:
                     if node_id == "100.03.0.004":
                         label = f"{ho_ten} {doi_khoanh}\n(Con nuôi)"
