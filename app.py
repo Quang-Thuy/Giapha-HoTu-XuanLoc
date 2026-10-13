@@ -1,6 +1,6 @@
 # ==============================================================================
 # GIA PHẢ ĐIỆN TỬ DÒNG HỌ TỪ XUÂN LỘC - CHUẨN ĐỊNH DANH HỢP NHẤT
-# PHIÊN BẢN APP21 TÍCH HỢP TỐI ƯU TOÀN DIỆN CHO ĐIỆN THOẠI (MOBILE-FIRST)
+# PHIÊN BẢN TÍCH HỢP TỐI ƯU TOÀN DIỆN CHO ĐIỆN THOẠI (MOBILE-FIRST)
 # ==============================================================================
 
 import streamlit as st
@@ -11,7 +11,210 @@ import re
 import os
 from PIL import Image
 from graphviz import Digraph
+# Thêm trực tiếp đường dẫn bin của Graphviz vào biến môi trường của tiến trình Python
+os.environ["PATH"] += os.pathsep + r"C:\Program Files\Graphviz\bin"
+
+import shutil
+# Hàm tự động tìm và thêm đường dẫn Graphviz vào PATH một cách linh hoạt
+def auto_detect_graphviz():
+    # 1. Kiểm tra xem hệ thống đã nhận diện được lệnh 'dot' sẵn chưa
+    if shutil.which("dot") is not None:
+        return  # Đã có sẵn trong PATH của máy, không cần làm gì thêm
+
+    # 2. Danh sách các đường dẫn cài đặt phổ biến trên Windows
+    common_paths = [
+        r"C:\Program Files\Graphviz\bin",
+        r"C:\Program Files (x86)\Graphviz\bin",
+        os.path.expanduser(r"~\AppData\Local\Programs\Graphviz\bin"),
+    ]
+
+    # 3. Quét qua các đường dẫn phổ biến, nếu thấy tệp dot.exe thì tự động thêm vào môi trường
+    for path in common_paths:
+        dot_executable = os.path.join(path, "dot.exe" if os.name == "nt" else "dot")
+        if os.path.exists(dot_executable):
+            os.environ["PATH"] += os.pathsep + path
+            break
+
+# Gọi hàm tự động nhận diện trước khi sử dụng thư viện graphviz
+auto_detect_graphviz()
+
 from pathlib import Path
+from PIL import Image, ImageOps
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener() # Đăng ký hỗ trợ đọc định dạng ảnh HEIC/HEIF của iPhone
+except ImportError:
+    pass
+import io
+import zipfile
+import base64
+import folium
+from streamlit_folium import st_folium
+
+#==========================================
+# Telegram Manager (Phiên bản Bọc Thép CSDL & SQL Trực Tiếp)
+#==========================================
+import threading
+import telebot
+from telebot import types
+from pathlib import Path
+import sqlite3
+import streamlit as st
+
+class TelegramBotManager:
+    # Đã cấu hình chuẩn Token và Chat ID Siêu nhóm
+    FIXED_TOKEN = "8709408235:AAH69tB_CGYxDs4ZuCSxKMNlPXg4yJhg_JE"
+    FIXED_CHAT_ID = "-1004360294941"
+
+    @staticmethod
+    def get_bot_token_and_chat_id():
+        return TelegramBotManager.FIXED_TOKEN, TelegramBotManager.FIXED_CHAT_ID
+
+    @staticmethod
+    @st.cache_resource
+    def start_background_bot():
+        """Khởi động trạm lắng nghe tín hiệu từ Telegram trên luồng ngầm"""
+        token, chat_id = TelegramBotManager.get_bot_token_and_chat_id()
+        if not token:
+            return False
+
+        bot = telebot.TeleBot(token)
+
+        @bot.callback_query_handler(func=lambda call: True)
+        def handle_callback(call):
+            _, current_chat_id = TelegramBotManager.get_bot_token_and_chat_id()
+            if str(call.message.chat.id) != str(current_chat_id):
+                bot.answer_callback_query(call.id, "❌ Bạn không có quyền quản trị hệ thống!")
+                return
+
+            data = call.data
+            try:
+                # ---------------- PHÊ DUYỆT ----------------
+                if data.startswith("duyet_"):
+                    member_id = data.replace("duyet_", "")
+                    kq = False
+                    ho_ten = "Thành viên"
+                    
+                    with sqlite3.connect(KhoDuLieuSQL.DB_FILE) as conn:
+                        cursor = conn.cursor()
+                        # Lấy thông tin hiện tại
+                        cursor.execute("SELECT TinhTrang, HoTen FROM GiaPha WHERE ID = ?", (member_id,))
+                        row = cursor.fetchone()
+                        
+                        if row:
+                            tinh_trang_goc, ho_ten = row
+                            # Cắt bỏ chữ "Chờ duyệt"
+                            new_tinh_trang = str(tinh_trang_goc).replace("Chờ duyệt,", "").replace("Chờ duyệt", "").strip()
+                            
+                            # CẬP NHẬT TRỰC TIẾP VÀO DATABASE BẰNG SQL (Khắc phục triệt để lỗi thiếu hàm)
+                            cursor.execute("UPDATE GiaPha SET TinhTrang = ? WHERE ID = ?", (new_tinh_trang, member_id))
+                            conn.commit()
+                            kq = cursor.rowcount > 0
+                            
+                    if kq:
+                        cap_text = f"✅ <b>ĐÃ PHÊ DUYỆT THÀNH CÔNG:</b>\n👤 {ho_ten} (ID: <code>{member_id}</code>)"
+                        if call.message.photo:
+                            bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=cap_text, parse_mode="HTML")
+                        else:
+                            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=cap_text, parse_mode="HTML")
+                        bot.answer_callback_query(call.id, "Đã duyệt và lưu vào CSDL!")
+                        # Làm sạch cache để tải lại dữ liệu mới trên Web
+                        KhoDuLieuSQL.load_data.clear() 
+                    else:
+                        bot.answer_callback_query(call.id, "❌ Lỗi: Không tìm thấy thành viên trong CSDL!")
+                
+                # ---------------- TỪ CHỐI / XÓA ----------------
+                elif data.startswith("xoa_"):
+                    member_id = data.replace("xoa_", "")
+                    kq = False
+                    ho_ten = "Thành viên"
+                    
+                    with sqlite3.connect(KhoDuLieuSQL.DB_FILE) as conn:
+                        cursor = conn.cursor()
+                        cursor.execute("SELECT HoTen FROM GiaPha WHERE ID = ?", (member_id,))
+                        row = cursor.fetchone()
+                        
+                        if row:
+                            ho_ten = row[0]
+                            # Xóa ảnh (nếu có)
+                            try:
+                                duong_dan_anh = QuanTriHinhAnh.lay_anh_chuan_xac(member_id, ho_ten)
+                                if duong_dan_anh:
+                                    img_path = Path(__file__).resolve().parent / duong_dan_anh
+                                    if img_path.exists(): img_path.unlink()
+                            except Exception:
+                                pass
+                            
+                            # XÓA TRỰC TIẾP TỪ DATABASE BẰNG SQL
+                            cursor.execute("DELETE FROM GiaPha WHERE ID = ?", (member_id,))
+                            conn.commit()
+                            kq = cursor.rowcount > 0
+                            
+                    if kq:
+                        cap_text = f"❌ <b>ĐÃ TỪ CHỐI & XÓA BỎ:</b>\n👤 {ho_ten} (ID: <code>{member_id}</code>)"
+                        if call.message.photo:
+                            bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=cap_text, parse_mode="HTML")
+                        else:
+                            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=cap_text, parse_mode="HTML")
+                        bot.answer_callback_query(call.id, "Đã xóa vĩnh viễn khỏi CSDL!")
+                        # Làm sạch cache để tải lại dữ liệu mới trên Web
+                        KhoDuLieuSQL.load_data.clear()
+                    else:
+                        bot.answer_callback_query(call.id, "❌ Lỗi: Không tìm thấy dữ liệu để xóa!")
+
+            except Exception as e:
+                bot.answer_callback_query(call.id, f"Lỗi hệ thống: {e}")
+
+        def run_polling():
+            while True:
+                try:
+                    bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
+                except Exception:
+                    import time
+                    time.sleep(5)
+
+        t = threading.Thread(target=run_polling, daemon=True)
+        t.start()
+        return True
+
+    @staticmethod
+    def gui_thong_bao_cho_duyet(member_info, img_relative_path=None):
+        token, chat_id = TelegramBotManager.get_bot_token_and_chat_id()
+        if not token or not chat_id:
+            return False, "Chưa cấu hình Token hoặc Chat ID."
+
+        bot = telebot.TeleBot(token)
+        noi_dung = (
+            f"🔔 <b>CÓ YÊU CẦU THÊM THÀNH VIÊN MỚI</b>\n\n"
+            f"👤 <b>Họ tên:</b> {member_info.get('HoTen')}\n"
+            f"🆔 <b>Mã ĐD:</b> <code>{member_info.get('ID')}</code>\n"
+            f"👨 <b>Cha trực hệ:</b> {member_info.get('TenCha')}\n"
+            f"📋 <b>Tình trạng:</b> {member_info.get('TinhTrang')}\n"
+            f"📝 <b>Ghi chú:</b> {member_info.get('GhiChu', 'Không có')}\n\n"
+            f"👉 Vui lòng chọn thao tác bên dưới:"
+        )
+
+        reply_markup = types.InlineKeyboardMarkup()
+        btn_duyet = types.InlineKeyboardButton("✅ Phê duyệt", callback_data=f"duyet_{member_info.get('ID')}")
+        btn_xoa = types.InlineKeyboardButton("❌ Từ chối / Xóa", callback_data=f"xoa_{member_info.get('ID')}")
+        reply_markup.add(btn_duyet, btn_xoa)
+
+        try:
+            full_img_path = None
+            if img_relative_path:
+                p = Path(__file__).resolve().parent / img_relative_path
+                if p.exists(): full_img_path = p
+
+            if full_img_path:
+                with open(full_img_path, "rb") as photo:
+                    bot.send_photo(chat_id=chat_id, photo=photo, caption=noi_dung, parse_mode="HTML", reply_markup=reply_markup)
+            else:
+                bot.send_message(chat_id=chat_id, text=noi_dung, parse_mode="HTML", reply_markup=reply_markup)
+            return True, "Đã gửi thông báo thành công!"
+        except Exception as e:
+            return False, f"Lỗi gửi: {e}"
+
+
 
 
 # ==============================================================================
@@ -38,6 +241,7 @@ class QuanTriTaiNguyen:
         10: "#E2F0D9", 11: "#FBE5D6", 12: "#EDEDED"
     }
 
+
     #=====================================================================
     # [PHÂN LÔ A1]: Hàm con xử lý khoanh tròn số đời và chấm đen tuyệt tôn
     #=====================================================================
@@ -46,12 +250,13 @@ class QuanTriTaiNguyen:
         try:
             val = int(doi_val)
             res = cls.CIRCLED_NUMBERS.get(val, f"({doi_val})")
-            keyword_list = ["phạp tự", "không có con", "tảo vong", "tảo một", "chết sớm"]
+            keyword_list = ["phạp tự", "không có con", "tảo vong", "tảo một", "chết sớm", "liệt sỹ", "Liệt sĩ", "tử sỹ", "tử sĩ"]
             if any(kw in str(tinh_trang).lower() for kw in keyword_list):
                 res += cls.TUYET_TON
             return res
         except:
             return ""
+
 
     #=====================================================================
     # [PHÂN LÔ A2]: Hàm con trích xuất tên chính (tên cuối)
@@ -183,1450 +388,68 @@ class KhoDuLieuSQL:
             );
             """)
 
+            # 🟢 THÊM BẢNG CẤU HÌNH HỆ THỐNG VÀO ĐÂY
+
+            # Tạo bảng cấu hình hệ thống
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS CauHinhHeThong (
+                Khoa TEXT PRIMARY KEY,
+                GiaTri TEXT
+            );
+            """)
+            # Đặt mặc định là 'True' (Mở) để con cháu tự do tải lên lúc đầu khóa là 'False'
+            cursor.execute("INSERT OR IGNORE INTO CauHinhHeThong (Khoa, GiaTri) VALUES ('cho_phep_tai_anh', 'True')")
+
             cursor.execute("SELECT COUNT(*) FROM GiaPha")
             count = cursor.fetchone()[0]
      
+            
             if count == 0:
-                raw_data = [
+                # 1. Gọi dữ liệu từ file vừa tạo (Lưu ý gõ đúng tên file không có đuôi .py)
+                from Data_Giapha_Chi2_At import raw_data
 
-
-                    # ==========================================================
-                    # ĐỜI THỨ 1 & 2: THỦY TỔ VÀ CÁC CỤ ĐỨNG ĐẦU CỬA
-                    # ==========================================================
-                    ("000.01.0.001", None, "Từ Dương Đốc", "Huy Cán", "Bà Trần Thị Niêm", "", "", "3/12 AL", "Thầy thuốc y dược tế sinh. Con đầu ông Từ Trí Sức (đời 6 Đại tôn), cùng mẹ lên làng Hoa Cử lập nghiệp.", "", ""),
-                    ("100.02.0.001", "000.01.0.001", "Từ Hữu Trí", "", "Bà Đào Thị Điểm", "", "", "28/5 AL", "Đứng đầu cửa Giáp. Làm chức Tri điền.", "", ""),
-                    ("200.02.0.002", "000.01.0.001", "Từ Hữu Mưu", "", "Bà Trần Thị Dinh, Bà Trần Thị Đài", "", "", "", "Đứng đầu cửa Ất. Làm nghề tri điện kiêm tổng trưởng.", "", ""),
-                    ("000.02.1.003", "000.01.0.001", "Từ Thị Hằng", "", "Lấy chồng", "", "", "", "Lấy chồng", "", ""),
-
-                    # ==========================================================
-                    # ĐỜI THỨ 3: CÁC CỤ ĐỨNG ĐẦU CHI
-                    # ==========================================================
-                    ("110.03.0.001", "100.02.0.001", "Từ Hữu Liện", "", "Bà Trần Thị Tần", "", "", "11/12AL", "Con đầu cụ Trí. Làm chức Huyện Thừa.", "", ""),
-                    ("120.03.0.002", "100.02.0.001", "Từ Hữu Dực", "", "Bà Ngô Thị Nữ Tắc", "", "", "", "Con thứ 2 cụ Trí.", "", ""),
-                    ("130.03.0.003", "100.02.0.001", "Từ Hữu Lạng", "", "Bà Trần Thị Yêm", "", "", "", "Con thứ 3 cụ Trí. Tri điện nội chức.", "", ""),
-                    ("100.03.0.004", "100.02.0.001", "Nguyễn Bá Hoan", "", "", "", "", "01/8 AL", "", "Con nuôi", ""),
-                    ("240.03.0.005", "200.02.0.002", "Từ Hữu Màn", "", "Bà Trần Thị Lụ", "", "", "", "Con đầu cụ Mưu. Thầy thuốc y dược tế sinh.", "", ""),
-                    ("250.03.0.006", "200.02.0.002", "Từ Hữu Hùng", "", "Bà Trần Thị Bích", "", "", "", "Con thứ 2 cụ Mưu. Tri hộ kiêm chính đạo nghĩa Nam.", "", ""),
-                    ("260.03.0.007", "200.02.0.002", "Từ Hữu Lân", "", "Bà Trần Thị... (Hiệu Tiệp Ảnh)", "", "", "", "Con thứ 3 cụ Mưu. Ưu binh đội trưởng.", "", ""),
-                    ("270.03.0.008", "200.02.0.002", "Từ Hữu Lạc", "", "Bà Hồ Thị Hiệu, Bà Hà Thị Hiệu Từ", "", "", "", "Con thứ 4 cụ Mưu. Ban cai đội phó cơ chưởng ngọc hầu.", "", ""),
-
-                    # ==========================================================
-                    # ĐỜI THỨ 4: PHÂN RẼ VÀO CÁC PHÁI
-                    # ==========================================================
-                    ("111.04.0.001", "110.03.0.001", "Từ Hữu Di", "", "Bà Ngô Thị Tố (Hiệu Trang Nhạ)", "", "", "", "Con cụ Liện. Thợ rèn.", "", ""),
-                    ("122.04.0.002", "120.03.0.002", "Từ Hữu Kỵ", "", "Bà Ngô Thị Lân", "", "", "", "Con đầu cụ Dực. Thầy thuốc.", "", ""),
-                    ("123.04.0.003", "120.03.0.002", "Từ Hữu Tương", "", "Bà Đào Thị Đính", "", "", "", "Con thứ 2 cụ Dực. Ưu binh đội trưởng.", "", ""),
-                    ("120.04.0.004", "120.03.0.002", "Từ Hữu Tạc", "", "Bà Nguyễn Thị Trân", "", "", "", "Con thứ 3 cụ Dực. Thợ rèn.", "Phạp tự", ""),
-                    ("124.04.0.005", "120.03.0.002", "Từ Hữu Tỉnh", "Cố Phùng", "Bà Trần Thị Phi", "1812", "1885", "13/4 AL", "Con thứ 4 cụ Dực. Đại phú, thọ 74 tuổi. Vợ là Bà Trần Thị Phi (Bà Cố Phùng), (1814-1882, giổ 30/11)", "", ""),
-                    ("120.04.0.006", "120.03.0.002", "Từ Hữu Ẩm", "", "Bà Trương Thị Tư, Bà Nguyễn Thị Chiên", "", "", "", "Con thứ 5 cụ Dực.", "", ""),
-                    ("120.04.0.007", "120.03.0.002", "Từ Hữu Lộc", "", "", "", "", "", "Con thứ 5 cụ Dực.", "Tảo vong", ""),
-                    ("120.04.0.008", "120.03.0.002", "Từ Hữu Phú", "", "", "", "", "", "Con thứ 5 cụ Dực.", "Tảo vong", ""),
-                    ("135.04.0.009", "130.03.0.003", "Từ Hữu Tình", "", "Bà Ngô Thị Phụng", "", "", "", "Con cụ Lạng. Thí trúng nhị trường.", "", ""),
-                    ("130.04.0.010", "130.03.0.003", "Từ Hữu Tính", "", "", "", "", "", "Con cụ Lạng.", "Chết sớm", ""),
-                    ("246.04.0.011", "240.03.0.005", "Từ Hữu Hiển", "", "Bà Ngô Thị... (Hiệu Thao Chuyết)", "", "", "", "Con đầu cụ Màn. Làm nghề ruộng.", "", ""),
-                    ("240.04.0.012", "240.03.0.005", "Từ Hữu Kiến", "", "", "", "", "", "Con cụ Màn", "Chết sớm", ""),             
-                    ("240.04.1.013", "240.03.0.005", "Từ Thị Dục", "", "", "", "", "", "Con cụ Màn", "Chết sớm", ""),   
-                    ("240.04.0.014", "240.03.0.005", "Từ Hữu Thông", "", "", "", "", "", "Con cụ Màn", "Tảo một", ""),
-                    ("240.04.0.015", "240.03.0.005", "Từ Hữu Minh", "", "", "", "", "", "Con cụ Màn", "Tảo vong", ""), 
-                    ("257.04.0.016", "250.03.0.006", "Từ Hữu Linh", "", "Bà Trần Thị Dương", "", "", "", "Con cụ Hùng.", "", ""),
-                    ("258.04.0.017", "250.03.0.006", "Từ Hữu Cảo", "", "Bà Trần Thị Phổ", "", "", "", "Con thứ 2 cụ Hùng.", "", ""),
-                    ("269.04.0.018", "260.03.0.007", "Từ Hữu Niên", "", "Bà Trần Thị Quỵ", "", "", "", "Con cụ Lân. Lý trưởng.", "", ""),
-                    ("260.04.0.019", "260.03.0.007", "Từ Hữu Điền", "", "Bà Đặng Thị Thành", "", "", "", "Khâm sai đội lệ.", "Không có con", ""),
-                    ("260.04.0.020", "260.03.0.007", "Từ Hữu Trung", "", "", "", "", "", "Con cụ Lân.", "Tảo vong", ""),
-                    ("270.04.0.021", "270.03.0.008", "Từ Hữu Thận", "", "Bà Nguyễn Thị Thề", "", "", "", "Con cụ Lạc.", "", ""),
-                    ("270.04.0.022", "270.03.0.008", "Từ Hữu Thung", "", "", "", "", "", "Con cụ Lạc.", "Tảo vong", ""),
-                    ("270.04.1.023", "270.03.0.008", "Từ Thị Thuyết", "", "", "", "", "", "Con cụ Lạc.", "Tảo vong", ""),
-
-
-                    # ==========================================================
-                    # ĐỜI THỨ 5
-                    # ==========================================================
-                    ("111.05.0.001", "111.04.0.001", "Từ Hữu Loan", "", "Bà cả Thái Thị Thiều, Bà thứ Ngô Thị Thi", "", "", "", "Con cụ Di. Sinh hạ: Từ Hữu Thư, Từ Hữu Thuyên (chết sớm), Từ Thị Thuế (chết sớm), Từ Thị Bức (chết sớm), Từ Thị Hiến (tảo vong), Từ Thị Đỏ (tảo vong).", "", ""),
-                    ("111.05.0.002", "111.04.0.001", "Từ Hữu Kiệu", "", "Bà cả Trần Thị Sum, Bà thứ Nguyễn Thị Trung", "", "", "", "Con thứ 2 cụ Di. Sinh hạ: Từ Hữu Ngạnh, Từ Thị Sam.", "", ""),               
-                    ("111.05.0.003", "111.04.0.001", "Từ Hữu Phượng", "", "Bà Trần Thị Bỉnh", "", "", "", "Con thứ 3 cụ Di. Sinh hạ: Từ Hữu Khánh, Từ Hữu Xướng (chết), Từ Hữu Sam, Từ Hữu Thậm (chết), Từ Hữu Cội, Từ Hữu Đỏ (tảo vong).", "", ""),
-                    ("111.05.0.004", "111.04.0.001", "Từ Hữu Điều", "", "Bà Nguyễn Thị Thiều", "", "", "", "Con thứ 4 cụ Di. Sinh hạ: Từ Thị Kiệm.", "Phạp tự", ""),
-                    ("122.05.0.005", "122.04.0.002", "Từ Hữu Tiển", "", "Bà Nguyễn Thị Kỷ", "", "", "", "Con cụ Kỵ. Sinh hạ: Từ Hữu Toát, Từ Thị Tôi (tảo vong).", "", ""),
-                    ("122.05.0.006", "122.04.0.002", "Từ Hữu Thạch", "", "", "", "", "", "Con cụ Kỵ.", "Chết sớm", ""),      
-                    ("122.05.0.007", "122.04.0.002", "Từ Hữu Ngọc", "", "", "", "", "", "Con cụ Kỵ.", "Chết sớm", ""),       
-                    ("122.05.0.008", "122.04.0.002", "Từ Hữu Ngà", "", "Bà Ngô Thị Quỳ", "", "", "", "Con thứ 2 cụ Kỵ. Sinh hạ: Từ Hữu Giá (tảo một).", "", ""),             
-                    ("122.05.0.009", "122.04.0.002", "Từ Hữu Lầu", "", "Bà Trần Thị Đị", "", "", "", "Con cụ Kỵ. Sinh hạ: Từ Hữu Mận, Từ Hữu Yêm (tảo một), Từ Hữu Bạo (tảo một).", "", ""),
-                    ("122.05.0.010", "122.04.0.002", "Từ Hữu Ngân", "", "", "", "", "", "Con cụ Kỵ.", "Chết sớm", ""),
-                    ("122.05.0.011", "122.04.0.002", "Từ Chi Cảnh", "", "", "", "", "", "Con cụ Kỵ.", "Chết sớm", ""),
-                    ("123.05.0.012", "123.04.0.003", "Từ Hữu Nghị", "", "Bà cả Đào Thị..., Bà thứ Nguyễn Thị Chói", "", "", "", "Con đầu cụ Tương. Sinh hạ: Từ Thị Thái (tảo một), Từ Hữu Rượng (chết sớm), Từ Thị (lấy chồng họ Nguyễn Nhim giữa làng), Từ Thị (lấy chồng họ Trần Kép giữa làng).", "Phạp tự", ""),
-                    ("123.05.0.013", "123.04.0.003", "Từ Hữu Vọ", "", "Bà cả Nguyễn Thị Sắc, Bà thứ Phan Thị Thụ", "", "", "", "Con thứ 2 cụ Tương. Sinh hạ: Từ Thị Chiêm (tảo vong), Từ Dái Chiêm (tảo vong).", "Phạp tự", ""),
-                    ("123.05.0.014", "123.04.0.003", "Từ Hữu Toàn", "", "Bà Trần Thị Chẹc", "", "", "", "Con thứ 3 cụ Tương. Sinh hạ: Từ Hữu Vẹn, Từ Hữu Vẹ, Từ Hữu Cu, Từ Thị Chích (tảo vong).", "", ""),
-                    ("120.05.1.015", "120.04.0.004", "Từ Thị Tân", "", "", "", "", "", "Con cụ Tạc.", "tảo vong", ""),
-                    ("120.05.1.016", "120.04.0.004", "Từ Thị Lụ", "", "", "", "", "", "Con cụ Tạc.", "tảo vong", ""),
-                    ("124.05.0.017", "124.04.0.005", "Từ Hữu Bường", "", "", "", "", "", "Con cụ Tỉnh.", "Chết sớm", ""),
-                    ("124.05.1.018", "124.04.0.005", "Từ Thị Bẹn", "", "Trần Song", "", "", "", "Con cụ Tỉnh. Lấy ông Trần Song trong làng", "", ""),
-                    ("124.05.1.019", "124.04.0.005", "Từ Thị Phấn", "", "Trần Ích", "", "", "", "Con cụ Tỉnh. Lấy Trần Ích trong làng", "", ""),
-                    ("124.05.0.020", "124.04.0.005", "Từ Hữu Chấn", "Ông Cố Thoan", "Bà Nguyễn Thị Thuyết", "1847", "1913", "05/03", "Con cụ Tỉnh. Vợ là Bà Nguyễn Thị Thuyết (người họ Nguyễn Văn Hương), (1853-1919, giổ 12/01). Sinh hạ: Từ Thị Mận (lấy ông Nguyễn Thoan ở Điền xá), Từ Thị Hân (lấy ông Nguyễn Liêm giữa làng), Từ Thị Phú (lấy ông Nguyễn Thâm giữa làng), Từ Thị Cầm (lấy ông Nguyễn Bá Mủm giữa làng), Từ Thị Đích (lấy ông Trần Thọ Bành Hương), Từ Thị Túc (lấy ông Trần Định trửa làng), Từ Hữu Đức (tảo một), Từ Hữu Đìch (tảo một), Từ Thị Toa - Thị Đỏ (tảo một).", "Phạp tự", ""),
-                    ("124.05.0.021", "124.04.0.005", "Từ Hữu Nhin", "Cố Điệng", "Bà Nguyễn Thị Xuy", "1861", "1907", "17/09", "Con cụ Tỉnh. Vợ là Bà Nguyễn Thị Xuy (con cố Xưng),(1862-1942, giổ 13/08). Sinh hạ: Từ Thị Tuần (lấy ông Bang Mỹ ở Yên Vinh - Trạo Nha), Từ Thị Hợi (lấy ông Thái Mạo ở Xuân Mai), Từ Thị Thao (lấy ông Trần Lê Cớt giữa làng), Từ Hữu Chính, Từ Thị Năm (lấy ông Trần Lạc ở Yên Đồng), Từ Hữu Giáo, Từ Hữu Thí.", "", ""),       
-                    ("120.05.0.022", "120.04.0.006", "Từ Hữu Hưng", "", "", "", "", "", "Con cụ Ẩm.", "Tảo một", ""),
-                    ("120.05.1.023", "120.04.0.006", "Từ Thị Chiêm", "", "", "", "", "", "Con cụ Ẩm.", "Tảo vong", ""),
-                    ("120.05.1.024", "120.04.0.006", "Từ Thị Diền", "", "", "", "", "", "Con cụ Ẩm.", "Tảo vong", ""),
-                    ("135.05.0.025", "135.04.0.009", "Từ Hữu Hồng", "", "Bà Trần Thị Côi", "", "", "", "Con cụ Tình. Thí trúng nhị trường - chức vụ tự xã. Sinh hạ: Từ Hữu Thống, Từ Hữu Thính, Từ Thị Thuý (chết sớm).", "", ""),
-                    ("135.05.0.026", "135.04.0.009", "Từ Hữu Bằng", "", "Bà cả Trần Thị Nhuận, Bà thứ Nguyễn Thị Chỉ", "", "", "", "Con thứ 2 cụ Tình. Làm nghề dạy học, kiêm thư ký làng xã. Sinh hạ: Từ Thị Điển (lấy chồng về Khô Nội), Từ Thị... (lấy ông Trần Lại trong làng), Từ Thị... (lấy ông Lượng Nhạc Trảo Nha), Từ Thị Lạp (lấy ông Trần Bách trong làng), Từ Hữu Bối (ông Phụ), Từ Hữu Triết, Từ Thị Bổn (lấy người Đại Lộc), Từ Thị Cháu (chết).", "", ""),
-                    ("135.05.0.027", "135.04.0.009", "Từ Hữu Lập", "", "Bà chính Trần Thị Tự, bà thứ Bùi Thị Liên", "", "", "", "Con thứ 3 cụ Tình. Làm nghề thầy thuốc kiêm xã hộ giám tri. Sinh hạ: Từ Hữu Quán, Từ Hữu Thường (chết sớm), Từ Hữu Cự (chết sớm), Từ Hữu Kính (chết sớm), Từ Hữu Ngoạn (hán tự thông minh, chết sớm), Từ Hữu Xán (ông Cố Hạo), Từ Hữu Đỏ (tảo vong).", "", ""),
-                    ("135.05.0.028", "135.04.0.009", "Từ Hữu Cống", "", "", "", "", "", "Con cụ Tình", "Chết sớm", ""),   
-                    ("246.05.0.029", "246.04.0.011", "Từ Hữu Khảng", "", "Bà cả Nguyễn Thị Sự, Bà thứ Trần Thị Thượng", "", "", "", "Con cụ Hiển. Sinh hạ: Từ Hữu Đỏ (tảo vong); 6 con gái gồm: Đỏ, Hảo, Đỏ, Đỏ, Chẹch, Thông (đều tảo vong).", "Phạp tự", ""),     
-                    ("246.05.0.030", "246.04.0.011", "Từ Hữu Khai", "Cả, Kỳ", "Bà Nguyễn Thị Yến", "", "", "", "Con thứ 2 cụ Hiển. Sinh hạ: Từ Hữu Hoè, Từ Hữu Trấn, Từ Hữu Ất, Từ Hữu Dự, Từ Thị, Từ Hữu Đỏ, Từ Hữu Vinh, Từ Hữu Bổng; 3 con gái gồm: Thị Đỏ, Đỏ, Đỏ (đều tảo vong).", "", ""),           
-                    ("246.05.1.031", "246.04.0.011", "Từ Thị Hân", "", "", "", "", "", "Con cụ Hiển.", "Chết sớm", ""),
-                    ("257.05.0.032", "257.04.0.016", "Từ Hữu Kiệt", "", "", "", "", "", "Con cụ Linh.", "Phạp tự", ""),
-                    ("257.05.0.033", "257.04.0.016", "Từ Hữu Quýnh", "", "Bà Nguyễn Thị Cưu", "", "", "", "Con thứ 2 cụ Linh. Sinh hạ: Từ Hữu Thạc, Từ Hữu Đỏ (tảo vong).", "", ""),
-                    ("257.05.1.034", "257.04.0.016", "Từ Thị Thước", "", "", "", "", "", "Con cụ Linh", "Chết sớm", ""),                  
-                    ("257.05.0.035", "257.04.0.016", "Từ Hữu Cu", "", "", "", "", "", "Con cụ Linh", "Tảo vong", ""),
-                    ("257.05.1.036", "257.04.0.016", "Từ Thị Hinh", "", "", "", "", "", "Con cụ Linh", "Tảo vong", ""),
-                    ("257.05.1.037", "257.04.0.016", "Từ Thị Ky", "", "", "", "", "", "Con cụ Linh", "Tảo một", ""), 
-                    ("258.05.0.038", "258.04.0.017", "Từ Hữu Trinh", "", "Bà Trần Thị Thầu", "", "", "", "Con đầu cụ Cảo. Sinh hạ: Từ Hữu Cuộc, Từ Hữu Ức (tảo một), Từ Hữu Tùy, Từ Hữu Khôi (tảo vong), Từ Thị Liên (tảo vong), Từ Thị Cẩm (tảo vong).", "", ""),               
-                    ("258.05.0.039", "258.04.0.017", "Từ Hữu Triền", "", "", "", "", "", "Con cụ Cảo.", "Chết sớm", ""),
-                    ("258.05.0.040", "258.04.0.017", "Từ Hữu Liên", "", "", "", "", "", "Con cụ Cảo.", "Chết sớm", ""),           
-                    ("258.05.0.041", "258.04.0.017", "Từ Hữu Tranh", "", "Bà cả Trần Thị Khoá, bà thứ Trần Thị Tiết", "", "", "", "Con thứ 2 cụ Cảo. Sinh hạ: Từ Hữu Do, Từ Thị Tốn.", "", ""),
-                    ("258.05.0.042", "258.04.0.017", "Từ Hữu Phối", "", "", "", "", "", "Con cụ Cảo.", "Chết sớm", ""),
-                    ("258.05.0.043", "258.04.0.017", "Từ Hữu Đoàn", "", "", "", "", "", "Con cụ Cảo.", "Tảo vong", ""),
-                    ("258.05.0.044", "258.04.0.017", "Từ Hữu Trừng", "", "Bà Ngô Thị Sung", "", "", "", "Con cụ Cảo. Sinh hạ: Từ Hữu Xuyến (tảo một), Từ Hữu Luyến (tảo một), Từ Hữu Son (tảo một); 7 con gái gồm: Xuân, Biện, Đỏ, Sáu, Thất, Phiến, Ú (đều chết).", "", ""),
-                    ("258.05.0.045", "258.04.0.017", "Từ Hữu Điều", "", "Bà Ngô Thị Lùc", "", "", "", "Con cụ Cảo. Sinh hạ: Từ Hữu Chuyền, Từ Hữu Chuân, Từ Hữu Đích (tảo một), Từ Hữu Nhận (tảo một).", "", ""),
-                    ("258.05.0.046", "258.04.0.017", "Từ Hữu Kiên", "", "Bà cả Lê Thị Hương, bà thứ Trương Thị Yến", "", "", "", "Con cụ Cảo. Làm phó tổng và dạy học Hán văn. Sinh hạ: Từ Hữu Huân, Từ Hữu Giảng, Từ Hữu Điển, Từ Hữu Dái (tảo một); 4 con gái gồm: Dản, Bẹn, Chẹc, Lục (đều tảo vong).", "", ""),
-                    ("258.05.0.047", "258.04.0.017", "Từ Hữu Cồng", "", "Bà cả Trần Thị Thú, Bà thứ Trần Thị Bình", "", "", "", "Con cụ Cảo. Sinh hạ: Từ Hữu Bồng; 5 con trai gồm: Cốc, Bành, Phùng, Đích, Kiêm; 3 con gái gồm: Chẹc, Đốc, Kép (đều chết sớm).", "", ""),
-                    ("269.05.0.048", "269.04.0.018", "Từ Hữu Bộ", "", "", "", "", "", "Con cụ Niên", "Tảo vong", ""),
-                    ("270.05.0.049", "270.04.0.021", "Từ Hữu Dinh", "", "Bà: Không biết rõ", "", "", "", "Con cụ Thận. Làm lý trưởng kiêm chức tri xã, nghỉ việc đi học tổng Cổ Giác. Sinh hạ: 2 con trai (1 con trai chết, 1 con trai theo mẹ về họ ngoại làm ở đâu tung tích không rõ).", "di cư, không rõ", ""),
-                    ("270.05.1.050", "270.04.0.021", "Từ Thị Trù", "", "", "", "", "", "Con cụ Thận.", "Tảo vong", ""),
-
-                    # ==========================================================
-                    # ĐỜI 6
-                    # ==========================================================
-                    # ------------------------------------
-                    # CHI 1
-                    # ------------------------------------    
-                    ("111.06.0.001", "111.05.0.001", "Từ Hữu Thư", "", "Bà Ngô Thị Kim", "", "", "", "Con cụ Loan. Lý trưởng. Sinh hạ: Từ Hữu Phiệt, Từ Thị (lấy cố Trần Cớt trong làng), Từ Thị (lấy ông Trần Chước trong làng), Từ Hữu Vinh (tảo một), Từ Hữu Vượng (tảo một), Từ Hữu Thuận (tảo một), Từ Hữu Đốc (tảo một).", "", ""),                  
-                    ("111.06.0.002", "111.05.0.001", "Từ Hữu Thuyên", "", "", "", "", "", "Con cụ Loan.", "Chết sớm", ""),
-                    ("111.06.1.003", "111.05.0.001", "Từ Thị Thuế", "", "", "", "", "", "Con cụ Loan.", "Chết sớm", ""),                    
-                    ("111.06.1.004", "111.05.0.001", "Từ Thị Bức", "", "", "", "", "", "Con cụ Loan.", "Chết sớm", ""),
-                    ("111.06.1.005", "111.05.0.001", "Từ Thị Hiến", "", "", "", "", "", "Con cụ Loan.", "Chết sớm", ""),                 
-                    ("111.06.0.006", "111.05.0.002", "Từ Hữu Ngạnh", "", "Bà Thái Thị Mạnh", "", "", "", "Con cụ Kiệu. Sinh hạ: Từ Hữu Lâm, Từ Hữu Tâm, Từ Hữu Lam (tảo một), Từ Hữu Liêm (tảo một).", "", ""),
-                    ("111.06.1.007", "111.05.0.002", "Từ Thị Sam", "", "Không rõ", "", "", "", "Con cụ Kiệu.", "", ""),
-                    ("111.06.0.008", "111.05.0.003", "Từ Hữu Khánh", "", "Bà Trần Thị Câu", "", "", "", "Con cụ Phượng. Sinh hạ: Từ Hữu Sáng, Từ Thị (lấy cố Hiến xã Thạch Liên), Từ Thị Chẹc (tảo một), Từ Thị (lấy chồng về Yên Đồng), Từ Thị Năm (tảo một), Từ Hữu Xích.", "", ""),
-                    ("111.06.0.009", "111.05.0.003", "Từ Hữu Xướng", "", "", "", "", "", "Con cụ Phượng.", "Chết sớm", ""),
-                    ("111.06.0.010", "111.05.0.003", "Từ Hữu Sum", "", "Bà Trần Thị Cơ", "", "", "", "Con cụ Phượng. Sinh hạ: Từ Hữu Toại, Từ Thị (lấy cố Sị trong làng), Từ Hữu Nghi, Từ Thị (lấy ông cựu Thuyên trong làng), Từ Thị (lấy ông Trần Yểu trong làng), Từ Thị Sáu (lấy ông Cửu Tường trong làng), Từ Thị (lấy ông Trung Hiếu trong làng), Từ Hữu Luận.", "", ""),  
-                    ("111.06.0.011", "111.05.0.003", "Từ Hữu Thậm", "", "", "", "", "", "Con cụ Phượng.", "Chết sớm", ""),
-                    ("111.06.0.012", "111.05.0.003", "Từ Hữu Cội", "", "Bà Trần Thị Dênh", "", "", "", "Con cụ Phượng. Sinh hạ: Từ Thị Dị (lấy ông Trần Đinh trong làng), Từ Hựu Lệ, Từ Thị (lấy ông Đặng Cầu quanh làng), Từ Thị (lấy ông Trần Thảng trong làng), Từ Hữu Nghĩa, Từ Hữu Khí (chết sớm), Từ Hữu Trề (chết sớm), Từ Thị Tám (lấy ông Trần Hoàn trong làng), Từ Hữu Lộc (tảo vong).", "", ""),
-                    ("111.06.1.013", "111.05.0.004", "Từ Thị Kiệm", "", "Không rõ", "", "", "", "Con cụ Điều.", "", ""),
-
-                    # ------------------------------------
-                    # CHI 2
-                    # ------------------------------------ 
-                    ("122.06.0.014", "122.05.0.005", "Từ Hữu Toát", "", "Bà Trần Thị Náu", "", "", "", "Con cụ Tiển. Sinh hạ: Từ Hữu Duyệt, Từ Thị Em (lấy ông Trần Thế trong làng), Từ Hữu Hợi, Từ Hữu Điếm (tảo vong), Từ Thị Đỏ (tảo vong).", "", ""),
-                    ("122.06.1.015", "122.05.0.005", "Từ Thị Tôi", "", "", "", "", "", "Con cụ Tiển", "Tảo vong", ""),
-                    ("122.06.0.016", "122.05.0.008", "Từ Hữu Giá", "", "", "", "", "", "Con cụ Ngà.", "Tảo một", ""),
-                    ("122.06.0.017", "122.05.0.009", "Từ Hữu Mận", "", "Bà Lê Thị Út", "", "", "", "Con cụ Lầu. Sinh hạ: Từ Thị Mai (lấy Trần Chinh trong làng), Từ Hữu Khai, Từ Hữu Lai, Từ Hữu Đỏ (tảo vong).", "", ""),
-                    ("122.06.0.018", "122.05.0.009", "Từ Hữu Yêm", "", "", "", "", "", "Con cụ Lầu.", "Tảo một", ""),
-                    ("122.06.0.019", "122.05.0.009", "Từ Hữu Bạo", "", "", "", "", "", "Con cụ Lầu.", "Tảo một", ""),  
-                    ("123.06.1.020", "123.05.0.012", "Từ Thị Thái", "", "", "", "", "", "Con cụ Nghị.", "Tảo một", ""),
-                    ("123.06.0.021", "123.05.0.012", "Từ Hữu Rượng", "", "", "", "", "", "Con cụ Nghị.", "Chết sớm", ""),
-                    ("123.06.1.022", "123.05.0.012", "Từ Thị ...", "", "Lấy họ Nguyễn Nhim", "", "", "", "Con cụ Nghị.", "", ""),
-                    ("123.06.1.023", "123.05.0.012", "Từ Thị ...", "", "Lấy họ Trần Kép", "", "", "", "Con cụ Nghị.", "", ""),
-                    ("123.06.1.024", "123.05.0.013", "Từ Thị Chiêm", "", "", "", "", "", "Con cụ Vọ", "Tảo vong", ""),
-                    ("123.06.0.025", "123.05.0.013", "Từ Dái Chiêm", "", "", "", "", "", "Con cụ Vọ", "Chết sớm", ""),
-                    ("123.06.0.026", "123.05.0.014", "Từ Hựu Vẹn", "", "Bà Trần Thị Diệp", "", "", "", "Con cụ Toàn. Sinh hạ: Từ Hữu Kiệp, Từ Hữu Điệp, Từ Thị Ba (lấy chồng về Thạch Liên), Từ Hữu Dữu (chết sớm), Từ Thị Chút (lấy ông Trần Tuần Dư Nại), Từ Thị Tỷ (lấy chồng về Tiến Lộc).", "", ""),
-                    ("123.06.0.027", "123.05.0.014", "Từ Hữu Vẹ", "", "Bà Trần Thị Ba", "", "", "", "Con cụ Toàn. Sinh hạ: Từ Thị Xin (chết sớm).", "Phạp tự", ""),
-                    ("123.06.0.028", "123.05.0.014", "Từ Hữu Cu", "", "", "", "", "", "Con cụ Toàn", "Chết sớm", ""),
-                    ("123.06.1.029", "123.05.0.014", "Từ Thị Chích", "", "", "", "", "", "Con cụ Toàn", "Tảo vong", ""),                
-                    ("124.06.1.030", "124.05.0.020", "Từ Thị Mận", "", "Nguyễn Thoan", "", "", "", "Con cụ Chấn. Lấy ông Nguyễn Thoan ở Trường Thành - Đồng Lộc", "", ""),
-                    ("124.06.1.031", "124.05.0.020", "Từ Thị Hân", "", "Nguyễn Liêm", "", "", "", "Con cụ Chấn. Lấy ông Nguyễn Liêm ở giữa làng", "", ""),
-                    ("124.06.1.032", "124.05.0.020", "Từ Thị Phú", "", "Nguyễn Thẩm", "", "", "", "Con cụ Chấn. Lấy ông Nguyễn Thẩm ở giữa làng", "", ""),
-                    ("124.06.1.033", "124.05.0.020", "Từ Thị Cầm", "", "Nguyễn Ẩm", "", "", "", "Con cụ Chấn. Lấy ông Nguyễn Ẩm ở Triền Lối", "", ""),
-                    ("124.06.1.034", "124.05.0.020", "Từ Thị Đích", "", "Trần Thọ Bành", "", "", "", "Con cụ Chấn. Lấy ông Trần Thọ Bành ở Triền Lối", "", ""),
-                    ("124.06.1.035", "124.05.0.020", "Từ Thị Túc", "", "Trần Định", "", "", "", "Con cụ Chấn. Lấy ông Nguyễn Định ở giữa làng", "", ""),
-                    ("124.06.0.036", "124.05.0.020", "Từ Hữu Đức", "", "", "", "", "", "Con cụ Chấn", "Tảo một", ""),
-                    ("124.06.0.037", "124.05.0.020", "Từ Hữu Đìch", "", "", "", "", "", "Con cụ Chấn", "Tảo một", ""),
-                    ("124.06.1.038", "124.05.0.020", "Từ Thị Toa", "", "", "", "", "", "Con cụ Chấn", "Tảo một", ""),
-                    ("124.06.1.039", "124.05.0.021", "Từ Thị Tuần", "", "Bang Mỵ", "", "", "", "Con cụ Nhin. Lấy ông Bang Mỹ người ở Yên Vinh - Trảo Nha ", "", ""),
-                    ("124.06.1.040", "124.05.0.021", "Từ Thị Hợi", "", "Thái Mạo", "", "", "", "Con cụ Nhin. Lấy ông Thái Mạo(Hạ) ở Xuân Mai", "", ""),
-                    ("124.06.1.041", "124.05.0.021", "Từ Thị Thao", "", "Trần Lê Cớt", "", "", "", "Con cụ Nhin. Lấy ông Trần Lê Cớt giữa làng", "", ""),
-                    ("124.06.0.042", "124.05.0.021", "Từ Hữu Chính", "", "Bà Nguyễn Thị Sương", "1891", "1940", "21/5", "Con cụ Nhin. Làm lý trưởng, thầy thuốc, địa lý, phù thuỷ đạo sỹ. Vợ là Bà Nguyễn Thị Sương (1898-1964, giổ 07/12). Sinh hạ: Từ Quang Diệu, Từ Hữu Bút (liệt sỹ), Từ Thị Tam (lấy ông Khởi trong làng), Từ Thị Hảo (lấy ông Trần Ninh trong làng), Từ Hữu Son, Từ Thị Tám (lấy ông Nguyễn Long trong làng), Từ Thị Chín (lấy ông Nhân trong làng); 3 con gái gồm: Thị Tứ, Thị Chút, Thị Mười (đều tảo vong).", "", ""),
-                    ("124.06.1.043", "124.05.0.021", "Từ Thị Năm", "", "Trần Lạc", "", "", "", "Con cụ Nhin. Lấy ông Trần Lạc ở Yên Đồng (Con cháu là Trần Vựng)", "", ""),
-                    ("124.06.0.044", "124.05.0.021", "Từ Hữu Giáo", "", "Bà Thái Thị Thới", "", "", "", "Con cụ Nhin. Sinh hạ: Từ Thị Chắt (lấy chồng người họ Trần Quang), Từ Thị Con (lấy chồng người Điền Xá Đồng Lộc), Từ Hữu Huấn (chết sớm), Từ Hữu Chuột, Từ Hữu Xưng (chết lúc 15 tuổi).", "", ""),
-                    ("124.06.0.045", "124.05.0.021", "Từ Hữu Thí", "", "Bà Trần Thị Ba", "", "", "", "Con cụ Nhin. Sinh hạ: Từ Hữu Nuôi (chết sớm), Từ Hữu Thiện, Từ Thị Tỷ (lấy chồng người Đức Thọ), Từ Thị Quyền (lấy chồng người Thạch Ngọc).", "", ""),
-
-                    # ------------------------------------
-                    # CHI 3
-                    # ------------------------------------                     
-                    ("135.06.0.046", "135.05.0.025", "Từ Hữu Thống", "", "Bà Trần Thị Cầu", "", "", "", "Con cụ Hồng. Sinh hạ: Từ Thị Đích, Thị Dy (chết sớm).", "Phạp tự", ""),
-                    ("135.06.0.047", "135.05.0.025", "Từ Hữu Thính", "", "Bà Ngô Thị Điện, Bà thứ Trương Thị Thiện", "", "", "", "Con cụ Hồng. Làm phó lý trưởng. Sinh hạ: Từ Thị (lấy cố Đốc Phiếm trong làng), Từ Hữu Mục, Từ Hữu Khoa, Từ Thị Đích (chết sớm).", "", ""),
-                    ("135.06.1.048", "135.05.0.025", "Từ Thị Thúy", "", "", "", "", "", "Con cụ Hồng.", "Chết sớm", ""),
-                    ("135.06.1.049", "135.05.0.026", "Từ Thị Điển", "", "Không rõ", "", "", "", "Con cụ Bằng. Lấy chồng về Khô Nội", "", ""),
-                    ("135.06.1.050", "135.05.0.026", "Từ Thị ...", "", "Trần Lại", "", "", "", "Con cụ Bằng. Lấy ông Trần Lại trong làng", "", ""),
-                    ("135.06.1.051", "135.05.0.026", "Từ Thị ...", "", "Lượng Nhạc", "", "", "", "Con cụ Bằng. Lấy Ông Lượng Nhạc Trảo Nha", "", ""),
-                    ("135.06.1.052", "135.05.0.026", "Từ Thị Lạp", "", "Trần Bách", "", "", "", "Con cụ Bằng. Lấy ông Trần Bách trong làng", "", ""),
-                    ("135.06.0.053", "135.05.0.026", "Từ Hữu Bối", "Ông Phụ", "Bà Nguyễn Thị Chút", "", "", "", "Con cụ Bằng. Sinh hạ: Từ Hữu Nuôi (chết sớm), Từ Thị Cháu (chết sớm), Từ Hữu Mậu.", "", ""),
-                    ("135.06.0.054", "135.05.0.026", "Từ Hữu Triết", "", "Bà lấy chồng khác", "", "", "", "Con cụ Bằng. Sinh hạ: Từ Hữu Cháu (chết sớm), Từ Hữu Cước (chết sớm), Từ Hữu Quằt (chết sớm), Từ Thị Quỳ (lấy chồng về Trường Lộc).", "", ""),
-                    ("135.06.1.055", "135.05.0.026", "Từ Thị Bổn", "", "Không rõ", "", "", "", "Con cụ Bằng. Lấy người Đại lộc", "", ""),
-                    ("135.06.0.056", "135.05.0.027", "Từ Hữu Quán", "", "Bà Trần Thị Tuy", "", "", "", "Con cụ Lập. Sinh hạ: Từ Thị Khoách (lấy chồng họ Nguyễn Nhin), Từ Thị Hai (lấy ông Nguyễn Điểm giữa làng), Từ Thị Chự (lấy người họ Nguyễn Thế Kê Mòi), Từ Thị Em Nậy (lấy ông Trần Tuệ giữa làng), Từ Thị Em Con (lấy ông Trần Bệ giữa làng), Từ Hữu Trù, Từ Thị Chút (lấy ông Trần Bản giữa làng), Từ Thị Tám (lấy ông Trần Dê giữa làng).", "", ""),
-                    ("135.06.0.057", "135.05.0.027", "Từ Hữu Thường", "", "", "", "", "", "Con cụ Lập", "Chết sớm", ""),
-                    ("135.06.0.058", "135.05.0.027", "Từ Hữu Cự", "", "", "", "", "", "Con cụ Lập", "Chết sớm", ""),
-                    ("135.06.0.059", "135.05.0.027", "Từ Hữu Kính", "", "", "", "", "", "Con cụ Lập", "Chết sớm", ""),
-                    ("135.06.0.060", "135.05.0.027", "Từ Hữu Ngoạn", "", "Không có vợ", "", "", "", "Con ông Từ Hữu Lập. Hán tự thông minh.", "Không có con", ""),
-                    ("135.06.0.061", "135.05.0.027", "Từ Hữu Xán", "", "Bà Nguyễn Thị Tửu", "", "", "", "Con cụ Lập. Sinh hạ: Từ Thị Bẹn (đã lấy chồng, chết sớm), Từ Thị Em (lấy chồng về Yên Đồng), Từ Thị Tam (chết đuối), Từ Thị Tứ (chết sớm), Từ Hữu Năm, Từ Hữu Lục, Từ Thị Bảy (chết sớm), Từ Hữu Tám.", "", ""),
-
-                    # ------------------------------------
-                    # CHI 4
-                    # ------------------------------------        
-                    ("246.06.0.062", "246.05.0.030", "Từ Hữu Hoè", "", "Bà Trần Thị Cát", "", "", "", "Con cụ Khái. Sinh hạ: Từ Hữu Đỏ, Từ Hữu Đốc, Từ Hữu Lường (đều chết sớm).", "", ""),
-                    ("246.06.0.063", "246.05.0.030", "Từ Hữu Trấn", "", "Bà Trần Thị Tình", "", "", "", "Con cụ Khái. Ông trước làm quyền suất đội – Sắc phong phó Đô đốc. Sinh hạ: Từ Hữu Bạt, Từ Hữu Nhiếp, Từ Thị Đị (lấy ông Trần Hoàng trong làng).", "", ""),
-                    ("246.06.0.064", "246.05.0.030", "Từ Hữu Át", "", "Bà Trần Thị Thưởng", "", "", "", "Con cụ Khái. Sinh hạ: Từ Hữu Xỉ, Từ Hữu Dị, Từ Thị Em (lấy ông Trần Vịnh giữa làng), Từ Thị Dị (tảo vong), Từ Thị Đỏ (tảo vong).", "", ""),
-                    ("246.06.0.065", "246.05.0.030", "Từ Hữu Dự", "", "Bà Nguyễn Thị Tông, Bà thứ Nguyễn Thị Sáu", "", "", "", "Con cụ Kỳ.", "Không có con", ""),
-                    ("246.06.0.066", "246.05.0.030", "Từ Hữu Vinh", "", "", "", "", "", "Con cụ Khái", "Chết sớm", ""),
-                    ("246.06.0.067", "246.05.0.030", "Từ Hữu Bồng", "", "", "", "", "", "Con cụ Khái", "Chết sớm", ""),
-
-                    # ------------------------------------
-                    # CHI 5
-                    # ------------------------------------                           
-                    ("257.06.0.068", "257.05.0.033", "Từ Hữu Thạc", "", "Bà Nguyễn Thị Thẩm", "", "", "", "Con cụ Quýnh. Sinh hạ: Từ Thị Đạc (tảo vong), Từ Thị Đô (tảo một). Ông bà này cuối thế kỷ 18, khoảng triều đại Thành Thái di cư ra Hoàng Mai, Nghệ An ở. Tông tích không rõ.", "di cư, không rõ", ""),
-                    ("258.06.0.069", "258.05.0.038", "Từ Hữu Cuộc", "", "Bà Trần Thị Khanh", "", "", "", "Con cụ Trinh. Sinh hạ: Từ Thị Tấn (tảo vong), Từ Hữu Đỏ (tảo vong), Từ Thị Đức (tảo vong), Từ Hữu Cu.", "", ""),
-                    ("258.06.0.070", "258.05.0.038", "Từ Hữu Ức", "", "", "", "", "", "Con cụ Trinh.", "Tảo một", ""),
-                    ("258.06.0.071", "258.05.0.038", "Từ Hữu Tùy", "", "Bà Trần Thị Trúc", "", "", "", "Con thứ 2 cụ Trinh. Sinh hạ: Từ Hữu Hoài, Từ Thị Láng (lấy chồng người họ Nguyễn Nhin), Từ Thị Chích (tảo một), Từ Hữu Liên (tảo một).", "", ""),
-                    ("258.06.0.072", "258.05.0.038", "Từ Hữu Khôi", "", "", "", "", "", "Con cụ Trinh.", "Tảo vong", ""),
-                    ("258.06.1.073", "258.05.0.038", "Từ Thị Liên", "", "", "", "", "", "Con cụ Trinh.", "Tảo vong", ""),
-                    ("258.06.1.074", "258.05.0.038", "Từ Thị Cẩm", "", "", "", "", "", "Con cụ Trinh.", "Tảo vong", ""),
-                    ("258.06.0.075", "258.05.0.041", "Từ Hữu Do", "", "Bà Ngô Thị Dị", "", "", "", "Con cụ Tranh. Sinh hạ: Từ Hữu Nha, Từ Thị Nhạ (tảo vong), Từ Thị Nhỏ (tảo vong).", "", ""),
-                    ("258.06.1.076", "258.05.0.041", "Từ Thị Tốn", "", "Không rõ", "", "", "", "Con cụ Tranh", "", ""),
-                    ("258.06.0.077", "258.05.0.044", "Từ Hữu Xuyến", "", "", "", "", "", "Con cụ Trừng.", "Tảo một", ""),
-                    ("258.06.0.078", "258.05.0.044", "Từ Hữu Luyến", "", "", "", "", "", "Con cụ Trừng.", "Tảo một", ""),
-                    ("258.06.0.079", "258.05.0.044", "Từ Hữu Son", "", "", "", "", "", "Con cụ Trừng.", "Tảo một", ""),
-                    ("258.06.0.080", "258.05.0.045", "Từ Hữu Chuyên", "", "Bà Trần Thị Nhuyến", "", "", "", "Con cụ Điều. Sinh hạ: Từ Hữu Trại, Từ Hữu Lành (tảo vong), Từ Hữu Đỏ (tảo vong), 6 gái (Vinh, Đích, Thảo, Chích, Đỏ, Đỏ) đều tảo vong.", "", ""),
-                    ("258.06.0.081", "258.05.0.045", "Từ Hữu Chuân", "",  "Bà Trần Thị Biên", "", "", "", "Con thứ 2 cụ Điều. Sinh hạ: Từ Hữu Nhạc, Từ Hữu Vòng (tảo một), Từ Thị Viền (lấy chồng người họ Nguyễn Nhin).", "", ""),
-                    ("258.06.0.082", "258.05.0.045", "Từ Hữu Đích", "", "", "", "", "", "Con cụ Điều", "Tảo một", ""),
-                    ("258.06.0.083", "258.05.0.045", "Từ Hữu Nhận", "", "", "", "", "", "Con cụ Điều", "Tảo một", ""),
-                    ("258.06.0.084", "258.05.0.046", "Từ Hữu Huân", "", "Bà Trần Thị Mạnh", "", "", "", "Con cụ Kiên. Ông trước làm lý trưởng. Sinh hạ: Từ Hữu Vi, Từ Hữu Lậu, Từ Hữu Ứng, Từ Thị... (lấy người họ Trần), Từ Hữu Tôn (mất sớm), 3 gái [Thị Lượng, Em, Đỏ] đều tảo một.", "", ""),
-                    ("258.06.0.085", "258.05.0.046", "Từ Hữu Giảng", "", "Bà Trần Thị Quán", "", "", "", "Con thứ 2 cụ Kiên. Sinh hạ: Từ Hữu Dái (tảo một), Từ Hữu Lai, Từ Hữu Lưu, Từ Hữu Đỏ (tảo vong).", "", ""),
-                    ("258.06.0.086", "258.05.0.046", "Từ Hữu Điển", "", "Bà Trần Thị Lương", "", "", "", "Con thứ 3 cụ Kiên. Sinh hạ: Từ Hữu Kẹo, Từ Hữu Mât (tảo vong), Từ Hữu Thái, Từ Hữu Thới (tảo một), Từ Thị Em (tảo một), Từ Thị Sáu (tảo một), 4 gái [Yêm, Đường, Đỏ, Đỏ] đều tảo một.", "", ""),
-                    ("258.06.0.087", "258.05.0.046", "Từ Hữu Dái", "", "", "", "", "", "Con cụ Kiên", "Tảo một", ""),
-                    ("258.06.0.088", "258.05.0.047", "Từ Hữu Bồng", "", "Bà Trần Thị Út", "", "", "", "Con cụ Kiên. Sinh hạ: Từ Hữu Tự (chết sớm), Từ Hữu Đỏ (tảo vong), Từ Hữu Đỏ (tảo vong). Ông bà này về sau di cư đi đâu không rõ.", "di cư, không rõ", ""),
-
-                    # ==========================================================
-                    # ĐỜI 7 
-                    # ==========================================================
-
-                    # ------------------------------------
-                    # CHI 1
-                    # ------------------------------------
-                    ("111.07.0.001", "111.06.0.001", "Từ Hữu Phiệt", "", "Bà cả Trần Thị Hán, bà thứ Trần Thị Thoả", "", "", "", "Con cụ Thư. Ông trước làm lý trưởng, chết ngày 25 tháng 7 âm lịch. Sinh hạ: Từ Thị... (lấy 2 lần chồng, lần sau về Vĩnh Lộc), Từ Hữu Điệt, Từ Thị Đém (tảo một), Từ Thị Bốn, Từ Hữu Huyền, Từ Hữu Ca (tảo một), Từ Thị Bảy (lấy người họ Nguyễn Nhin), Từ Thị Bát (tảo vong), Từ Hữu Đỏ (tảo vong), Từ Hữu Đỏ (tảo vong).", "", ""),
-                    ("111.07.1.002", "111.06.0.001", "Từ Thị ...", "", "Trần Cớt", "", "", "", "Con cụ Thư. Lấy cố Trần Cớt trong làng", "", ""),
-                    ("111.07.1.003", "111.06.0.001", "Từ Thị ...", "", "Trần Chước", "", "", "", "Con cụ Thư. Lấy ông Trần Chước trong làng", "", ""),
-                    ("111.07.0.004", "111.06.0.001", "Từ Hữu Vinh", "", "", "", "", "", "Con cụ Thư.", "Tảo một", ""),
-                    ("111.07.0.005", "111.06.0.001", "Từ Hữu Vượng", "", "", "", "", "", "Con cụ Thư.", "Tảo một", ""),
-                    ("111.07.0.006", "111.06.0.001", "Từ Hữu Thuận", "", "", "", "", "", "Con cụ Thư.", "Tảo một", ""),
-                    ("111.07.0.007", "111.06.0.001", "Từ Hữu Đốc", "", "", "", "", "", "Con cụ Thư.", "Tảo một", ""),
-                    ("111.07.0.008", "111.06.0.006", "Từ Hữu Lâm", "", "Bà Trần Thị Nhỏ", "", "", "", "Con cụ Ngạnh. Sinh hạ: Từ Thị Mức (lấy chồng họ Nguyễn Nhin), Từ Thị Ba (lấy chồng, 3 chồng), Từ Hữu Đồng, Từ Hữu Địch (tảo vong), Từ Hữu Kế, Từ Thị Chút (chết sớm), Từ Hữu Thịnh (chết sớm).", "", ""),
-                    ("111.07.0.009", "111.06.0.006", "Từ Hữu Tâm", "", "Bà Thái Thị Hai", "", "", "", "Con thứ 2 cụ Ngạnh. Được cấp bằng Phó tổng dụng. Sinh hạ: Từ Hữu Điệng (chết sớm), Từ Hữu Tiệng, Từ Thị Em (chết đuối), Từ Hữu Thiện (tảo một).", "", ""),
-                    ("111.07.0.010", "111.06.0.006", "Từ Hữu Lam", "", "", "", "", "", "Con cụ Ngạnh", "Tảo một", ""),
-                    ("111.07.0.011", "111.06.0.006", "Từ Hữu Liêm", "", "", "", "", "", "Con cụ Ngạnh", "Tảo một", ""),
-                    ("111.07.0.012", "111.06.0.008", "Từ Hữu Sáng", "", "Bà Trần Thị Bộ", "", "", "", "Con đầu cụ Khánh. Sinh hạ: Từ Hữu Nghiệp (tảo một), Từ Hữu Xuân (tảo vong), Từ Hữu Vên (tảo vong), Từ Thị Út (tảo một), Từ Thị Xin (tảo một), Từ Thị Mức (lấy chồng không có con, chết).", "", ""),
-                    ("111.07.1.013", "111.06.0.008", "Từ Thị...", "", "cố Hiến", "", "", "", "Con cụ Khánh. Lấy cố Hiến  xã Thạch Liên.", "", ""),
-                    ("111.07.1.014", "111.06.0.008", "Từ Thị Chẹc", "", "", "", "", "", "Con cụ Khánh", "Tảo một", ""),
-                    ("111.07.1.015", "111.06.0.008", "Từ Thị...", "", "Không rõ", "", "", "", "Con cụ Khánh. Lấy chồng về Yên đồng.", "", ""),
-                    ("111.07.1.016", "111.06.0.008", "Từ Thị Năm", "", "", "", "", "", "Con cụ Khánh", "Tảo một", ""),
-                    ("111.07.0.017", "111.06.0.008", "Từ Hữu Xích", "", "Bà cả Trần Thị Phương, bà thứ Nguyễn Thị Thiu", "", "", "", "Con cụ Khánh. Sinh hạ: 3 trai [Nghiêm, Linh, Tấn] đều tảo vong, Từ Thị Tuất (lấy người miền Nam, Từ Thị Thảo lấy người Sơn Lộc).", "Phạp tự", ""),
-                    ("111.07.0.018", "111.06.0.010", "Từ Hữu Toại", "", "Bà cả Trần Thị Khai, bà thứ Nguyễn Thị Kiềm", "", "", "", "Con cụ Sum. Ông trước làm lý trưởng lên chánh tổng. Sinh hạ: Từ Hữu Hào, Từ Thị Em nậy (lấy ông Thực Dư ở Đại Lộc), Từ Thị Em Con (lấy ông Nguyễn Khiêm), Từ Hữu Bốn, Từ Hữu Niêm (chết sớm).", "", ""),
-                    ("111.07.1.019", "111.06.0.010", "Từ Thị ...", "", "cố Sị", "", "", "", "Con cụ Sum. Lấy cố Sị trong làng", "", ""),
-                    ("111.07.0.020", "111.06.0.010", "Từ Hữu Nghị", "", "Bà Lê Thị Hai", "", "", "", "Con thứ 2 cụ Sum. Sinh hạ: Từ Hữu Nghi (chết lúc khoảng 20 tuổi), Từ Thị Em (lấy ông Trần Hải trong làng), Từ Hữu Lợi (tảo một), Từ Hữu Lộc.", "", ""),
-                    ("111.07.1.021", "111.06.0.010", "Từ Thị ...", "", "cựu Thuyên", "", "", "", "Con cụ Sum. Lấy ông cựu Thuyên trong làng", "", ""),
-                    ("111.07.1.022", "111.06.0.010", "Từ Thị ...", "", "Trần Yểu", "", "", "", "Con cụ Sum. Lấy ông Trần Yểu trong làng", "", ""),
-                    ("111.07.1.023", "111.06.0.010", "Từ Thị Sáu", "", "Cửu Tường", "", "", "", "Con cụ Sum. Lấy ông Cửu Tường trong làng", "", ""),
-                    ("111.07.1.024", "111.06.0.010", "Từ Thị ...", "", "Trung Hiếu", "", "", "", "Con cụ Sum. Lấy ông Trung Hiếu trong làng", "", ""),
-                    ("111.07.0.025", "111.06.0.010", "Từ Hữu Luận", "", "Bà Trần Thị, bà thứ Trần Thị Kép", "", "", "", "Con thứ 3 cụ Sum. Sinh hạ: Từ Thị Ngọ (lấy ông Trần Phúc trong làng), Từ Hữu Trợ, Từ Hữu Trự, Từ Hữu Ngự (tảo một), Từ Hữu Sáu, Từ Thị Tựu (lấy anh Nhàn xã Vĩnh Lộc), Từ Hữu Kế, Từ Thị Đỏ (tảo vong), Từ Hữu Chín (tảo một).", "", ""),
-                    ("111.07.1.026", "111.06.0.012", "Từ Thị Dị", "", "Trần Đinh", "", "", "", "Con cụ Cội. Lấy ông Trần Đinh trong làng", "", ""),
-                    ("111.07.0.027", "111.06.0.012", "Từ Hữu Lệ", "", "Bà Trần Thị Cầy (út)", "", "", "", "Con đầu cụ Cội. Sinh hạ: Từ Hữu Số, Từ Hữu Nhuyến, Từ Hữu Tam (mất sớm).", "", ""),
-                    ("111.07.1.028", "111.06.0.012", "Từ Thị ...", "", "Đặng Cầu", "", "", "", "Con cụ Cội. Lấy ông Đặng Cầu trong làng", "", ""),
-                    ("111.07.1.029", "111.06.0.012", "Từ Thị ...", "", "Trần Thảng", "", "", "", "Con cụ Cội. Lấy ông Trần Thảng trong làng", "", ""),
-                    ("111.07.0.030", "111.06.0.012", "Từ Hữu Nghĩa", "", "Bà Ngô Thị Ứng", "", "", "", "Con thứ 2 cụ Cội. Sinh hạ: Từ Hữu Nhường, Từ Thị Em (lấy ông Quỳ trong làng), Từ Hữu Thường, Từ Thị Chút (lấy ông Tình trong làng), Từ Hữu Tường, Từ Hữu Âu, Từ Hữu Dái (tảo một).", "", ""),
-                    ("111.07.0.031", "111.06.0.012", "Từ Hữu Khí", "", "", "", "", "", "Con cụ Cội.", "Chết sớm", ""),
-                    ("111.07.0.032", "111.06.0.012", "Từ Hữu Trề", "", "", "", "", "", "Con cụ Cội.", "Chết sớm", ""),
-                    ("111.07.1.033", "111.06.0.012", "Từ Thị Tám", "", "Đặng Cầu", "", "", "", "Con cụ Cội. Lấy ông Trần Hoàn trong làng", "", ""),
-                    ("111.07.0.034", "111.06.0.012", "Từ Hữu Lộc", "", "", "", "", "", "Con cụ Cội.", "Tảo vong", ""),
-
-                    # ------------------------------------
-                    # CHI 2
-                    # ------------------------------------ 
-                    ("122.07.0.035", "122.06.0.014", "Từ Hữu Duyệt", "", "Bà Trần Thị Nhụ", "", "", "", "Con cụ Toát. Sinh hạ: Từ Hữu Tựu, Từ Thị Tưu (lấy ông Trần Diệm trong làng), Từ Thị Chút (lấy ông Trần Ngọt trong làng), Từ Thị Chút Em (lấy ông Nguyễn Hy ở Yên Đồng), Từ Hữu Nựu.", "", ""),
-                    ("122.07.1.036", "122.06.0.014", "Từ Thị Em", "", "Trần Thế", "", "", "", "Con cụ Toát. Lấy ông Trần Thế trong làng", "", ""),
-                    ("122.07.0.037", "122.06.0.014", "Từ Hữu Hợi", "", "Bà Nguyễn Thị Đình", "", "", "", "Con thứ 2 cụ Toát. Sinh hạ: Từ Hữu Cảnh, Từ Hữu Quý (liệt sỹ), Từ Thị Tỷ (lấy ông Phan Đàn Xóm Mới), Từ Hữu Tư, Từ Thị Ngụ (lấy chồng về Đức Lâm, Đức Thọ), Từ Thị Lùc (lấy chồng về Kỳ Anh).", "", ""),
-                    ("122.07.0.038", "122.06.0.014", "Từ Hữu Điếm", "", "", "", "", "", "Con cụ Toát", "Tảo vong", ""),
-                    ("122.07.1.039", "122.06.0.017", "Từ Thị Mai", "", "Trần Chinh", "", "", "", "Con cụ Mận. Lấy Trần Chinh trong làng", "", ""),
-                    ("122.07.0.040", "122.06.0.017", "Từ Hữu Khai (Đoài)", "", "Bà Nguyễn Thị Chắt", "", "", "", "Con cụ Mận. Sinh hạ: Từ Thị Đoài (lấy ông Trần Đại trữa làng), Từ Hữu Lương, Từ Thị Đỏ (tảo một).", "", ""),
-                    ("122.07.0.041", "122.06.0.017", "Từ Hữu Lai", "Như", "Bà Trần Thị Em", "", "", "", "Con thứ 2 cụ Mận. Sinh hạ: Từ Thị Xuân, Từ Thị Tâm, Từ Hữu Tương.", "", ""),
-                    ("123.07.0.042", "123.06.0.026", "Từ Hữu Kiệp", "", "Bà Trần Thị Tráng", "", "", "", "Con đầu cụ Vẹn. Sinh hạ: Từ Hữu Đa (tảo một), Từ Hữu Số, Từ Hữu Yêm, Từ Hữu Niềm, Từ Thị Xuân (lấy ông Nguyễn Cầu, Trung Xá), Từ Hữu Xanh, Từ Thị Thanh (lấy ông Nguyễn Tứ (Xà) trong làng).", "", ""),
-                    ("123.07.0.043", "123.06.0.026", "Từ Hữu Điệp", "", "Bà Nguyễn Thị Ba", "", "", "", "Con thứ 2 cụ Vẹn. Sinh hạ: Từ Hữu Nuôi, Từ Hữu Nuôi Em (Tiếp). ", "", ""),
-                    ("123.07.1.044", "123.06.0.026", "Từ Thị Ba", "", "Không rõ", "", "", "", "Con cụ Vẹn. Lấy chồng về Thạch Liên", "", ""),         
-                    ("123.07.0.045", "123.06.0.026", "Từ Hữu Dữu", "", "", "", "", "", "Con cụ Vẹn", "Chết sớm", ""),
-                    ("123.07.1.046", "123.06.0.026", "Từ Thị Chút", "", "Trần Tuần", "", "", "", "Con cụ Vẹn. Lấy ông Trần Tuần dư nại", "", ""),
-                    ("123.07.1.047", "123.06.0.026", "Từ Thị Tỷ", "", "Ông Long", "", "", "", "Con cụ Vẹn. Lấy chồng về Tiến Lộc", "", ""),
-                    ("123.07.1.048", "123.06.0.027", "Từ Thị Xin", "", "", "", "", "", "Con cụ Vẹ", "Chết sớm", ""),
-                    ("124.07.0.049", "124.06.0.042", "Từ Quang Diệu", "", "Bà Trần Thị Thái", "1920", "1992", "01/05 AL", "Con đầu cụ Chính. Cán bộ xã, huyện, tỉnh liên khu 4; Huân, Huy chương kháng chiến hạng Nhất. Vợ là Bà Trần Thị Thái (1934-2012, giỗ 15/01). Sinh hạ: Từ Hữu Chắt (Chết sớm), Từ Thị Lý (Chết sớm), Từ Hữu Hạnh (tảo vong), Từ Thị Đào (tảo vong), Từ Quang Viện, Từ Quang Xá, Từ Kim Khánh, Từ Quang Thuỳ, Từ Thị Đỏ (tảo vong).", "", ""),
-                    ("124.07.0.050", "124.06.0.042", "Từ Quang Bút", "", "Không có vợ", "", "", "", "Con cụ Chính. Liệt sĩ chống Pháp", "Không có con", ""),
-                    ("124.07.1.051", "124.06.0.042", "Từ Thị Tam", "", "Trần Khới", "", "", "", "Con cụ Chính. Lấy ông Trần Khới trong làng (Con cháu hiện nay là Trần Khởi", "", ""),
-                    ("124.07.1.052", "124.06.0.042", "Từ Thị Tứ", "", "", "", "", "", "Con cụ Chính", "Tảo vong", ""),
-                    ("124.07.1.053", "124.06.0.042", "Từ Thị Chút", "", "", "", "", "", "Con cụ Chính", "Tảo vong", ""),             
-                    ("124.07.1.054", "124.06.0.042", "Từ Thị Hảo", "", "Trần Ninh", "", "", "", "Con cụ Chính. Lấy ông Trần Ninh trong làng (Con cháu hiện nay là Trần Đình Sâm", "", ""),             
-                    ("124.07.0.055", "124.06.0.042", "Từ Quang Son", "Phú", "Bà Trần Thị Tỷ", "", "", "", "Con thứ 3 cụ Chính. Ông làm cán bộ hợp tác xã. Sinh hạ: Từ Hữu Phú, Từ Thị Ngư (lấy ông Thái Kỳ xóm mới), Từ Thị Nhung (lấy chồng), Từ Hữu Huy, Từ Thị Quy (lấy anh Trần Hải (Xứ) trong làng), Từ Hữu Quý.", "", ""),
-                    ("124.07.1.056", "124.06.0.042", "Từ Thị Tám", "", "Nguyễn Long", "", "", "", "Con cụ Chính. Lấy ông Nguyễn Long trong làng(Con cháu hiện nay là Nguyễn Thị Thanh", "", ""),
-                    ("124.07.1.057", "124.06.0.042", "Từ Thị Chín", "", "Ông Nhân", "", "", "", "Con cụ Chính. Lấy ông Nhân trong làng(Con cháu hiện nay là Chắt Nhân", "", ""),
-                    ("124.07.1.058", "124.06.0.042", "Từ Thị Mười", "", "", "", "", "", "Con cụ Chính", "Tảo vong", ""),
-                    ("124.07.1.059", "124.06.0.044", "Từ Thị Chắt", "", "Trần Minh", "", "", "", "Con ông Giáo. Lấy ông Trần Minh ở Quang Lộc", "", ""),
-                    ("124.07.1.060", "124.06.0.044", "Từ Thị Con", "", "Nguyễn Thủy", "", "", "", "Con ông Giáo. Lấy ông Nguyễn Thủy ở Điền Xá - Đồng Lộc", "", ""),                  
-                    ("124.07.0.061", "124.06.0.044", "Từ Hữu Huấn", "", "", "", "", "", "Con ông Giáo.", "Chết sớm", ""),
-                    ("124.07.0.062", "124.06.0.044", "Từ Hữu Chuột", "", "Bà Trần Thị Tỷ", "", "", "", "Con ông Giáo. Sinh hạ: Từ Hữu Khang, Từ Thị Thái, Từ Hữu Bình, Từ Thị Đỏ (tảo vong).", "", ""),
-                    ("124.07.0.063", "124.06.0.044", "Từ Hữu Xưng", "", "", "", "", "", "Con ông Giáo. Chết lúc 15 tuổi ", "Chết sớm", ""),
-                    ("124.07.0.064", "124.06.0.045", "Từ Hữu Nuôi", "", "", "", "", "", "Con cụ Thí", "Chết sớm", ""),
-                    ("124.07.0.065", "124.06.0.045", "Từ Hữu Thiện", "", "Bà cả Trần Thị Xuân, Bà thứ Nguyễn Thị Quế", "", "", "", "Con cụ Thí. Ông trước làm nghề dạy học, giáo viên cấp 1. Vợ cả (Bà Hòa Thượng Xuân)sinh hạ: Từ Hữu Giáp (mất sớm). Vợ thứ sinh hạ: Từ Hữu Cường, Từ Hữu Thành (tảo vong), Từ Hữu Mạnh (đi làm con nuôi).", "", ""),
-                    ("124.07.1.066", "124.06.0.045", "Từ Thị Tỷ", "Liên", "ông Trần Văn Sinh", "", "", "", "Con cụ Thí. Lấy ông Trần Văn Sinh người Đức Thọ", "", ""),
-                    ("124.07.1.067", "124.06.0.045", "Từ Thị Quyền", "", "ông Nguyễn Hữu Tuế", "", "", "", "Con cụ Thí. Lấy ông Tuế người Thạch Ngọc", "", ""),
-
-                    # ------------------------------------
-                    # CHI 3
-                    # ------------------------------------      
-                    ("135.07.1.068", "135.06.0.046", "Từ Thị Đích", "", "Không rõ", "", "", "", "Con cụ Thống. Lấy chồng về Đồng Lộc.", "", ""),
-                    ("135.07.1.069", "135.06.0.046", "Từ Thị Di", "", "", "", "", "", "Con cụ Thống.", "Chết sớm", ""),
-                    ("135.07.1.070", "135.06.0.047", "Từ Thị ...", "", "Trần Phiếm", "", "", "", "on cụ Thính. Lấy ông Trần Phiếm trong làng", "", ""),
-                    ("135.07.0.071", "135.06.0.047", "Từ Hữu Mục", "", "Bà Trần Thị Dản", "", "", "", "Con cụ Thính. Sinh hạ: Từ Thị Thộ (mất do thiên lôi), Từ Hữu Thự.", "", ""),
-                    ("135.07.0.072", "135.06.0.047", "Từ Hữu Khoa", "", "Không có vợ", "", "", "", "Con cụ Thính. Sống già nhưng không có vợ con.", "Không có con", ""),
-                    ("135.07.0.073", "135.06.0.053", "Từ Hữu Nuôi", "", "", "", "", "", "Con ông Bối(ông Phụ)", "Chết sớm", ""),
-                    ("135.07.1.074", "135.06.0.053", "Từ Thị Cháu", "", "", "", "", "", "Con ông Bối(ông Phụ)", "Chết sớm", ""),
-                    ("135.07.0.075", "135.06.0.053", "Từ Hữu Mậu", "", "Hai vợ đều bỏ", "", "", "", "Con ông Bối (ông Phụ). Sinh hạ: Từ Thị Xanh (lấy chồng Miền Nam), Từ Thị Dần (không chồng con), Từ Thị Tam (mất sớm), Từ Thị Tứ (không chồng con).", "", ""),
-                    ("135.07.0.076", "135.06.0.054", "Từ Hữu Cháu", "", "", "", "", "", "Con ông Triết", "Chết sớm", ""),
-                    ("135.07.0.077", "135.06.0.054", "Từ Hữu Cước", "", "", "", "", "", "Con ông Triết", "Chết sớm", ""),
-                    ("135.07.0.078", "135.06.0.054", "Từ Hữu Quằt", "", "", "", "", "", "Con ông Triết", "Chết sớm", ""),
-                    ("135.07.1.079", "135.06.0.054", "Từ Thị Quỳ", "", "Không rõ", "", "", "", "Con ông Triết. Lấy chồng về Trường Lộc", "", ""),
-                    ("135.07.1.080", "135.06.0.056", "Từ Thị Khoách", "", "Nguyễn Thiềng", "", "", "", "Con cụ Quán. Lấy ông Nguyễn Thiềng giữa làng", "", ""),
-                    ("135.07.1.081", "135.06.0.056", "Từ Thị Hai", "", "Nguyễn Điểm", "", "", "", "Con cụ Quán. Lấy ông Nguyễn Điểm giữa làng", "", ""),
-                    ("135.07.1.082", "135.06.0.056", "Từ Thị Chự", "", "Nguyễn Thế", "", "", "", "Con cụ Quán. Lấy ông Nguyễn Thế ở Kẻ Mòi", "", ""),
-                    ("135.07.1.083", "135.06.0.056", "Từ Thị Em Nậy", "", "Trần Tuệ", "", "", "", "Con cụ Quán. Lấy ông Trần Tuệ giữa làng", "", ""),
-                    ("135.07.1.084", "135.06.0.056", "Từ Thị Em Con", "", "Trần Bệ", "", "", "", "Con cụ Quán. Lấy ông Trần Bệ giữa làng", "", ""),            
-                    ("135.07.0.085", "135.06.0.056", "Từ Hữu Trù", "", "Bà Nguyễn Thị Ngoéc", "", "", "", "Con cụ Quán. Vợ là Bà Nguyễn Thị Ngoéc (người Tiền Lối, Quang Lộc). Sinh hạ: Từ Hữu Trì, Từ Hữu Thái, Từ Thị Chiu (lấy chồng về Đại Lộc), Từ Thị Kẹm (chết sớm), Từ Hữu Ô (chết sớm), Từ Hữu Mạ (chết sớm).", "", ""),
-                    ("135.07.1.086", "135.06.0.056", "Từ Thị Chút", "", "Trần Bản", "", "", "", "Con cụ Quán. Lấy ông Trần Bản giữa làng", "", ""),
-                    ("135.07.1.087", "135.06.0.056", "Từ Thị Tám", "", "Trần Dê", "", "", "", "Con cụ Quán. Lấy ông Trần Dê giữa làng", "", ""),
-                    ("135.07.1.088", "135.06.0.061", "Từ Thị Bẹn", "", "Không rõ", "", "", "", "Con ông Xán. Đã lấy chồng chết sớm", "", ""),
-                    ("135.07.1.089", "135.06.0.061", "Từ Thị Em", "", "ông Bút", "", "", "", "Con ông Xán. Lấy ông Bút ở Yên Đồng", "", ""),
-                    ("135.07.1.090", "135.06.0.061", "Từ Thị Tam", "", "", "", "", "", "Con ông Xán. Chết đuối", "Chết sớm", ""),
-                    ("135.07.1.091", "135.06.0.061", "Từ Thị Tứ", "", "", "", "", "", "Con ông Xán.", "Chết sớm", ""),          
-                    ("135.07.0.092", "135.06.0.061", "Từ Hữu Năm", "Từ Hoa Việt", "Bà Nguyễn Thị Lợi", "", "", "", "Con ông Xán. Vợ là Bà Nguyễn Thị Lợi (người Quốc Oai, Bình Đà, Hà Đông). Bộ đội chống Pháp, kỹ sư điện, Huy chương chống Pháp, Huân chương chống Mỹ (Gia đình ở Hà Nội). Sinh hạ: Từ Thị Lan, Từ Hữu Nam (Từ Hoa Nam - bộ đội), Từ Thị Hải Anh.", "", ""),
-                    ("135.07.0.093", "135.06.0.061", "Từ Hữu Lục", "Quang, Thuận, Bút", "Bà Trần Thị Tỷ", "", "1988", "2/6 AL", "Con ông Xán. Vợ là Bà Trần Thị Tỷ ((?-2023, giổ 28/10 AL). Sinh hạ: Từ Thị Hạnh (chết sớm), Từ Thị Phúc (chết sớm), Từ Thị Thu Hà (lấy anh Nguyễn Tâm [Chung], trong làng), Từ Thị Nhung (chết đuối), Từ Hữu Hoà (Đại tá Quân đội, sống ở Hà Nội), Từ Thị Hiệp (lấy chồng về Sơn Lộc [chết sớm]), Từ Hữu Huấn (ở Hà Nội).", "", ""), 
-                    ("135.07.1.094", "135.06.0.061", "Từ Thị Bảy", "", "", "", "", "", "Con ông Xán.", "Chết sớm", ""),
-                    ("135.07.0.095", "135.06.0.061", "Từ Hữu Tám", "Sơn", "Bà Nguyễn Thị Quý", "", "", "", "Con ông Xán. Vợ là Bà Nguyễn Thị Quý (người Thuận Lộc). Vợ chồng làm công nhân ở Nông trường Việt Trung, Quảng Bình. Sinh hạ: Từ Thị Thái, Từ Thị Bình, Từ Thị Minh, Từ Thị Thìn, Từ Hữu Sang (chết sớm), Từ Hữu Trọng.", "", ""),
-
-                    # ------------------------------------
-                    # CHI 4
-                    # ------------------------------------     
-                    ("246.07.0.096", "246.06.0.062", "Từ Hữu Đốc", "", "", "", "", "", "Con ông Hòe", "Chết sớm", ""),
-                    ("246.07.0.097", "246.06.0.062", "Từ Hữu Lường", "", "", "", "", "", "Con ông Hòe", "Chết sớm", ""),
-                    ("246.07.0.098", "246.06.0.063", "Từ Hữu Bạt", "", "Bà cả Trần Thị Điểu, Bà thứ Ngô Thị Bốn", "", "", "", "Con ông Trấn. Ông trước làm Hương thợ làng. Sinh hạ: Từ Hữu Mộc (đi Lào chết), Từ Hữu Phương (chết sớm), Từ Hữu Cương, Từ Thị Ngọ (lấy ông Trần Thản trong làng).", "", ""),
-                    ("246.07.1.099", "246.06.0.063", "Từ Thị Đệ", "Cố Tòng", "Trần Hùng", "", "", "", "Con ông Trấn. Lấy ông Trần Hùng giữa làng", "", ""),
-                    ("246.07.0.100", "246.06.0.063", "Từ Hữu Nhiếp", "Cố Dương", "Bà Trần Thị Thao", "", "", "14/4", "Con cụ Trấn. Vợ là Bà Trần Thị Thào (thọ 91 tuổi, mất 21/2 AL). Ông trước làm sải chùa, cán bộ phong trào 1930. Sống thọ 73 tuổi. Sinh hạ: Từ Thị Chắn (tảo vong), Từ Thị Chắt (lấy ông Trần Dương, Yên Đồng), Từ Hữu Tượng, Từ Hữu Hình (Hảo - Liệt sĩ), Từ Hữu Chất.", "", ""),                  
-                    ("246.07.0.101", "246.06.0.064", "Từ Hữu Xỉ", "", "Bà cả Ngô Thị Em, bà thứ Bùi Thị Tự", "", "", "", "Con ông Át. Sinh hạ: Từ Hữu Tuất (tảo một), Từ Thị Yên (lấy ông Nguyễn Liêu trong làng), Từ Hữu Dần, Từ Hữu Thìn.", "", ""),
-                    ("246.07.0.102", "246.06.0.064", "Từ Hữu Dỵ", "", "Nguyễn Thị Thường", "", "", "", "Con ông Át. Vợ là Nguyễn Thị Thường (Vợ cải giá tha phu). Sinh hạ: Từ Hữu Bạng, Từ Hữu Hộ, Từ Hữu Khánh.", "", ""),
-                    ("246.07.1.103", "246.06.0.064", "Từ Thị Em", "", "Trần Văn Vinh", "", "", "", "Con ông Át. Lấy ông Trần Văn Vinh giữa làng", "", ""),
-                    ("246.07.1.104", "246.06.0.064", "Từ Thị Dị", "", "", "", "", "", "Con ông Át", "Tảo vong", ""),
-                    # ------------------------------------
-                    # CHI 5
-                    # ------------------------------------          
-                    ("258.07.1.105", "258.06.0.069", "Từ Thị Tấn", "", "", "", "", "", "Con ông Cuộc.", "Tảo vong", ""),
-                    ("258.07.1.106", "258.06.0.069", "Từ Thị Đức", "", "", "", "", "", "Con ông Cuộc.", "Tảo vong", ""),                   
-                    ("258.07.0.107", "258.06.0.069", "Từ Hữu Cu", "", "Bà Nguyễn Thị Út", "", "", "", "Con ông Cuộc.", "Không có con", ""),
-                    ("258.07.0.108", "258.06.0.071", "Từ Hữu Hoài", "", "Bà Nguyễn Thị Túc", "", "", "", "Con ông Tuỳ. Sinh hạ: Từ Thị Hiểu (lấy ông Trần Chiểu trong làng), Từ Hữu Điểu, Từ Hữu Tiếu (Phán), Từ Thị Đỏ (tảo vong).", "", ""),
-                    ("258.07.1.109", "258.06.0.071", "Từ Thị ...", "", "ông Láng", "", "", "", "Con ông Tuỳ. Lấy ông Láng giữa làng", "", ""),
-                    ("258.07.1.110", "258.06.0.071", "Từ Thị Chích", "", "", "", "", "", "Con ông Tuỳ", "Tảo một", ""),
-                    ("258.07.0.111", "258.06.0.071", "Từ Hữu Liên", "", "", "", "", "", "Con ông Tuỳ", "Tảo một", ""),
-                    ("258.07.0.112", "258.06.0.075", "Từ Hữu Nha", "", "Bà Nguyễn Thị Thật", "", "", "", "Con ông Do. Nghề nghiệp: làm nghề da, thợ mộc, thợ may. Sinh hạ: Từ Thị Dệ (lấy ông Nguyễn Văn Thống, Dư Nại), Từ Thị Hoà (lấy ông Hành ở Mỹ Lộc), Từ Thị Dục (lấy ông Thế Nhiên, Thượng Xuân), Từ Thị Phúc (lấy ông Trần Á trong làng), Từ Thị Tỷ (lấy Nguyễn Hành, Dư Nại), Từ Hữu Tung (tảo vong).", "", ""),
-                    ("258.07.1.113", "258.06.0.075", "Từ Thị Nhạ", "", "", "", "", "", "Con ông Do.", "Tảo vong", ""),
-                    ("258.07.1.114", "258.06.0.075", "Từ Thị Nhỏ", "", "", "", "", "", "Con ông Do.", "Tảo vong", ""),
-                    ("258.07.0.115", "258.06.0.080", "Từ Hữu Trại", "", "Vợ đi lấy chồng khác", "", "", "", "Con ông Chuyên. Sinh hạ: Từ Thị Sào (lấy chồng về Kẻ Mòi).", "Phạp tự", ""),
-                    ("258.07.0.116", "258.06.0.080", "Từ Hữu Lành", "", "", "", "", "", "Con ông Chuyên.", "Tảo vong", ""),
-                    ("258.07.0.117", "258.06.0.081", "Từ Hữu Nhạc", "",  "Bà cả Đặng Thị Kiều, bà thứ Thái Thị Hanh", "", "", "", "Con ông Chuân. Nghề nghiệp: Dạy Hán, thầy thuốc, địa lý. Sinh hạ: Từ Thị Em (lấy ông Phan Liêu, Xóm Mới), Từ Hữu Đề.", "", ""),
-                    ("258.07.0.118", "258.06.0.081", "Từ Hữu Vòng", "", "", "", "", "", "Con ông Chuân", "Tảo một", ""),
-                    ("258.07.1.119", "258.06.0.081", "Từ Thị Mặc", "", "Nguyễn Viền", "", "", "", "Con ông Chuân. Lấy ông Nguyễn Viền giữa làng", "", ""),
-                    ("258.07.0.120", "258.06.0.084", "Từ Hữu Vi", "", "Bà Trần Thị Thao", "", "", "", "Con đầu ông Huân. Nghề nghiệp: Thợ mộc. Sinh hạ: Từ Hữu Dạ (tảo một), Từ Hữu Túc, Từ Thị Đạn (lấy ông Trần Bá (Phố) trong làng).", "", ""),
-                    ("258.07.0.121", "258.06.0.084", "Từ Hữu Lậu", "", "Bà Trần Thị Tân, bà thứ Lê Thị Năm", "", "", "", "Con ông Huân. Sinh hạ: Từ Hữu Vân, Từ Hữu Đằng, Từ Hữu Bầng (Liệt sĩ), Từ Hữu Nhuệ.", "", ""),
-                    ("258.07.0.122", "258.06.0.084", "Từ Hữu Ứng", "", "Bà Trần Thị Năm", "", "", "", "Con thứ 3 ông Huân. Được sắc phong Chánh bát phẩm, Đội trưởng. Sinh hạ: Từ Hữu Sàn, Từ Thị Em (lấy ông Trần Tá trong làng), Từ Hữu Hiệt, Từ Thị Tử (lấy ông Nguyễn Xà trong làng), Từ Hữu Sàng.", "", ""),
-                    ("258.07.1.123", "258.06.0.084", "Từ Thị ...", "", "Mục Lung", "", "", "", "Con ông Huân. Lấy ông Mục Lung ", "", ""),
-                    ("258.07.0.124", "258.06.0.084", "Từ Hữu Tôn", "", "", "", "", "", "Con ông Huân", "Chết sớm", ""),
-                    ("258.07.0.125", "258.06.0.085", "Từ Hữu Dái", "", "", "", "", "", "Con ông Giảng", "Tảo một", ""),
-                    ("258.07.0.126", "258.06.0.085", "Từ Hữu Lai", "", "Bà Trần Thị...", "", "", "", "Con ông Giảng. Sinh hạ: Từ Hữu Trà, Từ Thị Trừ (lấy chồng về Thạch Tiến), Từ Thị Thứ (lấy Trần Vụ trong làng), Từ Hữu Bậc (Liệt sĩ).", "", ""),
-                    ("258.07.0.127", "258.06.0.085", "Từ Hữu Lưu", "", "Bà Nguyễn Thị Thời", "", "", "", "Con thứ 2 ông Giảng. Sinh hạ: Từ Thị Bẹn (lấy ông Trần Dung trong làng), Từ Hữu Tưu (Khoái), Từ Thị Em (lấy ông Phan Âu, Thượng Xuân), Từ Thị... (lấy ông Trần Phu trong làng).", "", ""),
-                    ("258.07.0.128", "258.06.0.086", "Từ Hữu Kẹo", "", "Vợ lấy chồng khác", "", "", "", "Con ông Điển.", "Phạp tự", ""),
-                    ("258.07.0.129", "258.06.0.086", "Từ Hữu Mật", "", "", "", "", "", "Con ông Điển.", "Tảo vong", ""),
-                    ("258.07.0.130", "258.06.0.086", "Từ Hữu Thái", "", "", "", "", "", "Con ông Điển.", "Chết sớm", ""),
-                    ("258.07.0.131", "258.06.0.086", "Từ Hữu Thới", "", "", "", "", "", "Con ông Điển.", "Tảo một", ""),
-                    ("258.07.0.132", "258.06.0.088", "Từ Hữu Tự", "", "", "", "", "", "Con ông Bồng", "Chết sớm", ""),
-
-                    # ==========================================================
-                    # ĐỜI 8 
-                    # ==========================================================
-
-                    # ------------------------------------
-                    # CHI 1
-                    # ------------------------------------                    
-                    ("111.08.1.001", "111.07.0.001", "Từ Thị...", "", "Cửu Bẹn", "", "", "", "Con ông Phiệt. Lấy 2 chồng, chồng đầu là ông Điệng; sau lấy ông Cửu Bẹn ở Vĩnh Lộc", "", ""),
-                    ("111.08.0.002", "111.07.0.001", "Từ Hữu Điệt", "", "Bà Nguyễn Thị Bốn", "", "", "", "Con ông Phiệt. Sinh hạ: Từ Hữu Vện.", "", ""),
-                    ("111.08.1.003", "111.07.0.001", "Từ Thị Đém", "", "", "", "", "", "Con ông Phiệt", "Tảo vong", ""),
-                    ("111.08.0.004", "111.07.0.001", "Từ Hữu Việt", "", "Vợ lấy chồng khác", "", "", "", "Con ông Phiệt.", "Phạp tự", ""),
-                    ("111.08.0.005", "111.07.0.001", "Từ Hữu Huyền", "Năm", "Bà Nguyễn Thị Vạn", "", "", "", "Con ông Phiệt. Sinh hạ: Từ Hữu Cháu, Từ Hữu Thụ, Từ Hữu Phù (Tửu), Từ Thị Tứ (lấy ông Nguyễn Chung trong làng), Từ Hữu Dấu, Từ Thị Lục (lấy ông Trần Hoàn trong làng).", "", ""),
-                    ("111.08.0.006", "111.07.0.001", "Từ Hữu Ca", "", "", "", "", "", "Con ông Phiệt", "Tảo một", ""),
-                    ("111.08.1.007", "111.07.0.001", "Từ Thị Bảy", "", "Ba Điêm", "", "", "", "Con ông Phiệt. Lấy ông Ba Điêm trong làng", "Tảo một", ""),
-                    ("111.08.1.008", "111.07.0.001", "Từ Thị Bát", "", "", "", "", "", "Con ông Phiệt", "Tảo vong", ""),
-                    ("111.08.1.009", "111.07.0.008", "Từ Thị Mực", "", "Cu Láng", "", "", "", "Con ông Lâm. Lấy ông Cu Láng trong làng", "", ""),
-                    ("111.08.1.010", "111.07.0.008", "Từ Thị Ba", "", "Không rõ", "", "", "", "Con ông Lâm. Lấy 3 chồng", "", ""),
-                    ("111.08.0.011", "111.07.0.008", "Từ Hữu Đồng", "Hường", "Bà Trần Thị Con", "", "", "", "Con đầu ông Lâm. Sinh hạ: Từ Hữu Hường (Liệt sĩ), Từ Hữu Hồng, Từ Hữu Bàng, Từ Thị Thị (lấy về Thượng Lội, Quang Lộc), Từ Hữu Bính, Từ Thị Minh (lấy anh Trần Lục (Cứ) trong làng), Từ Hữu Lương.", "", ""),
-                    ("111.08.0.012", "111.07.0.008", "Từ Hữu Địch", "", "", "", "", "", "Con ông Lâm", "Tảo vong", ""),
-                    ("111.08.0.013", "111.07.0.008", "Từ Hữu Kế", "Huệ", "Bà Trần Thị Hạ", "", "", "", "Con thứ 2 ông Lâm. Sinh hạ: Từ Thị Huệ, Từ Thị Hoà, Từ Hữu Huy, Từ Thị Hiệu (lấy Nguyễn Minh Thạc, Thượng Xuân), Từ Hữu Hiếu, Từ Thị Hương, Từ Hữu Hoa, Từ Hữu Hoè, Từ Hữu Huề.", "", ""),
-                    ("111.08.1.014", "111.07.0.008", "Từ Thị Chút", "", "", "", "", "", "Con ông Lâm", "Chết sớm", ""),
-                    ("111.08.0.015", "111.07.0.008", "Từ Hữu Thịnh", "", "", "", "", "", "Con ông Lâm", "Chết sớm", ""),
-                    ("111.08.0.016", "111.07.0.009", "Từ Hữu Điệng", "", "", "", "", "", "Con ông Tâm", "Chết sớm", ""),
-                    ("111.08.0.017", "111.07.0.009", "Từ Hữu Tiệng", "", "Bà Nguyễn Thị Bình", "", "", "", "Con ông Tâm. Sinh hạ: Từ Thị Chắt (lấy ông Ca trong làng), Từ Hữu Lai, Từ Hữu Phối (Không vợ), Từ Thị Hợp (Không chồng).", "", ""),
-                    ("111.08.1.018", "111.07.0.009", "Từ Thị Em", "", "", "", "", "", "Con ông Tâm. Chết đuối", "Chết sớm", ""),
-                    ("111.08.0.019", "111.07.0.009", "Từ Hữu Thiện", "", "", "", "", "", "Con ông Tâm", "Tảo một", ""),
-                    ("111.08.0.020", "111.07.0.012", "Từ Hữu Nghiệp", "", "", "", "", "", "Con ông Sáng", "Tảo một", ""),
-                    ("111.08.0.021", "111.07.0.012", "Từ Hữu Xuân", "", "", "", "", "", "Con ông Sáng", "Tảo vong", ""),
-                    ("111.08.0.022", "111.07.0.012", "Từ Hữu Vên", "", "", "", "", "", "Con ông Sáng", "Tảo vong", ""),
-                    ("111.08.1.023", "111.07.0.012", "Từ Thị Út", "", "", "", "", "", "Con ông Sáng", "Tảo một", ""),
-                    ("111.08.1.024", "111.07.0.012", "Từ Thị Xin", "", "", "", "", "", "Con ông Sáng", "Tảo một", ""),
-                    ("111.08.1.025", "111.07.0.012", "Từ Thị Mức", "", "Không rõ", "", "", "", "Con ông Sáng. Lấy chồng không có con (chết)", "", ""), 
-                    ("111.08.1.026", "111.07.0.017", "Từ Thị Tuất", "", "Không rõ", "", "", "", "Con ông Xích. Lấy chồng người miền Nam", "", ""),
-                    ("111.08.0.027", "111.07.0.018", "Từ Hữu Hào", "", "Bà Trần Thị...", "", "", "", "Con ông Toại. Sinh hạ: Từ Hữu Lượng, Từ Thị Em (lấy ông Trần Thường trong làng), Từ Thị Tựu (lấy ông Nguyễn Ngơi, Thượng Xuân), Từ Hữu Dự (tảo vong), Từ Thị Thương (tảo một).", "", ""),
-                    ("111.08.1.028", "111.07.0.018", "Từ Thị Em Nậy", "", "Thực Dư", "", "", "", "Con ông Toại. Lấy ông Thực Dư ở Đại lộc", "", ""),
-                    ("111.08.1.029", "111.07.0.018", "Từ Thị Em Con", "", "Nguyễn Khiêm", "", "", "", "Con ông Toại. Lấy ông Nguyễn Khiêm", "", ""),
-                    ("111.08.0.030", "111.07.0.018", "Từ Hữu Bốn", "", "", "", "", "", "Con ông Toại", "Chết sớm", ""),
-                    ("111.08.0.031", "111.07.0.018", "Từ Hữu Niêm", "", "", "", "", "", "Con ông Toại", "Chết sớm", ""),
-                    ("111.08.0.032", "111.07.0.020", "Từ Hữu Nghi", "", "", "", "", "", "Con ông Nghị. Chết lúc khoảng 20 tuổi, Không có vợ con.", "Chết sớm", ""),
-                    ("111.08.1.033", "111.07.0.020", "Từ Thị Em", "", "", "", "", "", "Con ông Nghị. Lấy ông Trần Hải trong làng", "", ""),
-                    ("111.08.0.034", "111.07.0.020", "Từ Hữu Lợi", "", "", "", "", "", "Con ông Nghị", "Tảo một", ""),
-                    ("111.08.0.035", "111.07.0.020", "Từ Hữu Lộc", "", "", "", "", "", "Con ông Nghị", "Chết sớm", ""),
-                    ("111.08.1.036", "111.07.0.025", "Từ Thị Xin ", "", "Trần Phúc", "", "", "", "Con ông Luận. Lấy ông Trần Phúc trong làng", "", ""),                   
-                    ("111.08.0.037", "111.07.0.025", "Từ Hữu Trợ", "", "Bà Trần Thị Đửu", "", "", "", "Con ông Luận. Sinh hạ: Từ Hữu Khương (Liệt sĩ), Từ Thị Thương (lấy Nguyễn Cược trong làng), Từ Hữu Sâm (Ở Hà Nội).", "", ""),
-                    ("111.08.0.038", "111.07.0.025", "Từ Hữu Thú", "Trự", "Bà Trần Thị", "", "", "", "Con ông Luận. Sinh hạ: Từ Thị Tuyết (lấy Trần Hoàn [Hoàn Con] trong làng), Từ Hữu Hợp, Từ Thị Bình.", "", ""),
-                    ("111.08.0.039", "111.07.0.025", "Từ Hữu Ngự", "", "", "", "", "", "Con ông Luận", "Tảo một", ""),
-                    ("111.08.0.040", "111.07.0.025", "Từ Hữu Sáu", "", "Bà Trần Thị Quế", "", "", "", "Con thứ 3 ông Luận. Đại tá Quân đội. Vợ là Bà Trần Thị Quế ở Đức Thuỷ, Đức Thọ. Sinh hạ: Từ Thị Thuỷ, Từ Thị Hà, Từ Thị Hải, Từ Hữu Đạt.", "", ""),
-                    ("111.08.1.041", "111.07.0.025", "Từ Thị Tựu", "", "ông Nhàn", "", "", "", "Con ông Luận. Lấy ông Nhàn xã Vịnh lộc", "", ""),   
-                    ("111.08.0.042", "111.07.0.025", "Từ Hữu Kế", "", "Bà Phạm Thị Man", "", "", "", "Con thứ 4 ông Luận. Bộ đội chuyển sang công nhân nhà nước, nghỉ việc. Sinh hạ: Từ Hữu Hùng, Từ Thị Dũng, Từ Thị Hoà, Từ Hữu Côi.", "", ""),
-                    ("111.08.0.043", "111.07.0.025", "Từ Hữu Chín ", "", "", "", "", "", "Con ông Luận", "Tảo một", ""),            
-                    ("111.08.0.044", "111.07.0.027", "Từ Hữu Số", "", "Bà Trần Thị Khuyển", "", "", "", "Con ông Lệ. Ông chết, bà đi lấy chồng khác. Sinh hạ: Từ Thị Hương (lấy chồng về Đức Thọ).", "Phạp tự", ""),
-                    ("111.08.0.045", "111.07.0.027", "Từ Hữu Nhuyến", "Thanh", "Bà Nguyễn Thị Hồng", "", "", "", "Con thứ 2 ông Lệ. Cán bộ xã, huyện, tỉnh (đã nghỉ hưu). Vợ là Bà Nguyễn Thị Hồng ở Nghi Xuân. Sinh hạ: Từ Ngọc Lương, Từ Hữu Long, Từ Thị Lam, Từ Thị Lê, Từ Hữu Lĩnh, Từ Thị Lộc.", "", ""),
-                    ("111.08.0.046", "111.07.0.027", "Từ Hữu Tam", "", "", "", "", "", "Con ông Lệ", "Chết sớm", ""),
-                    ("111.08.0.047", "111.07.0.030", "Từ Hữu Nhường", "Hiền", "Bà Nguyễn Thị Liêm", "", "", "", "Con đầu ông Nghĩa. Vợ là Bà Nguyễn Thị Liêm ở Quang Lộc. Sinh hạ: Từ Thị Hiền (lấy anh Nguyễn Bảo con ông Nguyễn Toàn), Từ Hữu Thảo (chết sớm), Từ Hữu Cát, Từ Hữu Nhung, Từ Thị Sâm (lấy anh Nguyễn Tú [Chiên]), Từ Thị Liệu (lấy anh Trần Bình con ông Trực), Từ Thị Đào (lấy anh Trần Đình Trọng trong làng), Từ Hữu Xuân.", "", ""),
-                    ("111.08.1.048", "111.07.0.030", "Từ Thị Em", "", "", "", "", "", "Con ông Nghĩa. Lấy ông Quỳ (Thành) trong làng", "", ""),
-                    ("111.08.0.049", "111.07.0.030", "Từ Hữu Thường", "", "Bà Lê Thị Thanh", "", "", "", "Con trai thứ 2 ông Nghĩa. Công nhân lâm nghiệp (đã nghỉ việc). Vợ là Bà Lê Thị Thanh ở Trung Lộc. Sinh hạ: Từ Hữu Bình, Từ Hữu Minh, Từ Thị Hoà.", "", ""),
-                    ("111.08.1.050", "111.07.0.030", "Từ Thị Chút", "", "", "", "", "", "Con ông Nghĩa. Lấy ông Tình trong làng ", "", ""),
-                    ("111.08.0.051", "111.07.0.030", "Từ Hữu Tường", "", "Bà Trần Thị Thảo", "", "", "", "Con thứ 3 ông Nghĩa. Công nhân xí nghiệp gang thép Thái Nguyên (đã nghỉ việc). Sinh hạ: Từ Thị Thái, Từ Thị Hoà, Từ Hữu Hùng.", "", ""),
-                    ("111.08.0.052", "111.07.0.030", "Từ Hữu Âu", "", "Bà Bùi Thị Cảnh", "", "", "", "Con thứ 4 ông Nghĩa. Vợ là Bà Bùi Thị Cảnh ở Đại Lộc. Sinh hạ: Từ Thị Thuỷ, Từ Thị Lan, Từ Hữu Hoài, Từ Thị Hồng, Từ Hữu Quang, Từ Hữu Quý.", "", ""),
-                    ("111.08.0.053", "111.07.0.030", "Từ Hữu Dái", "", "", "", "", "", "Con ông Nghĩa", "Tảo một", ""),
-
-                    # ------------------------------------
-                    # CHI 2
-                    # ------------------------------------
-
-                    ("122.08.0.067", "122.07.0.035", "Từ Hữu Tựu", "", "Bà Trần Thị Chút", "", "", "", "Con ông Duyệt. Sinh hạ: Từ Thị ... (tảo một), Từ Hữu Tuyến", "", ""),
-                    ("122.08.0.068", "122.07.0.035", "Từ Hữu Nựu", "", "Bà Ngô Thị Bảy", "", "", "", "Con thứ 2 ông Duyệt. Sinh hạ: Từ Hữu Cừ, Từ Thị Tỷ (tảo một).", "", ""),
-                    ("122.08.1.069", "122.07.0.035", "Từ Thị Tưu", "", "Trần Diệm", "", "", "", "Con đông Duyệt. Lấy ông Trần Diệm trong làng", "", ""),
-                    ("122.08.1.070", "122.07.0.035", "Từ Thị Chút", "", "Trần Ngọt", "", "", "", "Con ông Duyệt. Lấy ông Trần Ngọt trong làng", "", ""),
-                    ("122.08.1.071", "122.07.0.035", "Từ Thị Chút Em", "", "Nguyễn Hy", "", "", "", "Con ông Duyệt. Lấy ông Nguyễn Hy ở Yên Đồng", "", ""),
-                    ("122.08.0.072", "122.07.0.037", "Từ Xuân Cảnh", "", "Bà Trần Thị Nuôi, bà thứ Nguyễn Thị Lan", "", "", "", "Con đầu ông Hợi. Sinh hạ: Từ Thị Chắt (lấy chồng về Sơn Lộc), Từ Thị Xanh (lấy Trần Hạnh [Thành] trong làng), Từ Hữu Anh (tảo một), Từ Hữu Hồng (tảo một), Từ Thị Hường (tảo một), Từ Thị Hạnh, Từ Thị Hiền, Từ Hữu Hoàn, Từ Thị Hằng.", "", ""),
-
-                    ("122.08.0.073", "122.07.0.037", "Từ Hữu Quý", "", "", "", "", "", "Con thứ 2 ông Hợi. Liệt sỹ chống Mỹ.", "Không có con", ""),
-                    ("122.08.1.074", "122.07.0.037", "Từ Thị Tỷ", "", "Phan Đàn", "", "", "", "Con ông Hợi. Lấy ông Phan Đàn Xóm Mới", "", ""),
-
-                    ("122.08.0.075", "122.07.0.037", "Từ Hữu Tư", "", "Bà Nguyễn Thị Tứ", "", "", "", "Con thứ 3 ông Hợi. Công nhân nhà nước. Sinh hạ: Từ Thị Thanh, Từ Hữu Thành.", "", ""),
-                    ("122.08.1.076", "122.07.0.037", "Từ Thị Ngụ", "", "Không rõ", "", "", "", "Con ông Hợi. Lấy chồng về Đức Lâm, Đức Thọ", "", ""),
-                    ("122.08.1.077", "122.07.0.037", "Từ Thị Lục", "", "Không rõ", "", "", "", "Con ông Hợi. Lấy chồng về Kỳ Anh", "", ""),
-                    ("122.08.1.078", "122.07.0.040", "Từ Thị Đoài", "", "Trần Đại", "", "", "", "Con ông Khai. Lấy ông Trần Đại trữa làng ", "", ""),
-                    ("122.08.0.079", "122.07.0.040", "Từ Hữu Lương", "", "Bà Phan Thị Minh", "", "", "", "Con ông Khai (Đoài). Vợ là Bà Phan Thị Minh người Thượng Xuân. Sinh hạ: Từ Hữu Trung, Từ Hữu Thông, Từ Hữu Tiến, Từ Huấn Triển (tảo một), Từ Hữu Trường, Từ Thị Tình (Tảo một), Từ Hữu Thân.", "", ""),
-                    ("122.08.1.080", "122.07.0.041", "Từ Thị Xuân", "", "Không rõ", "", "", "", "Con ông Lai (Như). Lấy chồng người ở Sơn Lộc", "", ""),
-                    ("122.08.1.081", "122.07.0.041", "Từ Thị Tâm", "", "Ông Tịnh", "", "", "", "Con ông Lai (Như)", "", ""),
-                    ("122.08.0.082", "122.07.0.041", "Từ Hữu Tương", "", "Bà Nguyên", "", "", "", "Con ông Lai (Như). Vợ là Bà Nguyên người ở Sơn Lộc Sinh hạ: Từ Thị Hằng, Từ Hữu Đạt.", "", ""),
-                    ("123.08.0.083", "123.07.0.042", "Từ Hữu Đa", "", "", "", "", "", "Con ông Kiệp", "Tảo một", ""),
-
-                    ("123.08.0.084", "123.07.0.042", "Từ Hữu Số", "", "Bà Trần Thị Lan", "", "", "", "Con ông Kiệp. Cán bộ quân sự về hưu. Sinh hạ: Từ Thị Hương (lấy chồng), Từ Hữu Quyết, Từ Thị Tâm, Từ Hữu Thắng, Từ Trần Đông - con nuôi.", "", ""),
-                    ("123.08.0.085", "123.07.0.042", "Từ Hữu Yêm", "", "Bà Đinh Thị Ngọ", "", "", "", "Con ông Kiệp. Công nhân nhà nước. Sinh hạ: Từ Hữu Hải (chết sớm), Từ Hữu Hoàn, Từ Hữu Ngọc, Từ Thị Hằng.", "", ""),
-                    ("123.08.0.086", "123.07.0.042", "Từ Hữu Niềm", "", "Bà Trần Thị Lý", "", "", "", "Con ông Kiệp. Cán bộ Quân đội nghỉ hưu. Vợ là Bà Trần Thị Lý ở Yên Đồng. Sinh hạ: Từ Thị Hoà, Từ Hữu Hùng, Từ Thị Nguyệt, Từ Thị Ngọc, Từ Thị Trâm, Từ Thị Quế.", "", ""),
-                    ("123.08.1.087", "123.07.0.042", "Từ Thị Xuân", "", "Nguyễn Cầu", "", "", "", "Con ông Kiệp. Lấy ông Nguyễn Cầu, Trung Xá", "", ""),
-                    ("123.08.0.088", "123.07.0.042", "Từ Hữu Xanh", "", "Bà Trần Thị Châu", "", "", "", "Con ông Kiệp. Sinh hạ: Từ Hữu Thuận, Từ Hữu Lợi, Từ Hữu Hải, Từ Hữu Bằng.", "", ""),
-                    ("123.08.1.089", "123.07.0.042", "Từ Thị Thanh", "", "Nguyễn Tứ", "", "", "", "Con ông Kiệp. Lấy ông Nguyễn Tứ (Xà) trong làng", "", ""),
-                    ("123.08.0.090", "123.07.0.043", "Từ Hữu Nuôi", "Nam", "Bà Trần Thị Phương", "", "", "", "Con ông Điệp. Vợ là Bà Trần Thị Phương ở Khánh Lộc. Sinh hạ: Từ Hữu Dũng.", "", ""),
-                    ("123.08.0.091", "123.07.0.043", "Từ Hữu Em", "Tiếp", "Bà Nguyễn Thị Sâm", "", "", "", "Con thứ 2 ông Điệp. Vợ là Bà Nguyễn Thị Sâm ở Khánh Lộc. Sinh hạ: Từ Hữu Phú, Từ Hữu Khánh, Từ Hữu Chương.", "", ""),
-                    ("124.08.0.092", "124.07.0.049", "Từ Hữu Chắt", "", "", "", "", "", "Con ông Quang Diệu", "Chết sớm", ""),
-                    ("124.08.1.093", "124.07.0.049", "Từ Thị Lý", "", "", "", "", "", "Con ông Quang Diệu", "Chết sớm", ""),
-                    ("124.08.0.094", "124.07.0.049", "Từ Hữu Hạnh", "", "", "", "", "", "Con ông Quang Diệu", "Tảo vong", ""),
-                    ("124.08.1.095", "124.07.0.049", "Từ Thị Đào", "", "", "", "", "", "Con ông Quang Diệu", "Tảo vong", ""),                                    
-                    ("124.08.0.096", "124.07.0.049", "Từ Quang Viện", "", "Bà Lưu Thị Nhung", "1962", "", "", "Con ông Quang Diệu. Công nhân nhà nước ở Đắc Lắc. Vợ là Bà Lưu Thị Nhung ở Nam Đàn (1962). Sinh hạ: Từ Thị Hiền, Từ Minh Khoa.", "", ""),
-                    ("124.08.0.097", "124.07.0.049", "Từ Quang Xá", "", "Bà Nguyễn Thị Hoa", "1965", "", "", "Con ông Quang Diệu. Vợ là Bà Nguyễn Thị Hoa ở Đại Lộc, 1971-2017, giỗ 15/12 AL. Sinh hạ: Từ Ngọc Mơ (Gái).", "", ""),
-                    ("124.08.0.098", "124.07.0.049", "Từ Quang Khánh", "", "Bà Thái Thị Nguyệt", "", "1967", "", "Con ông Quang Diệu. Vợ là Bà Thái Thị Nguyệt (Sinh năm 1972). Sinh hạ: Từ Thị Trang, Từ Thị Ngân, Từ Thị Thắm (mất lúc 5 tuổi), Từ Quang Nam.", "", ""),
-                    ("124.08.0.099", "124.07.0.049", "Từ Quang Thuỳ", "", "Bà Nguyễn Thị Hường", "1970", "", "", "Con ông Quang Diệu. Thượng tá, Cán bộ Quân đội. Vợ là Nguyễn Thị Hường ở Thịnh Lộc, sinh năm 1989. Sinh hạ: Từ Anh Thư, Từ Anh Thơ, Từ Minh Hiếu.", "", ""),
-                    ("124.08.0.100", "124.07.0.055", "Từ Hữu Phú", "", "Bà Lê Thị Cúc", "", "2020", "", "Con đầu ông Son. Cán bộ Quân đội nghỉ hưu. Vợ là Bà Lê Thị Cúc ở Hương Khê. Sinh hạ: Từ Hải Thành, Từ Thị Hương Xuân, Từ Thị Minh Trang.", "", ""),
-                    ("124.08.1.101", "124.07.0.055", "Từ Thị Ngư", "", "Thái Kỳ", "", "", "", "Con ông Son. Lấy ông Thái Kỳ xóm mới", "", ""),
-                    ("124.08.1.102", "124.07.0.055", "Từ Thị Nhung", "", "Không rõ", "", "", "", "Con ông Son. Lấy về Yên Lộc, sau đó chồng nghiện rượu nên bỏ vào Lâm Đồng làm ăn", "", ""),
-                    ("124.08.0.103", "124.07.0.055", "Từ Hữu Huy", "", "Bà Trần Thị Tâm", "1966", "", "", "Con thứ 2 ông Son. Vợ là Bà Trần Thị Tâm ở Yên Đồng. Sinh hạ: Từ Hữu Hoàng, Từ Quang Hiệp, Từ Thị Phương.", "", ""),
-                    ("124.08.1.104", "124.07.0.055", "Từ Thị Quy", "", "Trần Hải", "1970", "", "", "Con ông Son. Lấy anh Trần Hải (Xứ) trong làng", "", ""),
-                    ("124.08.0.105", "124.07.0.055", "Từ Hữu Quý", "", "Bà Nguyễn Thị Mùi", "1972", "", "", "Con thứ 3 ông Son. Vợ là Bà Nguyễn Thị Mùi ở Thượng Xuân. Sinh hạ: Từ Nhật Lương, Từ Nam Thắng.", "", ""),
-                    ("124.08.0.106", "124.07.0.062", "Từ Hữu Khang", "", "Bà Trần Thị Thị", "", "", "", "Con đầu ông Chuột. Vợ là Bà Trần Thị Thị ở giữa làng). Sinh hạ: Từ Thị Hiền, Từ Thị Hoà.", "Phạp tự", ""),
-                    ("124.08.0.107", "124.07.0.062", "Từ Thị Thái", "", "Không lấy chồng", "", "", "", "Con ông Chuột. Không lấy chồng", "", ""),
-                    ("124.08.0.108", "124.07.0.062", "Từ Hữu Bình", "", "Bà Trần Thị Xuân", "", "", "", "Con ông Chuột. Vợ là Bà Trần Thị Xuân ở giữa làng. Sinh hạ: Từ Hữu Sâm, Từ Thị Phượng, Từ Hữu Bảo.", "", ""),
-                    ("124.08.0.109", "124.07.0.065", "Từ Hữu Giáp", "", "", "", "", "", "Con ông Thiện.", "Chết sớm", ""),
-                    ("124.08.0.110", "124.07.0.065", "Từ Hữu Cường", "", "Bà Nguyễn Thị Thuận", "", "", "", "Con ông Thiện. Vợ là Bà Nguyễn Thị Thuận ở Đại Lộc. Sinh hạ: Từ Hữu Đức.", "", ""),
-                    ("124.08.0.111", "124.07.0.065", "Từ Hữu Thành", "", "", "", "", "", "Con ông Thiện.", "Chết sớm", ""),
-                    ("124.08.0.112", "124.07.0.065", "Từ Hữu Mạnh", "", "Bà Trần Thị Lý", "", "", "", "Con ông Thiện. Vợ là Bà Trần Thị Lý ở Thạch Ngọc. Sinh hạ: Từ Thị Khánh Huyền, Từ Thị Khánh Minh, Từ Hữu Duy.", "", ""),
-
-                    # ------------------------------------
-                    # CHI 3
-                    # ------------------------------------
-                    ("135.08.1.113", "135.07.0.071", "Từ Thị Thộ", "", "", "", "", "", "Con ông Mục", "Chết sớm", ""),
-                    ("135.08.0.114", "135.07.0.071", "Từ Hữu Thự", "", "Bà Trần Thị Em", "", "", "", "Con ông Mục. Sinh hạ: Từ Hữu Hoà, Từ Hữu Bình, Từ Hữu Hạnh, Từ Thị Bính (lấy chồng Quang Lộc), Từ Thị Tý (lấy chồng Tùng Lộc), Từ Thị Vân (lấy chồng Diễn Châu, Nghệ An).", "", ""),
-                    ("135.08.1.115", "135.07.0.075", "Từ Thị Xanh", "", "Không rõ", "", "", "", "Con ông Mậu. Lấy chồng người miền Nam", "", ""),
-                    ("135.08.1.116", "135.07.0.075", "Từ Thị Dần", "", "Không lấy chồng", "", "", "", "Con ông Mậu. Không lấy chồng", "Chết sớm", ""),
-                    ("135.08.1.117", "135.07.0.075", "Từ Thị Tam", "", "", "", "", "", "Con ông Mậu", "Chết sớm", ""),
-                    ("135.08.1.118", "135.07.0.075", "Từ Thị Tứ", "", "Không lấy chồng", "", "", "", "Con ông Mậu. Không lấy chồng", "", ""),
-                    ("135.08.0.119", "135.07.0.085", "Từ Hữu Trì", "Đệ", "Bà cả Trần Thị Đị, Bà hai Đào Thị Bàn", "", "", "", "Con ông Trù. Sinh hạ: Từ Thị Hoa (lấy chồng Hương Khê), Từ Thị Lan, Từ Thị Bình (con bà hai).", "Phạp tự", ""),
-                    ("135.08.0.120", "135.07.0.085", "Từ Hữu Thái", "Thỉnh", "Bà Đào Thị Nhân", "", "", "", "Con thứ 2 ông Trù. Sinh hạ: Từ Hữu Tân, Từ Hữu Thân, Từ Thị Ái, Từ Hữu Hùng, Từ Thị Dũng, Từ Hữu Hoà.", "", ""),
-                    ("135.08.1.121", "135.07.0.085", "Từ Thị Chin", "", "", "", "", "", "Con ông Trù. Lấy chồng về Đại lộc", "", ""),
-                    ("135.08.1.122", "135.07.0.085", "Từ Thị Kẹm", "", "", "", "", "", "Con ông Trù", "Chết sớm", ""),
-                    ("135.08.0.123", "135.07.0.085", "Từ Hữu Ô", "", "", "", "", "", "Con ông Trù", "Chết sớm", ""),
-                    ("135.08.0.124", "135.07.0.085", "Từ Hữu Mạ", "", "", "", "", "", "Con ông Trù", "Chết sớm", ""),
-                    ("135.08.1.125", "135.07.0.092", "Từ Thị Lan", "", "Không rõ", "", "", "", "Con ông Việt", "", ""),
-                    ("135.08.0.126", "135.07.0.092", "Từ Hữu Nam", "Từ Hoa Nam", "Bà cả Trương Thị Thảo, Bà hai Nguyễn Thanh Chung", "", "", "", "Con ông Việt. Sinh hạ: Từ Hoàng Hải, Từ Mai Ly, Từ Mai Linh (con bà hai).", "", ""),
-                    ("135.08.1.127", "135.07.0.092", "Từ Thị Hải Anh", "", "Không rõ", "", "", "", "Con ông Việt", "", ""),
-                    ("135.08.1.128", "135.07.0.093", "Từ Thị Hạnh", "", "", "", "", "", "Con ông Lục", "Chết sớm", ""),
-                    ("135.08.1.129", "135.07.0.093", "Từ Thị Phúc", "", "", "", "", "", "Con ông Lục", "Chết sớm", ""),
-                    ("135.08.1.130", "135.07.0.093", "Từ Thị Thu Hà", "", "Nguyễn Tâm", "", "", "", "Con ông Lục. Lấy anh Nguyễn Tâm (Chung), trong làng", "", ""),
-                    ("135.08.1.131", "135.07.0.093", "Từ Thị Nhung", "", "", "", "", "", "Con ông Lục. Chết đuối", "Chết sớm", ""),
-                    ("135.08.0.132", "135.07.0.093", "Từ Hữu Hoà", "", "Bà Lê Thị Kim Hiền", "", "", "", "Con ông Lục (Quang, Thuận, Bút). Đại tá Quân đội nghỉ hưu tại Hà Nội. Sinh hạ: Từ Thanh Huyền (1993), Từ Tiến Dũng (1999).", "", ""),
-                    ("135.08.1.133", "135.07.0.093", "Từ Thị Hiệp", "", "Không rõ", "", "", "", "Con ông Lục. Lấy chồng về Sơn Lộc (Chết sớm)", "", ""),
-                    ("135.08.0.134", "135.07.0.093", "Từ Hữu Huấn", "", "Bà Nguyễn Thị Hà Hạnh", "", "", "", "Con ông Lục. ở Hà Nội. Sinh hạ: Từ Phương Thảo, Từ Phương Hiếu, Từ Nguyên Anh.", "", ""),
-                    ("135.08.1.135", "135.07.0.095", "Từ Thị Thái", "", "Không rõ", "", "", "", "Con ông Tám", "", ""),
-                    ("135.08.1.136", "135.07.0.095", "Từ Thị Bình", "", "Không rõ", "", "", "", "Con ông Tám", "", ""),
-                    ("135.08.1.137", "135.07.0.095", "Từ Thị Minh", "", "Không rõ", "", "", "", "Con ông Tám", "", ""),
-                    ("135.08.1.138", "135.07.0.095", "Từ Thị Thìn", "", "Không rõ", "", "", "", "Con ông Tám", "", ""),
-                    ("135.08.0.139", "135.07.0.095", "Từ Hữu Sang", "", "Bà Phan Thị Hương", "", "", "", "Con ông Tám. Chết sớm. Sinh hạ: Từ Hữu Phương (Quảng Bình).", "", ""),
-                    ("135.08.0.140", "135.07.0.095", "Từ Hữu Trọng", "", "Bà Đinh Thị Thu Hải", "", "", "", "Con ông Tám. Sinh hạ: Từ Hải Đăng (Quảng Bình).", "", ""),
-
-                    # ------------------------------------
-                    # CHI 4
-                    # ------------------------------------                
-                    ("246.08.0.141", "246.07.0.098", "Từ Hữu Mộc", "", "", "", "", "", "Con ông Bạt. Đi Lào chết", "Chết sớm", ""),
-                    ("246.08.0.142", "246.07.0.098", "Từ Hữu Phương", "", "", "", "", "", "Con ông Bạt", "Chết sớm", ""),
-                    ("246.08.0.143", "246.07.0.098", "Từ Hữu Cương", "", "Bà Trần Thị Tần", "", "", "", "Con ông Bạt. Ông làm cán bộ Đảng và chính quyền xã HTX. Sinh hạ: Từ Thị Xuân (Lấy anh Thanh (Thống) ở Dư nại, Từ Hữu Hạ, Từ Thị Thu (Lấy anh Trần Cần Trong xã, Từ Hữu Đông.", "", ""),
-                    ("246.08.1.144", "246.07.0.098", "Từ Thị Ngọ", "", "Trần Thản", "", "", "", "Con ông Bạt. Lấy ông Trần Thản trong làng", "", ""),
-                    ("246.08.1.145", "246.07.0.100", "Từ Thị Cháu", "", "", "", "", "", "Con ông Nhiếp", "Tảo vong", ""),
-                    ("246.08.1.146", "246.07.0.100", "Từ Thị Chắt", "", "Trần Dương", "", "", "", "Con ông Nhiếp. Lấy ông Trần Dương, Yên Đồng", "", ""),
-                    ("246.08.0.147", "246.07.0.100", "Từ Hữu Tượng", "", "Bà Trần Thị Mảy", "", "", "", "Con ông Nhiếp. Sinh hạ: Từ Thị Dược, Từ Thị Tâm (lấy chồng về Yên Đồng), Từ Hữu Tam (liệt sĩ), Từ Thị Tứ, Từ Hữu Nam, Từ Hữu Lục, Từ Hữu Thị (chết sớm), Từ Hữu Thành, Từ Hữu Lập (chết sớm), Từ Thị Minh.", "", ""),
-                    ("246.08.0.148", "246.07.0.100", "Từ Hữu Hình", "Hảo", "", "", "", "", "Con thứ 2 ông Nhiếp. Ông là cán bộ quân sự chống Pháp - Liệt sĩ, được truy tặng 3 huân chương.", "Không có con", ""),
-                    ("246.08.0.149", "246.07.0.100", "Từ Hữu Chất", "", "Bà Ngô Thị Bính", "", "", "", "Con ông Nhiếp. Ông trước làm cán bộ thương nghiệp Huyện, Tỉnh nghỉ hưu. Sinh hạ: Từ Mạnh Mậu, Từ Thị Kiểu (Lấy chồng về Sơn Lộc), Từ Thị Thu (Lấy Trần Choan trong làng), Từ Quốc Lệ, Từ Quốc Đạt, Từ Thị Đỏ (Tảo vong).", "", ""),
-                    ("246.08.0.150", "246.07.0.101", "Từ Hữu Tuất", "", "", "", "", "", "Con ông Xỉ", "Tảo một", ""),
-                    ("246.08.1.151", "246.07.0.101", "Từ Thị Yên", "", "Nguyễn Liêu", "", "", "", "Con ông Xỉ. Lấy ông Nguyễn Liêu trong làng", "", ""),
-                    ("246.08.0.152", "246.07.0.101", "Từ Hữu Dần", "", "", "", "", "", "Con ông Xỉ", "Chết sớm", ""),
-                    ("246.08.0.153", "246.07.0.101", "Từ Hữu Thìn", "", "", "", "", "", "Con ông Xỉ", "Chết sớm", ""),                    
-                    ("246.08.0.154", "246.07.0.102", "Từ Quang Bạng", "", "Bà Trần Thị Chắt", "", "", "", "Con đầu ông Dị. Sinh hạ: Từ Thị Hạnh (Lấy chồng về Quang Lộc), Từ Hữu Phúc.", "", ""),
-                    ("246.08.0.155", "246.07.0.102", "Từ Quang Hộ", "Lý", "Bà Trần Thị Khuyển", "", "", "", "Con ông Dị. Sinh hạ: Từ Hải Lý, Từ Thị Tình (chết), Từ Thị Công, Từ Thị Ty, Từ Hữu Sơn, Từ Hữu Lam.", "", ""),
-                    ("246.08.0.156", "246.07.0.102", "Từ Hữu Châu ", "Khánh", "Bà cả Nguyễn Thị Xuân, thứ: Nguyễn Thị Liên", "", "", "", "Con thứ 3 ông Dị. Sinh hạ: Từ Thị Mỹ cán bộ ở Gia Lai(lấy chồng), Từ Thị Hoà (lấy chồng về Quang Lộc), Từ Thị Tâm giáo viên ở Gia Lai(lấy chồng), Từ Thị Sâm, Từ Hữu Thắng, Từ Thị Lộc, Từ Hữu Lợi.", "", ""),
-
-
-                    # ------------------------------------
-                    # CHI 5
-                    # ------------------------------------
-                    ("258.08.1.157", "258.07.0.108", "Từ Thị Hiểu", "", "Trần Chiểu", "", "", "", "Con ông Hoài. Lấy ông Trần Chiểu trong làng", "", ""),
-                    ("258.08.0.158", "258.07.0.108", "Từ Hữu Điểu", "Trung", "Bà Trần Thị Hai", "", "", "", "Con ông Hoài. Sinh hạ: Từ Thị Cháu (lấy chồng người Quang Lộc), Từ Hữu Loan, Từ Hữu Ba, Từ Thị Tỷ (lấy anh Trần Thành(Phu) trong làng), Từ Thị Xuân (lấy chồng về Nghi Xuân).", "", ""),
-                    ("258.08.0.159", "258.07.0.108", "Từ Hữu Tiếu", "Phán", "Bà Nguyễn Thị Con", "", "", "", "Con ông Hoài. Ông trước làm cán bộ đảng uỷ và uỷ ban xã. Sinh hạ: Từ Hữu Phán, Từ Hữu Đán (mất sớm), Từ Thị Hoà (lấy chồng về Thuận Lộc), Từ Thị Chất (lấy chồng về Thạch Đài, Thạch Hà), Từ Hữu Tường (Liệt sỹ), Từ Hữu Lục, Từ Hữu Lương.", "", ""),
-                    ("258.08.1.160", "258.07.0.112", "Từ Thị Dệ", "", "Nguyễn Văn Thống", "", "", "", "Con ông Nha. Lấy ông Nguyễn Văn Thống ở Dư Nại", "", ""),
-                    ("258.08.1.161", "258.07.0.112", "Từ Thị Hòa", "", "ông Hành", "", "", "", "Con ông Nha. Lấy người Mỹ Lộc", "", ""),
-                    ("258.08.1.162", "258.07.0.112", "Từ Thị Dục", "", "Thế Nhiên", "", "", "", "Con ông Nha. Lấy ông Thế Nhiên ở Thượng Xuân", "", ""),
-                    ("258.08.1.163", "258.07.0.112", "Từ Thị Phúc", "", "Trần Á", "", "", "", "Con ông Nha. Lấy ông Trần Á trong làng", "", ""),
-                    ("258.08.1.164", "258.07.0.112", "Từ Thị Tỷ", "", "Nguyễn Hành", "", "", "", "Con ông Nha. Lấy Nguyễn Hành ở Dư Nại", "", ""),
-                    ("258.08.0.165", "258.07.0.112", "Từ Hữu Tung", "", "", "", "", "", "Con ông Nha", "Tảo vong", ""),
-                    ("258.08.1.166", "258.07.0.115", "Từ Thị Sào", "", "Không rõ", "", "", "", "Con ông Trại. Lấy chồng về Kẻ Mòi", "", ""),
-                    ("258.08.1.167", "258.07.0.117", "Từ Thị Em", "", "", "", "", "", "Con ông Nhạc. Lấy ông Phan Liêu Xóm Mới", "", ""),
-                    ("258.08.0.168", "258.07.0.117", "Từ Hữu Đề", "", "", "", "", "", "Con ông Nhạc. Ông làm Hội trưởng hội Đông y tỉnh Nghệ Tĩnh. Sinh hạ: Từ Hữu Đàn, Từ Hữu Liêm, Từ Hữu Thanh.", "", ""),
-                    ("258.08.0.169", "258.07.0.120", "Từ Hữu Dạ", "", "", "", "", "", "Con ông Vi", "Tảo một", ""),
-                    ("258.08.0.170", "258.07.0.120", "Từ Hữu Túc", "Thân", "Bà Nguyễn Thị Hai", "", "", "", "Con ông Vi đời thứ 7. Ông trước làm nghề thợ mộc. Sinh hạ: Từ Thị Thìn (lấy chồng về Trung Lộc), Từ Thị Kiêm (lấy ông Trần Đạt trong làng), Từ Thị Yêm (tảo một), Từ Thị Chế (tảo một), Từ Hữu Đỏ (tảo một), Từ Hữu Tuý, Từ Thị Tuyết (lấy ông Trần Tùng trong làng), Từ Thị Bình (lấy chồng về Nghi Xuân).", "", ""),
-                    ("258.08.1.171", "258.07.0.120", "Từ Thị Đạn", "", "Trần Bá", "", "", "", "Con ông Vi. Lấy ông Trần Bá trong làng", "", ""),
-
-                    ("258.08.0.172", "258.07.0.121", "Từ Hữu Vân", "Bính", "Bà Trần Thị Đém", "", "", "", "Con ông Lậu. Sinh hạ: Từ Thị Bính (lấy chồng về Quang Lộc), Từ Thị Tam (lấy Trần Ngoạt trong làng), Từ Thị Lục (lấy chồng về Hương Sơn), Từ Thị Liên (ở Đắk Lắk, không lấy chồng ), Từ Thị Xuân (lấy chồng về Thạch Hà), Từ Hữu Hậu.", "", ""),
-                    ("258.08.0.173", "258.07.0.121", "Từ Hữu Đằng", "", "", "", "", "", "Con ông Lậu. Ông làm công nhân ở Nghĩa Đàn - Nghệ An. Sinh hạ: Từ Hợp, Từ Hoà, Từ Hoa, Từ Lý, Từ Long, Từ Thành, Từ Bình.", "", ""),
-                    ("258.08.0.174", "258.07.0.121", "Từ Hữu Bầng", "", "", "", "", "", "Con ông Lậu. Liệt sỹ chống Pháp.", "Không có con", ""),
-                    ("258.08.0.175", "258.07.0.121", "Từ Hữu Nhuệ", "", "", "", "", "", "Con ông Lậu. Công nhân ở Nghĩa Đàn, Nghệ An. Sinh hạ: Từ Hữu Thanh, Từ Hữu Bình.", "", ""),
-                    ("258.08.0.176", "258.07.0.122", "Từ Hữu Sàn", "", "Bà Trần Thị Chút", "", "", "", "Con ông Ứng. Sinh hạ: Từ Hữu Lý, Từ Hữu Hộ (Liệt sỹ), Từ Hữu Minh.", "", ""),
-                    ("258.08.1.177", "258.07.0.122", "Từ Thị Em", "", "Trần Tá", "", "", "", "Con ông Ứng. Lấy ông Trần Tá trong làng", "", ""),
-                    ("258.08.0.178", "258.07.0.122", "Từ Hữu Hiệt", "", "Bà Trần Thị Ngụ", "", "", "", "Con ông Ứng. Làm Trưởng ban, y dược thú y xã, được tặng thưởng Huân chương. Sinh hạ: Từ Thị Xuân (tảo một), Từ Thị Đào (lấy chồng về Thạch Đinh), Từ Thị Huệ (lấy chồng về Thạch Tượng), Từ Thị Lan (lấy chồng về Đức Lâm, Đức Thọ), Từ Hữu Toàn, Từ Hữu Tiến, Từ Hữu Dũng.", "", ""),
-                    ("258.08.1.179", "258.07.0.122", "Từ Thị Tỷ", "", "Nguyễn Xà", "", "", "", "Con ông Ứng. Lấy ông Nguyễn Xà trong làng", "", ""),
-                    ("258.08.0.180", "258.07.0.122", "Từ Hữu Sàng", "Nhu", "Bà Nguyễn Thị Tỷ", "", "", "", "Con thứ 3 ông Ứng đời thứ 7. Ông trước đi bộ đội chống Pháp, được tặng thưởng 2 Huân chương. Sinh hạ: Từ Thị Nhu (lấy chồng về Đại Lộc), Từ Hữu Giáp, Từ Thị Huệ, Từ Hữu Huề.", "", ""),
-                    ("258.08.0.181", "258.07.0.126", "Từ Hữu Trà", "", "Bà Trần Thị Nuôi", "", "", "", "Con ông Lai. Ông trước làm cán bộ Hợp tác xã nhiều nhiệm kỳ. Sinh hạ: Từ Hữu Triển (Liệt sỹ), Từ Hữu Đại, Từ Thị Thanh (lấy Trần Hùng (Xương) trong làng).", "", ""),
-                    ("258.08.1.182", "258.07.0.126", "Từ Thị Trừ", "", "Không rõ", "", "", "", "Con ông Lai. Lấy chồng về Thạch Tiến", "", ""),
-                    ("258.08.1.183", "258.07.0.126", "Từ Thị Thứ", "", "Trần Vụ", "", "", "", "Con ông Lai. Lấy Trần Vụ trong làng ", "", ""),
-                    ("258.08.0.184", "258.07.0.126", "Từ Hữu Bậc", "", "", "", "", "", "Con ông Lai. Liệt sỹ", "Không có con", ""),
-                    ("258.08.1.185", "258.07.0.127", "Từ Thị Bẹn", "", "Trần Dung", "", "", "", "Con ông Lưu. Lấy ông Trần Dung trong làng ", "", ""),
-                    ("258.08.0.186", "258.07.0.127", "Từ Hữu Tưu", "Khoái", "Bà Trần Thị Luận", "", "", "", "Con ông Lưu. Sinh hạ: Từ Hữu Nậy (Từ Trần – 47 tuổi), Từ Hữu Em (Hoài), Từ Thị Tỷ (lấy Trần Tịnh trong làng), Từ Thị Tứ (lấy chồng về Thanh Hoá), Từ Hữu Năm (chết sớm), Từ Thị Sáu (lấy Trần Tam (cứ) trong làng), Từ Hữu Chất, Từ Hữu Tạo, Từ Hữu Bình, Từ Hữu Chín.", "", ""),
-                    ("258.08.1.187", "258.07.0.127", "Từ Thị ...", "", "Trần Phu", "", "", "", "Con ông Lưu. Lấy ông Trần Phu trong làng", "", ""),
-                    ("258.08.1.188", "258.07.0.127", "Từ Thị Em", "", "Phan Âu", "", "", "", "Con ông Lưu. Lấy ông Phan Âu ở Thượng Xuân", "", ""),
-                    
-                    # ==========================================================
-                    # ĐỜI 9 
-                    # ==========================================================
-
-                    # ------------------------------------
-                    # CHI 1
-                    # ------------------------------------
-                    ("111.09.0.001", "111.08.0.002", "Từ Hữu Vện", "Hà", "Bà Trần Thị Nghĩa", "", "", "", "Con ông Điệt. Ông làm nghề thợ mộc. Sinh hạ: Từ Hữu Đắc, Từ Hữu Bật, Từ Hữu Phú, Từ Hữu Tư [mất sớm], Từ Hữu Ngụ, Từ Thị Xuân [chồng Thạch Sơn, Thạch Hà].", "", ""),
-                    ("111.09.0.002", "111.08.0.005", "Từ Hữu Cháu", "", "Bà: lấy chồng khác", "", "", "", "Con ông Huyền. Sinh hạ: Từ Hữu Tân.", "", ""),
-
-                    ("111.09.0.003", "111.08.0.005", "Từ Hữu Thụ", "Dụng", "Bà Trần Thị Đởm", "", "", "", "Con thứ 2 ông Huyền. Sinh hạ: Từ Thị Hoà [lấy chồng trong làng], Từ Thị Dũng [lấy ông Trần Đại trong làng], Từ Thị Bình, Từ Hữu Đính, Từ Thị Minh, Từ Hữu Bính.", "", ""),
-                    ("111.09.0.004", "111.08.0.005", "Từ Hữu Phù", "Tửu", "Bà Trần Thị Em", "", "", "", "Con thứ 3 ông Huyền. Ông trước làm cán bộ xã và HTX nhiều nhiệm kỳ. Sinh hạ: Từ Thị Hương [lấy chồng về Xóm Mới], Từ Hữu Đạt, Từ Thị Xuân [lấy anh Trần Tám(Cân)trong làng].", "", ""),
-                    ("111.09.1.005", "111.08.0.005", "Từ Thị Tứ", "", "Nguyễn Chung", "", "", "", "Con ông Huyền. Lấy ông Nguyễn Chung trong làng", "", ""),
-
-
-
-                    ("111.09.0.006", "111.08.0.005", "Từ Hữu Dấu", "", "Bà Nguyễn Thị Hoa", "", "", "", "Con thứ 4 ông Huyền. Sinh hạ: Từ Hữu Huề, Từ Hữu Huê, Từ Hữu Hoà, Từ Thị Phương.", "", ""),
-                    ("111.09.1.007", "111.08.0.005", "Từ Thị Lục", "", "Trần Hoàn", "", "", "", "Con ông Huyền. Lấy ông Trần Hoàn trong làng", "", ""),
-                    ("111.09.0.008", "111.08.0.011", "Từ Hữu Hường", "", "", "", "", "", "Con ông Đồng. Ông là liệt sỹ, vợ về lấy chồng khác.", "Không có con", ""),
-                    ("111.09.0.009", "111.08.0.011", "Từ Hữu Hồng", "", "Bà Trần Thị Minh", "", "", "", "Con thứ 2 ông Đồng. Lấy Bà Trần Thị Minh ở Thạch Hà. Sinh hạ: Từ Hữu Quân, Từ Thị Thanh [chết đuối], Từ Thị Lý, Từ Hữu Mạo.", "", ""),
-                    ("111.09.0.010", "111.08.0.011", "Từ Hữu Bàng", "", "Bà Nguyễn Thị Chắt", "", "", "", "Con thứ 3 ông Đồng. Sinh hạ: Từ Thị Hoa, Từ Hữu Lan, Từ Thị Phương.", "", ""),
-                    ("111.09.1.011", "111.08.0.011", "Từ Thị Thị", "", "Không rõ", "", "", "", "Con ông Đồng. lấy về Thượng Lội, Quang Lộc", "", ""),
-                    ("111.09.0.012", "111.08.0.011", "Từ Hữu Bính", "", "Bà Nguyễn Thị Hường", "", "", "", "Con thứ 4 ông Đồng. Lấy Bà Nguyễn Thị Hường ở Hương Khê. Sinh hạ: Từ Thị Nga, Từ Hữu Sửu.", "", ""),
-                    ("111.09.1.013", "111.08.0.011", "Từ Thị Minh", "", "Trần Lục", "", "", "", "Con ông Đồng. lấy anh Trần Lục (Cứ) trong làng", "", ""),
-                    ("111.09.0.014", "111.08.0.011", "Từ Hữu Lương", "", "Bà Trần Thị Bính", "", "", "", "Con thứ 5 ông Đồng. Sinh hạ: Từ Hữu Hải, Từ Hữu Hiệp, Từ Thị Thuỷ.", "", ""),
-                    ("111.09.1.015", "111.08.0.013", "Từ Thị Huệ", "", "Không rõ", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
-                    ("111.09.1.016", "111.08.0.013", "Từ Thị Hòa", "", "Không rõ", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
-                    ("111.09.0.017", "111.08.0.013", "Từ Hữu Huy", "", "Bà Trần Thị Châu", "", "", "", "Con ông Kế. Sinh hạ: Từ Thị Thanh, Từ Hữu Danh, Từ Hữu Nhân, Từ Hữu Nghĩa.", "", ""),
-                    ("111.09.1.018", "111.08.0.013", "Từ Thị Hiệu", "", "Nguyễn Minh Thạc", "", "", "", "Con ông Kế. Lấy Nguyễn Minh Thạc Thượng Xuân", "", ""),
-                    ("111.09.0.019", "111.08.0.013", "Từ Hữu Hiếu", "", "Nguyễn Thị ...", "", "", "", "Con ông Kế. Sinh hạ: Từ Thị Hoài [con bà Vân], đang cập nhật.", "", ""),
-                    ("111.09.1.020", "111.08.0.013", "Từ Thị Hương", "", "Không rõ", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
-                    ("111.09.0.021", "111.08.0.013", "Từ Hữu Hoa", "", "", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
-                    ("111.09.0.022", "111.08.0.013", "Từ Hữu Hoè", "", "", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
-                    ("111.09.0.023", "111.08.0.013", "Từ Hữu Huề", "", "đang cập nhật", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
-                    ("111.09.1.024", "111.08.0.017", "Từ Thị Chắt", "", "Lương Văn Ca", "", "", "", "Con ông Tiệng. Lấy Lương Văn Ca trong làng", "", ""), 
-                    ("111.09.0.025", "111.08.0.017", "Từ Hữu Lai", "", "Bà Trần Thị Thanh", "", "", "", "Con ông Tiệng. Sinh hạ: Từ Hữu Cháu, Từ Thị Lý, Từ Hữu Quy, Từ Hữu Định, Từ Hữu Luật, Từ Thị Luận, Từ Hữu Duẩn.", "", ""),
-                    ("111.09.0.026", "111.08.0.017", "Từ Hữu Phối", "", "Không lấy vợ", "", "", "", "Con ông Tiệng. Sống đến già, không lấy vợ.", "Không có con", ""),
-                    ("111.09.1.027", "111.08.0.017", "Từ Thị Hợp", "", "Không lấy chồng", "", "", "", "Con ông Tiệng. Sống đến già, không lấy chồng.", "Không có con", ""), 
-                    ("111.09.0.028", "111.08.0.027", "Từ Hữu Lượng", "Nghiệm", "Bà Nguyễn Thị Ngóec ", "", "", "", "Con ông Hào. Lấy Bà Nguyễn Thị Ngóec ở Đại Lộc. Sinh hạ: Từ Hữu Cháu [tảo vong], Từ Thị Nghiệm, Từ Hữu Sơn, Từ Hữu Thân, Từ Hữu Thìn [liệt sỹ], Từ Hữu Hải, Từ Thị Hà, Từ Hữu Nga.", "", ""),
-                    ("111.09.1.029", "111.08.0.027", "Từ Thị Em", "", "Trần Thường", "", "", "", "Con ông Hào. Lấy ông Trần Thường trong làng", "", ""),
-                    ("111.09.1.030", "111.08.0.027", "Từ Thị Tựu", "", "Nguyễn Ngơi", "", "", "", "Con ông Hào. Lấy ông Nguyễn Ngơi Thượng xuân", "", ""),
-                    ("111.09.0.031", "111.08.0.027", "Từ Hữu Dự", "", "", "", "", "", "Con ông Hào", "Tảo vong", ""),
-                    ("111.09.0.032", "111.08.0.027", "Từ Thị Thương", "", "", "", "", "", "Con ông Hào", "Tảo một", ""),
-                    ("111.09.0.033", "111.08.0.037", "Từ Hữu Khương", "", "", "", "", "", "Con ông Trợ. Liệt sỹ", "Không có con", ""),
-                    ("111.09.1.034", "111.08.0.037", "Từ Thị Thương", "", "Nguyễn Cược", "", "", "", "Con ông Trợ. Lấy Nguyễn Cược trong làng", "", ""),
-                    ("111.09.0.035", "111.08.0.037", "Từ Hữu Sâm", "", "Bà Lê Thị Hằng", "", "", "", "Con ông Trợ. Kỹ sư, cán bộ nhà nước. ở Hà Nội. Sinh hạ 3 người con gái: Từ Minh Nguyệt, Từ Nguyệt Nga, Từ Lê Nguyệt Ánh.", "", ""),
-                    ("111.09.1.036", "111.08.0.038", "Từ Thị Tuyết", "", "Trần Hoàn", "", "", "", "Con ông Thú. Lấy Trần Hoàn (Hoàn Con) trong làng", "", ""),
-                    ("111.09.0.037", "111.08.0.038", "Từ Hữu Hợp", "", "Bà Đào Thị Liên", "", "", "", "Con ông Thú. Lấy Bà Đào Thị Liên ở Quang Lộc. Sinh hạ: Từ Thị Hường, Từ Hữu Định, Từ Hữu Tuấn.", "", ""),
-                    ("111.09.1.038", "111.08.0.038", "Từ Thị Bình", "", "Trần Hoàn", "", "", "", "Con ông Thú. Lấy Trần Hoàn (Hoàn Con) trong làng", "", ""),
-                    ("111.09.1.039", "111.08.0.040", "Từ Thị Thủy", "", "Không rõ", "", "", "", "Con ông Sáu. Đang cập nhật.", "", ""),
-                    ("111.09.1.040", "111.08.0.040", "Từ Thị Hà", "", "Không rõ", "", "", "", "Con ông Sáu. Đang cập nhật.", "", ""),
-                    ("111.09.1.041", "111.08.0.040", "Từ Thị Hải", "", "Không rõ", "", "", "", "Con ông Sáu. Đang cập nhật.", "", ""),
-                    ("111.09.0.042", "111.08.0.040", "Từ Hữu Đạt", "", "Bà Nguyễn Thị Huệ", "", "", "", "Con ông Sáu. Sinh hạ: Từ Hải Minh, Từ Ngân Khánh.", "", ""),
-                    ("111.09.0.043", "111.08.0.042", "Từ Hữu Hùng", "", "đang cập nhật", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
-                    ("111.09.1.044", "111.08.0.042", "Từ Thị Dũng", "", "đang cập nhật", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
-                    ("111.09.1.045", "111.08.0.042", "Từ Thị Hòa", "", "đang cập nhật", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
-                    ("111.09.0.046", "111.08.0.042", "Từ Hữu Côi", "", "đang cập nhật", "", "", "", "Con ông Kế. Đang cập nhật.", "", ""),
-                    ("111.09.0.047", "111.08.0.045", "Từ Ngọc Lương", "", "Bà Nguyễn Thị Huệ", "", "", "", "Con thứ nhất ông Thanh. Trung tướng, Phó Giáo sư, Tiến sỹ. Vợ là Bà Nguyễn Thị Huệ làm Công nhân Nhà máy Cộc Sợi, nghỉ hưu tại TP.HCM. Ông bà có công lao to lớn, đóng góp nhiều công sức và tài lực xây dựng dòng họ. Sinh hạ: Từ Ngọc Nhân, Từ Ngọc Vỵ.", "", ""),
-                    ("111.09.0.048", "111.08.0.045", "Từ Ngọc Long", "", "Bà Nguyễn Thị Hoa", "", "", "", "Con thứ 2 ông Thanh. Sinh hạ: Từ Thị Mai, Từ Thị Huyền.", "", ""),
-                    ("111.09.1.049", "111.08.0.045", "Từ Thị Lam", "", "Đang cập nhật", "", "", "", "Con ông Thanh. Đang cập nhật", "", ""),
-                    ("111.09.1.050", "111.08.0.045", "Từ Thị Lê", "", "Đang cập nhật", "", "", "", "Con ông Thanh. Đang cập nhật", "", ""),
-                    ("111.09.0.051", "111.08.0.045", "Từ Ngọc Lĩnh", "", "Bà Trần Thị Sâm", "", "", "", "Con trai thứ 3 ông Thanh. Sinh hạ: Từ Ngọc Ý [đang cập nhật].", "", ""),
-                    ("111.09.1.052", "111.08.0.045", "Từ Thị Lộc", "", "Đang cập nhật", "", "", "", "Con ông Thanh. Đang cập nhật", "", ""),
-
-
-
-
-
-                    ("111.09.1.053", "111.08.0.047", "Từ Thị Hiền", "", "Nguyễn Bảo", "", "", "", "Con ông Hiền. Lấy anh Nguyễn Bảo con ông Nguyễn Toàn trong làng", "", ""),
-                    ("111.09.0.054", "111.08.0.047", "Từ Hữu Thảo", "", "", "", "", "", "Con ông Hiền.", "Chết sớm", ""),
-
-                    ("111.09.0.055", "111.08.0.047", "Từ Hữu Cát", "", "Bà Nguyễn Thị Tứ", "", "", "", "Con ông Hiền. Sinh hạ: Từ Thị Mai, Từ Hữu Thuận, Từ Thị Hà, Từ Ngọc Thoả.", "", ""),
-                    ("111.09.0.056", "111.08.0.047", "Từ Hữu Nhung", "", "Bà Nguyễn Thị Tạo", "", "", "", "Con ông Hiền. Sinh hạ: Từ Ngọc Hoàn, Từ Ngọc Hải.", "", ""),
-
-                    ("111.09.1.057", "111.08.0.047", "Từ Thị Sâm", "", "Nguyễn Tú", "", "", "", "Con ông Hiền. Lấy anh Nguyễn Tú (Chiên)", "", ""),
-                    ("111.09.1.058", "111.08.0.047", "Từ Thị Liệu", "", "Trần Bình", "", "", "", "Con ông Hiền. Lấy anh Trần Bình con ông Trự", "", ""),
-
-                    ("111.09.1.059", "111.08.0.047", "Từ Thị Đào", "", "Trần Đình Trọng", "", "", "", "Con ông Hiền. Lấy anh Trần Đình Trọng trong làng", "", ""),
-                    ("111.09.0.060", "111.08.0.047", "Từ Ngọc Xuân", "", "Trần Thị Thu Thủy", "", "", "", "Con ông Hiền. Sinh hạ: Từ Ngọc Huy.", "", ""),
-
-                    ("111.09.0.061", "111.08.0.049", "Từ Hữu Bình", "", "Bà Trần Thị Sen", "", "", "", "Con ông Thường. Sinh hạ: Từ Hữu Linh, Từ Thị Tâm.", "", ""),
-                    ("111.09.0.062", "111.08.0.049", "Từ Hữu Minh", "", "đang cập nhật", "", "", "", "Con ông Thường. Đang cập nhật.", "", ""),
-                    ("111.09.1.063", "111.08.0.049", "Từ Thị Hòa", "", "đang cập nhật", "", "", "", "Con ông Thường. Đang cập nhật.", "", ""),
-                    ("111.09.1.064", "111.08.0.051", "Từ Thị Thái", "", "đang cập nhật", "", "", "", "Con ông Tường. Đang cập nhật.", "", ""),
-                    ("111.09.1.065", "111.08.0.051", "Từ Thị Hòa", "", "đang cập nhật", "", "", "", "Con ông Tường. Đang cập nhật.", "", ""),
-                    ("111.09.0.066", "111.08.0.051", "Từ Hữu Hùng", "", "đang cập nhật", "", "", "", "Con ông Tường. Đang cập nhật.", "", ""),
-                    ("111.09.1.067", "111.08.0.052", "Từ Thị Thủy", "", "đang cập nhật", "", "", "", "Con ông Âu. Đang cập nhật.", "", ""),
-                    ("111.09.1.068", "111.08.0.052", "Từ Thị Lan", "", "đang cập nhật", "", "", "", "Con ông Âu. Đang cập nhật.", "", ""),
-                    ("111.09.0.069", "111.08.0.052", "Từ Hữu Hoài", "", "đang cập nhật", "", "", "", "Con ông Âu. Đang cập nhật.", "", ""),
-                    ("111.09.1.070", "111.08.0.052", "Từ Thị Hồng", "", "đang cập nhật", "", "", "", "Con ông Âu. Đang cập nhật.", "", ""),
-                    ("111.09.0.071", "111.08.0.052", "Từ Hữu Quang", "", "đang cập nhật", "", "", "", "Con ông Âu. Đang cập nhật.", "", ""),
-                    ("111.09.0.072", "111.08.0.052", "Từ Hữu Quý", "", "đang cập nhật", "", "", "", "Con ông Âu. Đang cập nhật.", "", ""),
-
-                    # ------------------------------------
-                    # CHI 2
-                    # ------------------------------------
-                    ("122.09.0.001", "122.08.0.067", "Từ Hữu Tuyến", "", "Bà Nguyễn Thị Lan", "", "", "", "Con đầu ông Tựu. Công nhân Lâm trường Hương Sơn. Sinh hạ: Từ Thị Hoà, Từ Hữu Thoả, Từ Hữu Thành, Từ Hữu Tuyền, Từ Thị Mỏ, Từ Thị Mậu.", "", ""),
-                    ("122.09.0.002", "122.08.0.068", "Từ Hữu Cừ", "", "Bà Nguyễn Thị Cháu", "", "", "", "Con ông Nựu. Vợ là Bà Nguyễn Thị Cháu ở Thượng Xuân. Sinh hạ: 1. Từ Hữu Hùng, 2. Từ Thị Dũng, 3. Từ Hữu Kiên (chết sớm), 4. Từ Hữu Cường, 5. Từ Thị Phú (lấy chồng về Mỹ Lộc), 6. Từ Thị Hựu, 7. Từ Thị Hạnh, 8. Từ Hữu Phúc, 9. Từ Hữu Vừng.", "", ""),
-                    ("122.09.0.003", "122.08.0.068", "Từ Thị Tỷ", "", "", "", "", "", "Con ông Nựu.", "Tảo một", ""),         
-
-                    ("122.09.1.004", "122.08.0.072", "Từ Thị Chắt", "", "Trương Ân", "", "", "", "Con ông Cảnh. Lấy chồng về Sơn Lộc", "", ""),
-                    ("122.09.1.005", "122.08.0.072", "Từ Thị Xanh", "", "Trần Hạnh", "", "", "", "Con ông Cảnh. Lấy Trần Hạnh (Thành) trong làng", "", ""),
-                    ("122.09.0.006", "122.08.0.072", "Từ Hữu Anh", "", "", "", "", "", "Con ông Cảnh.", "Tảo một", ""),
-                    ("122.09.0.007", "122.08.0.072", "Từ Hữu Hồng", "", "", "", "", "", "Con ông Cảnh.", "Tảo một", ""),
-                    ("122.09.1.008", "122.08.0.072", "Từ Thị Hường", "", "", "", "", "", "Con ông Cảnh.", "Tảo một", ""),
-
-                    ("122.09.1.009", "122.08.0.072", "Từ Thị Hạnh", "", "Bùi Hùng", "", "", "", "Con ông Cảnh. Lấy chồng ở Đắc Nông", "", ""),
-                    ("122.09.1.010", "122.08.0.072", "Từ Thị Hiền", "", "Bùi Nam", "", "", "", "Con ông Cảnh. Lấy chồng về Trung Lộc", "", ""),
-                    ("122.09.0.011", "122.08.0.072", "Từ Hữu Hoàn", "", "Phạm Thị Hà", "", "", "", "Con ông Cảnh. Vợ là Phạm Thị Hà ở Trung Lộc.", "", ""),
-                    ("122.09.1.012", "122.08.0.072", "Từ Thị Hằng", "", "Phạm Văn Phú", "", "", "", "Con ông Cảnh. Lấy chồng về Đại Lộc", "", ""),
-                    ("122.09.1.013", "122.08.0.072", "Từ Thị Hồng Thắm", "", "Phạm Văn Vịnh", "", "", "", "Con ông Cảnh. Lấy chồng về Mỹ Lộc", "", ""),
-
-                    ("122.09.1.014", "122.08.0.075", "Từ Thị Thanh", "", "Ông Đức", "", "", "", "Con ông Tư. Chồng là Ông Đức người Hà Tây", "", ""),
-                    ("122.09.0.015", "122.08.0.075", "Từ Hữu Thành", "", "Bỏ vợ", "", "", "", "Con ông Tư. Sinh hạ: Từ Thị...", "", ""),
-
-                    ("122.09.0.016", "122.08.0.079", "Từ Hữu Trung", "", "Lê Thị Vân", "", "", "", "Con đầu ông Lương. Vợ là Lê Thị Vân Lê Thị Vân ở  xã Thạch Sơn, Thạch Hà. Sinh hạ: Từ Thị Bích Loan (lấy chồng về tỉnh Lâm Đồng), Từ Ngọc Luân, Từ Ngọc Lễ", "", ""),
-                    ("122.09.0.017", "122.08.0.079", "Từ Hữu Thông", "", "Trần Thị Hạnh", "", "", "", "Con ông Lương. Vợ là Trần Thị Hạnh (Thành) ở giữa làng. Sinh hạ: Từ Hữu Huy, Từ Hữu Ngọc.", "", ""),
-                    ("122.09.0.018", "122.08.0.079", "Từ Hữu Tiến", "", "Bùi Thị Luyến, Trần Thị Hà", "", "", "", "Con ông Lương. Vợ là Bùi Thị Luyến ở Thanh Hóa; Trần Thị Hà ở Đắc Lắc. Sinh hạ: Từ Hữu Thỏa, Từ Thị Hà Ly, Từ Thị Thùy Linh", "", ""),
-                    ("122.09.0.019", "122.08.0.079", "Từ Hữu Triển", "", "", "", "", "", "Con ông Lương", "Tảo một", ""),                    
-                    ("122.09.0.020", "122.08.0.079", "Từ Hữu Trường", "", "Lữ Thị Kim Khuê", "", "", "", "Con ông Lương. Vợ là Lữ Thị Kim Khuê ở Đắc Lắc. Sinh hạ: Từ Ngọc Anh Thư, Từ Vĩnh Cường", "", ""),
-                    ("122.09.1.021", "122.08.0.079", "Từ Thị T́ình", "", "", "", "", "", "Con ông Lương.", "Tảo một", ""),
-                    ("122.09.0.022", "122.08.0.079", "Từ Hữu Thân", "", "Nguyễn Thị Kiều", "", "", "", "Con ông Lương. Vợ là Nguyễn Thị Kiều ở Đồng Nai.Sinh hạ: Từ Thị Ngọc Trân, Từ Thị Ngọc Châu", "", ""),                    
-                    ("122.09.1.023", "122.08.0.082", "Từ Thị Hằng", "", "Nguyễn Hữu Tuấn", "", "", "", "Con ông Tương. Chồng là Nguyễn Hữu Tuấn con ông Nhuận ở Thượng Lộc.", "", ""),
-
-                    ("122.09.0.024", "122.08.0.082", "Từ Hữu Đạt", "", "đang cập nhật", "", "", "", "Con ông Tương. Đang cập nhật.", "", ""), 
-
-                    ("123.09.0.025", "123.08.0.084", "Từ Hữu Quyết", "", "Bà Hiền", "", "", "", "Con ông Số. Vợ là Bà Hiền người Nghi Xuân", "", ""),
-                    ("123.09.1.026", "123.08.0.084", "Từ Thị Tâm", "", "đang cập nhật", "", "", "", "Con ông Số.", "", ""),
-                    ("123.09.0.027", "123.08.0.084", "Từ Hữu Thắng", "", "Bà Xuân", "", "", "", "Con ông Số.", "", ""),
-                    ("123.09.0.028", "123.08.0.084", "Trần Từ Nông", "Đông", "Bà Hải", "", "", "", "Con nuôi ông Số.", "Con nuôi", ""),                    
-                    ("123.09.0.029", "123.08.0.085", "Từ Hữu Hải", "", "", "", "", "", "Con ông Yêm.", "Chết sớm", ""),
-                    ("123.09.0.030", "123.08.0.085", "Từ Hữu Hoàn", "", "Trần Thị Nghị", "", "", "", "Con ông Yêm. Vợ là Trần Thị Nghị người Nghệ An.", "", ""),
-                    ("123.09.0.031", "123.08.0.085", "Từ Hữu Ngọc", "", "Bà Sâm", "", "", "", "Con ông Yêm. Vợ là Bà Sâm người Nghệ An", "", ""),
-                    ("123.09.1.032", "123.08.0.085", "Từ Thị Hằng", "", "đang cập nhật", "", "", "", "Con ông Yêm. Đang cập nhật", "", ""),
-
-                    ("123.09.1.033", "123.08.0.086", "Từ Thị Hòa", "", "đang cập nhật", "", "", "", "Con ông Niềm. Đang cập nhật.", "", ""),
-                    ("123.09.0.034", "123.08.0.086", "Từ Hữu Hùng", "", "Hoàng Thị Hường", "", "", "", "Con ông Niềm. Vợ là Hoàng Thị Hường", "", ""),
-                    ("123.09.1.035", "123.08.0.086", "Từ Thị Nguyệt", "", "đang cập nhật", "", "", "", "Con ông Niềm. Đang cập nhật.", "", ""),
-                    ("123.09.1.036", "123.08.0.086", "Từ Thị Ngọc", "", "đang cập nhật", "", "", "", "Con ông Niềm. Đang cập nhật.", "", ""),
-                    ("123.09.1.037", "123.08.0.086", "Từ Thị Trâm", "", "đang cập nhật", "", "", "", "Con ông Niềm. Đang cập nhật.", "", ""),
-
-                    ("123.09.1.038", "123.08.0.086", "Từ Thị Quế", "", "đang cập nhật", "", "", "", "Con ông Niềm. Đang cập nhật.", "", ""),
-                    
-                    ("123.09.0.039", "123.08.0.088", "Từ Hữu Thuận", "", "Phan Thị Hoa", "", "", "", "Con ông Xanh. Vợ là Phan Thị Hoa người Thạch Việt.", "", ""),
-                    ("123.09.0.040", "123.08.0.088", "Từ Hữu Lợi", "", "Trần Thị Kim Anh", "", "", "", "Con ông Xanh. Vợ là Trần Thị Kim Anh người Quảng Bình.", "", ""),
-
-                    ("123.09.0.041", "123.08.0.088", "Từ Hữu Hải", "", "đang cập nhật", "", "", "", "Con ông Xanh. Đang cập nhật.", "", ""),
-                    ("123.09.0.042", "123.08.0.088", "Từ Hữu Bằng", "", "đang cập nhật", "", "", "", "Con ông Xanh. Đang cập nhật.", "", ""),
-                    ("123.09.0.043", "123.08.0.090", "Từ Hữu Dũng", "", "đang cập nhật", "", "", "", "Con ông Nuôi. Đang cập nhật.", "", ""),
-                    ("123.09.0.044", "123.08.0.091", "Từ Hữu Phú", "", "đang cập nhật", "", "", "", "Con ông Em. Đang cập nhật.", "", ""),
-                    ("123.09.0.045", "123.08.0.091", "Từ Hữu Khánh", "", "đang cập nhật", "", "", "", "Con ông Em. Đang cập nhật.", "", ""),
-                    ("123.09.0.046", "123.08.0.091", "Từ Hữu Chương", "", "đang cập nhật", "", "", "", "Con ông Em. Đang cập nhật.", "", ""),
-                    ("124.09.1.047", "124.08.0.096", "Từ Thị Hiền", "", "Hồ Ngọc Điểu", "", "", "", "Con ông Viện. Đang cập nhật.", "", ""),
-                    ("124.09.0.048", "124.08.0.096", "Từ Minh Khoa", "", "Lê Thị Thảo Duyên", "", "", "", "Con ông Viện. Vợ là Lê Thị Thảo Duyên sống ở Đắc Lắc, quê gốc ở Quảng Nam.", "", ""),
-                    ("124.09.1.049", "124.08.0.097", "Từ Ngọc Mơ ", "", "đang cập nhật", "", "", "", "Con ông Xá. Đang cập nhật.", "", ""),
-                    ("124.09.1.050", "124.08.0.098", "Từ Thị Trang", "", "Trần Hoàng Sáng", "", "", "", "Con ông Khánh. Chồng là Trần Hoàng Sáng ở Đức Thọ.", "", ""),
-                    ("124.09.1.051", "124.08.0.098", "Từ Thị Ngân", "", "Nguyễn Văn Hiệp", "", "", "", "Con ông Khánh. Chồng là Nguyễn Văn Hiệp ở Nghệ An.", "", ""),
-                    ("124.09.1.052", "124.08.0.098", "Từ Thị Thắm", "", "", "", "", "", "Con ông Khánh. Mất lúc 5 tuổi.", "Chết sớm", ""),
-                    ("124.09.0.053", "124.08.0.098", "Từ Quang Nam", "", "đang cập nhật", "", "", "", "Con ông Khánh. Đang cập nhật.", "", ""),
-                    ("124.09.1.054", "124.08.0.099", "Từ Anh Thư", "", "đang cập nhật", "", "", "", "Con ông Thùy. Đang cập nhật.", "", ""),
-                    ("124.09.1.055", "124.08.0.099", "Từ Anh Thơ", "", "đang cập nhật", "", "", "", "Con ông Thùy. Đang cập nhật.", "", ""),
-                    ("124.09.0.056", "124.08.0.099", "Từ Minh Hiếu", "", "đang cập nhật", "", "", "", "Con ông Thùy. Đang cập nhật.", "", ""),
-                    ("124.09.0.057", "124.08.0.100", "Từ Hải Thành", "", "Nguyễn Thị Thùy", "", "", "", "Con ông Phú. Vợ là Nguyễn Thị Thùy ở Lào Cai. Sinh hạ: Từ Nguyễn Gia Hân, Từ Mỹ Duyên, Từ Hải Đăng", "", ""),
-                    ("124.09.1.058", "124.08.0.100", "Từ Thị Hương Xuân", "", "Lê Thành Phương", "", "", "", "Con ông Phú. Chồng là Lê Thành Phương ở Thị Trấn Hương Khê.", "", ""),
-                    ("124.09.1.059", "124.08.0.100", "Từ Thị Minh Trang", "", "Lưu Doãn Ánh", "", "", "", "Con ông Phú. Chồng là Lưu Doãn Ánh ở Nam Trực - Nam Định.", "", ""),
-                    ("124.09.1.060", "124.08.0.103", "Từ Thị Phương", "", "Nguyễn Anh Sơn", "", "", "", "Con ông Huy. Chồng là Nguyễn Anh Sơn ở Quang Lộc.", "", ""),
-                    ("124.09.0.061", "124.08.0.103", "Từ Hữu Hoàng", "", "Trần Thị Loan", "", "", "", "Con ông Huy. Vợ là Trần Thị Loan con Ông Phúc ở giữa làng. Sinh hạ: Từ Ngọc Huyền", "", ""),
-                    ("124.09.0.062", "124.08.0.103", "Từ Quang Hiệp", "", "đang cập nhật", "", "", "", "Con ông Huy. Đang cập nhật.", "", ""),
-                    ("124.09.0.063", "124.08.0.105", "Từ Nhật Lương", "", "đang cập nhật", "", "", "", "Con ông Quý. Đang cập nhật.", "", ""),
-                    ("124.09.0.064", "124.08.0.105", "Từ Nam Thắng", "", "đang cập nhật", "", "", "", "Con ông Quý. Đang cập nhật.", "", ""),
-                    ("124.09.1.065", "124.08.0.106", "Từ Thị Hiền", "", "đang cập nhật", "", "", "", "Con ông Khang. Đang cập nhật.", "", ""),
-                    ("124.09.1.066", "124.08.0.106", "Từ Thị Hòa", "", "đang cập nhật", "", "", "", "Con ông Khang. Đang cập nhật.", "", ""),
-                    ("124.09.0.067", "124.08.0.108", "Từ Hữu Sâm", "", "Nguyễn Thị Hồng", "", "", "", "Con ông Bình. Vợ là Nguyễn Thị Hồng ở giữa làng.", "", ""),
-                    ("124.09.1.068", "124.08.0.108", "Từ Thị Phượng", "", "Trần Văn Cường", "", "", "", "Con ông Bình. Chồng là Trần Văn Cường ở Cửa Lò.", "", ""),
-                    ("124.09.0.069", "124.08.0.108", "Từ Hữu Bảo", "", "đang cập nhật", "", "", "", "Con ông Bình. Đang cập nhật.", "", ""),
-                    ("124.09.0.070", "124.08.0.110", "Từ Hữu Đức", "", "đang cập nhật", "", "", "", "Con ông Cường. Đang cập nhật.", "", ""),
-                    ("124.09.0.071", "124.08.0.112", "Từ Hữu Duy", "", "đang cập nhật", "", "", "", "Con ông Mạnh. Đang cập nhật.", "", ""),                    
-  
-                    # ------------------------------------
-                    # CHI 3
-                    # ------------------------------------
-                    ("135.09.0.001", "135.08.0.114", "Từ Hữu Hoà", "", "Bà Thái Thị Hãn", "", "", "", "Con ông Từ Hữu Thự. Vợ là Bà Thái Thị Hãn người ở Kỳ Anh. Sinh hạ: Từ Hữu Dũng, Từ Hữu Trung.", "", ""), 
-                    ("135.09.0.002", "135.08.0.114", "Từ Hữu Bình", "", "Bà Võ Thị Tứ", "", "", "", "Con ông Từ Hữu Thự. Vợ là Bà Võ Thị Tứ người ở Song Lộc. Sinh hạ: Từ Thị Anh, Từ Thị Mỹ, Từ Hữu Việt, Từ Hữu Đức.", "", ""),
-                    ("135.09.0.003", "135.08.0.114", "Từ Hữu Hạnh", "", "Bà Nguyễn Thị Mai", "", "", "", "Con ông Từ Hữu Thự. Vợ là Bà Nguyễn Thị Mai người ở Nam Định. Sinh hạ: Từ Thị Hà, Từ Hữu Phúc.", "", ""),
-                    ("135.09.1.004", "135.08.0.114", "Từ Thị Bính", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thự. Lấy chồng Quang Lộc", "", ""),
-                    ("135.09.1.005", "135.08.0.114", "Từ Thị Tý", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thự. Lấy chồng Tùng Lộc", "", ""),
-                    ("135.09.1.006", "135.08.0.114", "Từ Thị Vân", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thự. Lấy chồng Diễn Châu, Nghệ An", "", ""),
-                    ("135.09.1.007", "135.08.0.119", "Từ Thị Hoa", "", "Không rõ", "", "", "", "Con ông Từ Hữu Trì. Đang cập nhật.", "", ""),
-                    ("135.09.1.008", "135.08.0.119", "Từ Thị Lan", "", "Không rõ", "", "", "", "Con ông Từ Hữu Trì. Đang cập nhật.", "", ""),
-                    ("135.09.1.009", "135.08.0.119", "Từ Thị Bình", "", "Không rõ", "", "", "", "Con ông Từ Hữu Trì. Con bà hai. Đang cập nhật.", "", ""),
-                    ("135.09.0.010", "135.08.0.120", "Từ Hữu Tân", "", "Bà Nguyễn Thị Canh", "", "", "", "Con ông Từ Hữu Thái. Sinh hạ: Từ Thị Nhung, Từ Hữu Tài, Từ Hữu Chiến.", "", ""),
-                    ("135.09.0.011", "135.08.0.120", "Từ Hữu Thân", "", "Bà Trần Thị Thành", "", "", "", "Con ông Từ Hữu Thái. Sinh hạ: Từ Hữu Trung, Từ Hữu Thông.", "", ""),
-                    ("135.09.1.012", "135.08.0.120", "Từ Thị Ái", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thái. Đang cập nhật.", "", ""),
-                    ("135.09.0.013", "135.08.0.120", "Từ Hữu Hùng", "", "Bà Thái Thị Dung", "", "", "", "Con ông Từ Hữu Thái. Sinh hạ: Từ Hữu Quốc, Từ Hữu Khánh.", "", ""),
-                    ("135.09.1.014", "135.08.0.120", "Từ Thị Dũng", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thái. Đang cập nhật.", "", ""),
-                    ("135.09.0.015", "135.08.0.120", "Từ Hữu Hoà", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Thái. Đang cập nhật.", "", ""),
-                    ("135.09.0.016", "135.08.0.126", "Từ Hoàng Hải", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nam. Đang cập nhật.", "", ""),
-                    ("135.09.1.017", "135.08.0.126", "Từ Mai Ly", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nam. Đang cập nhật.", "", ""),
-                    ("135.09.1.018", "135.08.0.126", "Từ Mai Linh", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nam. Con bà hai. Đang cập nhật.", "", ""),
-                    ("135.09.0.019", "135.08.0.132", "Từ Thanh Huyền", "", "đang cập nhật", "1993", "", "", "Con ông Từ Hữu Hoà. Đang cập nhật.", "", ""),
-                    ("135.09.0.020", "135.08.0.132", "Từ Tiến Dũng", "", "đang cập nhật", "1999", "", "", "Con ông Từ Hữu Hoà. Đang cập nhật.", "", ""),
-                    ("135.09.1.021", "135.08.0.134", "Từ Phương Thảo", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Huấn. Đang cập nhật.", "", ""),
-                    ("135.09.1.022", "135.08.0.134", "Từ Phương Hiếu", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Huấn. Đang cập nhật.", "", ""),
-                    ("135.09.1.023", "135.08.0.134", "Từ Nguyên Anh", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Huấn. Đang cập nhật.", "", ""),
-                    ("135.09.0.024", "135.08.0.139", "Từ Hữu Phương", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Sang. Đang cập nhật.", "", ""),
-                    ("135.09.0.025", "135.08.0.140", "Từ Hải Đăng", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Trọng. Đang cập nhật.", "", ""),
-
-                    # ------------------------------------
-                    # CHI 4
-                    # ------------------------------------
-                    ("246.09.1.001", "246.08.0.143", "Từ Thị Xuân", "", "Nguyễn Văn Thanh", "", "", "", "Con ông Từ Hữu Cương. Lấy Ông Nguyễn Văn Thanh (Thống) ở Dư Nại.", "", ""),
-                    ("246.09.0.002", "246.08.0.143", "Từ Hữu Hạ", "", "Bà Trần Thị Mai", "", "", "", "Con ông Từ Hữu Cương. Sinh hạ: Từ Hữu Thông, Từ Hữu Minh.", "", ""),
-                    ("246.09.1.003", "246.08.0.143", "Từ Thị Thu", "", "Trần Đình Cần", "", "", "", "Con ông Từ Hữu Cương. Lấy anh Trần Đình Cần trong xã", "", ""),
-                    ("246.09.0.004", "246.08.0.143", "Từ Hữu Đông", "", "Bà Trần Thị Phú", "", "", "", "Con ông Từ Hữu Cương. Sinh hạ: Từ Thị Hà, Từ Hữu Hưng.", "", ""),                       
-
-                    ("246.09.1.005", "246.08.0.147", "Từ Thị Dược", "", "Nguyễn Đình Luyện", "", "", "", "Con ông Từ Hữu Tượng. Đang cập nhật", "", ""),
-                    ("246.09.1.006", "246.08.0.147", "Từ Thị Tâm", "", "Trần Thanh Tĩnh", "", "", "", "Con ông Từ Hữu Tượng. Lấy chồng về Yên Đồng", "", ""),
-                    ("246.09.0.007", "246.08.0.147", "Từ Hữu Tam", "", "", "", "", "", "Con ông Từ Hữu Tượng. Liệt sĩ", "Không có con", ""),
-                    ("246.09.1.008", "246.08.0.147", "Từ Thị Tứ", "", "Phan Công Tiêu", "", "", "", "Con ông Từ Hữu Tượng.", "", ""),
-
-                    ("246.09.0.009", "246.08.0.147", "Từ Hữu Nam", "", "Bà Trần Thị Vinh", "", "", "", "Con ông Từ Hữu Tượng. Sinh hạ: Từ Thị Nga, Từ Hữu Vũ.", "", ""),
-                    ("246.09.0.010", "246.08.0.147", "Từ Hữu Lục", "", "Bà Trần Thị Hiền", "", "", "", "Con ông Từ Hữu Tượng. Vợ là Bà Trần Thị Hiền con ông Năm giữa làng. Sinh hạ: Từ Thị Thắm, Từ Thị Thuỳ.", "", ""),
-                    ("246.09.0.011", "246.08.0.147", "Từ Hữu Thị", "", "", "", "", "", "Con ông Từ Hữu Tượng", "Chết sớm", ""),
-                    ("246.09.0.012", "246.08.0.147", "Từ Hữu Thành", "", "Bà Lê Thị Nhị", "", "", "", "Con ông Từ Hữu Tượng. Vợ là Bà Lê Thị Nhị ở Quảng Bình. Sinh hạ: Từ Hữu Bình, Từ Hữu Ngọc, Từ Hữu Tuấn.", "", ""),
-                    ("246.09.0.013", "246.08.0.147", "Từ Hữu Lập", "", "", "", "", "", "Con ông Từ Hữu Tượng. Tử sỹ", "Chết sớm", ""),
-                    ("246.09.1.014", "246.08.0.147", "Từ Thị Minh", "", "", "", "", "", "Con ông Từ Hữu Tượng. Không có chồng con", "Chết sớm", ""),
-
-                    ("246.09.0.015", "246.08.0.149", "Từ Mạnh Mậu", "", "Bà Nguyễn Thị Lai", "", "", "", "Con ông Từ Hữu Chất. Kỹ sư, cán bộ nhà nước. Vợ là Bà Nguyễn Thị Lai người ở Trường Lộc. Sinh hạ: Từ Mạnh Hùng, Từ Thị Việt Hà.", "", ""),
-                    ("246.09.1.016", "246.08.0.149", "Từ Thị Kiểu", "", "Thân Văn Yên", "", "", "", "Con ông Từ Hữu Chất. Lấy chồng về Sơn Lộc", "", ""),
-                    ("246.09.1.017", "246.08.0.149", "Từ Thị Thu", "", "Trần Đình Choan", "", "", "", "Con ông Từ Hữu Chất. Lấy Trần Đình Choan trong làng", "", ""),
-                    ("246.09.0.018", "246.08.0.149", "Từ Quốc Lệ", "", "Bà Trần Thị Hằng", "", "", "", "Con ông Từ Hữu Chất. Đại tá Quân đội. Sinh hạ: Từ Huy Trung, Từ Thị Huyền Nga, Từ Quốc Việt.", "", ""),
-                    ("246.09.0.019", "246.08.0.149", "Từ Quốc Đạt", "", "Bà Trần Thị Xuân", "", "", "", "Con ông Từ Hữu Chất. Sinh hạ: Từ Thị Sâm, Từ Hữu Nhung.", "", ""),
-
-                    ("246.09.1.020", "246.08.0.154", "Từ Thị Hạnh", "", "Thân Viết Tiến", "", "", "", "Con ông Từ Hữu Bạng. Lấy chồng về Quang Lộc", "", ""),
-
-                    ("246.09.0.021", "246.08.0.154", "Từ Hữu Phúc", "", "Bà Trần Thị Nuôi", "", "", "", "Con ông Từ Hữu Bạng. Sinh hạ: Từ Thị Đức, Từ Hữu Lành, Từ Thị Hiền, Từ Thị Thảo, Từ Hữu Quang.", "", ""),
-                    ("246.09.1.022", "246.08.0.154", "Từ Thị Tỷ", "", "", "", "", "", "Con ông Từ Hữu Bạng.", "Chết sớm", ""),
-
-                    ("246.09.0.023", "246.08.0.155", "Từ Hữu Lý", "", "Bà Lê Thị Truyền", "", "", "", "Con ông Từ Hữu Hộ. Sinh hạ: Từ Hữu Pháp, Từ Hữu Luân, Từ Thị Hồng Quyên.", "", ""),
-                    ("246.09.1.024", "246.08.0.155", "Từ Thị Tình", "", "", "", "", "", "Con ông Từ Hữu Hộ.", "Chết sớm", ""),
-                    ("246.09.1.025", "246.08.0.155", "Từ Thị Công", "", "Không lấy chồng", "", "", "", "Con ông Từ Hữu Hộ. Không lấy chồng", "", ""),
-                    ("246.09.1.026", "246.08.0.155", "Từ Thị Ty", "", "Không lấy chồng", "", "", "", "Con ông Từ Hữu Hộ. Không lấy chồng", "", ""),
-                    ("246.09.1.027", "246.08.0.155", "Từ Thị Hợp", "", "", "", "", "", "Con ông Từ Hữu Hộ", "Chết sớm", ""),
-
-                    ("246.09.0.028", "246.08.0.155", "Từ Hữu Sơn", "", "Bà Trần Thị Thuỷ", "", "", "", "Con ông Từ Hữu Hộ. Vợ là Bà Trần Thị Thuỷ, Con ông Bốn giữa làng. Sinh hạ: Từ Nam Long, Từ Quốc Vương.", "", ""),
-                    ("246.09.0.029", "246.08.0.155", "Từ Hữu Lam", "", "Nguyễn Thị Hà", "", "", "", "Con ông Từ Hữu Hộ. Sinh hạ: Từ Hữu Việt.", "", ""),                 
-
-                    ("246.09.1.030", "246.08.0.156", "Từ Thị Mỹ", "", "Nguyễn Tiến Phẳng", "", "", "", "Con ông Từ Hữu Khánh, Con Bà Xuân. Làm cán bộ ở Gia Lai", "", ""),
-                    ("246.09.1.031", "246.08.0.156", "Từ Thị Hòa", "", "Đặng Lệ", "", "", "", "Con ông Từ Hữu Khánh. Lấy chồng về Quang Lộc", "", ""),
-                    ("246.09.1.032", "246.08.0.156", "Từ Thị Tâm", "", "Không lấy chồng", "", "", "", "Con ông Từ Hữu Khánh. Làm giáo viên ở Gia Lai", "", ""),
-
-                    ("246.09.0.033", "246.08.0.156", "Từ Hữu Cát", "", "", "", "", "", "Con ông Từ Hữu Khánh", "Chết sớm", ""),
-                    ("246.09.1.034", "246.08.0.156", "Từ Thị Sâm", "", "Không rõ", "", "", "", "Con ông Từ Hữu Khánh, con Bà Liên. Đang cập nhật", "", ""),
-                    ("246.09.0.035", "246.08.0.156", "Từ Hữu Thắng", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Khánh. Đang cập nhật.", "", ""),
-                    ("246.09.1.036", "246.08.0.156", "Từ Thị Lộc", "", "Trần Đình Long", "", "", "", "Con ông Từ Hữu Khánh.", "", ""),
-                    ("246.09.0.037", "246.08.0.156", "Từ Hữu Lợi", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Khánh. Đang cập nhật.", "", ""),
-                    ("246.09.0.038", "246.08.0.156", "Từ Hữu Bảo", "", "", "", "", "", "Con ông Từ Hữu Khánh", "Chết sớm", ""),
-                    ("246.09.0.039", "246.08.0.156", "Từ Hữu Quyền", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Khánh. Đang cập nhật.", "", ""),
-
-                    # ------------------------------------
-                    # CHI 5
-                    # ------------------------------------
-                    ("258.09.1.001", "258.08.0.158", "Từ Thị Cháu", "", "Không rõ", "", "", "", "Con ông Từ Hữu Điểu. Lấy hồng người Quang Lộc", "", ""),
-
-                    ("258.09.0.002", "258.08.0.158", "Từ Hữu Loan", "", "Bà Đặng Thị Thức", "", "", "", "Con ông Từ Hữu Điểu (Trung). Vợ là Bà Đặng Thị Thức người ở Quang Lộc. Sinh hạ: Từ Hữu Sơn, Từ Thị Hà, Từ Hữu Hải, Từ Hữu Hùng.", "", ""),
-                    ("258.09.0.003", "258.08.0.158", "Từ Hữu Ba", "", "Bà Trần Thị Xuân", "", "", "", "Con ông Từ Hữu Điểu. Cán bộ Nhà nước. Sinh hạ: Từ Hữu Long, Từ Thu Mai.", "", ""),
-                    ("258.09.1.004", "258.08.0.158", "Từ Thị Tỷ", "", "Trần Thành", "", "", "", "Con ông Từ Hữu Điểu. Lấy anh Trần Thành (Phu) trong làng", "", ""),
-                    ("258.09.1.005", "258.08.0.158", "Từ Thị Xuân", "", "Hoàng Văn Định", "", "", "", "Con ông Từ Hữu Điểu. Lấy chồng về Nghi Xuân", "", ""),
-                    ("258.09.0.006", "258.08.0.159", "Từ Hữu Phán", "", "Bà Phan Thị Lộc", "", "", "", "Con ông Từ Hữu Tiếu (Phán). Ông là Chánh án Tòa án huyện Can Lộc. Sinh hạ: Từ Thị Nga (lấy chồng về Trường Lộc), Từ Thị Ngân, Từ Hữu Anh (chết sớm), Từ Hữu Hùng.", "", ""),
-                    ("258.09.0.007", "258.08.0.159", "Từ Hữu Đán", "", "Bà Trần Thị Thảo", "", "", "", "Con ông Từ Hữu Tiếu", "Chết sớm", ""),
-                    ("258.09.1.008", "258.08.0.159", "Từ Thị Hòa", "", "Không rõ", "", "", "", "Con ông Từ Hữu Tiếu. Lấy chồng về Thuận Lộc", "", ""),
-                    ("258.09.1.009", "258.08.0.159", "Từ Thị Chất", "", "Không rõ", "", "", "", "Con ông Từ Hữu Tiếu. Lấy chồng về Thạch Đài, Thạch Hà", "", ""),
-                    ("258.09.0.010", "258.08.0.159", "Từ Hữu Tường", "", "Bà Trần Thị Thảo", "", "", "", "Con ông Từ Hữu Tiếu. Liệt sỹ", "Chưa có con", ""),
-                    ("258.09.0.011", "258.08.0.159", "Từ Hữu Lục", "", "Bà Trần Thị Thảo", "", "", "", "Con ông Từ Hữu Tiếu. Sinh hạ: Từ Thị Nhung, Từ Thị Thuỷ, Từ Thị Lâm, Từ Hữu Huy.", "", ""),
-                    ("258.09.0.012", "258.08.0.159", "Từ Hữu Lương", "", "Bà Trần Thị Tài", "", "", "", "Con ông Từ Hữu Tiếu. Sinh hạ: Từ Thị Hiền, Từ Thị Hữu, Từ Hữu Phương, Từ Hữu Đạt.", "", ""),
-                    ("258.09.0.013", "258.08.0.168", "Từ Hữu Đàn", "", "Bà Trần Thị Liên", "", "", "", "Con ông Từ Hữu Đề. Sinh hạ: Từ Hữu Minh, Từ Thị Anh.", "", ""),
-                    ("258.09.0.014", "258.08.0.168", "Từ Hữu Liêm", "", "Bà Lê Thị Hồng", "", "", "", "Con ông Từ Hữu Đề. Sinh hạ: Từ Thị Tâm, Từ Thị Như.", "", ""),
-                    ("258.09.0.015", "258.08.0.168", "Từ Hữu Thanh", "", "Bà Phan Thị Quế", "", "", "", "Con ông Từ Hữu Đề. Sinh hạ: Từ Hữu Quỳnh, Từ Thị Oanh.", "", ""),
-                    ("258.09.1.016", "258.08.0.170", "Từ Thị Thìn", "", "Không rõ", "", "", "", "Con ông Từ Hữu Túc. Lấy chồng về Trung Lộc", "", ""),
-                    ("258.09.1.017", "258.08.0.170", "Từ Thị Kiêm", "", "Trần Đạt", "", "", "", "Con ông Từ Hữu Túc. Lấy ông Trần Đạt trong làng", "", ""),
-                    ("258.09.1.018", "258.08.0.170", "Từ Thị Yêm", "", "", "", "", "", "Con ông Từ Hữu Túc", "Tảo một", ""),
-                    ("258.09.1.019", "258.08.0.170", "Từ Thị Chế", "", "", "", "", "", "Con ông Từ Hữu Túc", "Tảo một", ""),
-                    ("258.09.0.020", "258.08.0.170", "Từ Hữu Tuý", "", "Bà Trần Thị Hương", "", "", "", "Con ông Từ Hữu Túc (Thân). Vợ là Bà Trần Thị Hương người Hương Sơn. Sinh hạ: Từ Ngọc Anh, Từ Ngọc Dũng, Từ Ngọc Cường, Từ Ngọc Quyền, Từ Thị Hoa.", "", ""),
-                    ("258.09.1.021", "258.08.0.170", "Từ Thị Tuyết", "", "Trần Tùng", "", "", "", "Con ông Từ Hữu Túc. Lấy ông Trần Tùng trong làng", "", ""),
-                    ("258.09.1.022", "258.08.0.170", "Từ Thị Bình", "", "Không rõ", "", "", "", "Con ông Từ Hữu Túc. Lấy chồng về Nghi Xuân ", "", ""),
-
-                    ("258.09.1.023", "258.08.0.172", "Từ Thị Bính", "", "Ông Hành", "", "", "", "Con ông Từ Hữu Vân. Lấy chồng về Quang lộc", "", ""),
-                    ("258.09.1.024", "258.08.0.172", "Từ Thị Tam", "", "Trần Ngoạt", "", "", "", "Con ông Từ Hữu Vân. Lấy Trần Ngoạt trong làng ", "", ""),
-                    ("258.09.1.025", "258.08.0.172", "Từ Thị Lục", "", "Ông Tý", "", "", "", "Con ông Từ Hữu Vân. Lấy chồng về Hương Sơn", "", ""),
-                    ("258.09.1.026", "258.08.0.172", "Từ Thị Liên", "", "Không lấy chồng", "", "", "", "Con ông Từ Hữu Vân. Sinh hạ: Từ Thị Hiền. Ở Đắc Lắc", "", ""),
-                    ("258.09.1.027", "258.08.0.172", "Từ Thị Xuân", "", "Ngô Đức Kính", "", "", "", "Con ông Từ Hữu Vân. Lấy chồng về Đại Lộc", "", ""),
-                    ("258.09.0.028", "258.08.0.172", "Từ Hữu Hậu", "", "Bà Hoàng Thị Chung", "", "", "", "Con ông Từ Hữu Vân. Vợ là Bà Hoàng Thị Chung người ở Sơn Lộc. Sinh hạ: Từ Thị Thanh, Từ Hữu Thành, Từ Thị Thắm, Từ Hữu Thiết, Từ Hữu Phát.", "", ""),
-
-                    ("258.09.1.029", "258.08.0.173", "Từ Thị Hợp", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.030", "258.08.0.173", "Từ Hữu Hòa", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.1.031", "258.08.0.173", "Từ Thị Hoa", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.1.032", "258.08.0.173", "Từ Thị Lý", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.033", "258.08.0.173", "Từ Hữu Long", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.034", "258.08.0.173", "Từ Hữu Thành", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Đang cập nhật.", "", ""),
-                    ("258.09.0.035", "258.08.0.173", "Từ Hữu Minh", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Sinh hạ: Từ Hữu Châu, Từ Hữu Tiến.", "", ""),                
-                    ("258.09.0.036", "258.08.0.173", "Từ Hữu Định", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Đằng. Sinh hạ: Từ Hữu Tuấn, Từ Hữu Tú, Từ Hữu Tài.", "", ""),
-
-                    ("258.09.0.037", "258.08.0.175", "Từ Hữu Thanh", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nhuệ. Sinh hạ: Từ Hữu Cường.", "", ""),
-                    ("258.09.0.038", "258.08.0.175", "Từ Hữu Bình", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nhuệ. Đang cập nhật.", "", ""),
-                    ("258.09.0.039", "258.08.0.175", "Từ Hữu Thống", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Nhuệ.", "", ""),
-
-                    ("258.09.0.040", "258.08.0.176", "Từ Hữu Lý", "", "Bà Đào Thị Lan", "", "", "", "Con ông Từ Hữu Sàn. Vợ là Bà Đào Thị Lan người ở Đức Thọ. Sinh hạ: Từ Thị Liễu, Từ Thị Lâm, Từ Hữu Luận, Từ Hữu Luật.", "", ""),
-                    ("258.09.0.041", "258.08.0.176", "Từ Hữu Hộ", "", "", "", "", "", "Con ông Từ Hữu Sàn. Liệt sỹ", "Không có con", ""),                
-                    ("258.09.0.042", "258.08.0.176", "Từ Hữu Minh", "", "Bà Nguyễn Thị Nựu", "", "", "", "Con ông Từ Hữu Sàn. Sinh hạ: Từ Thị Bình, Từ Hữu Thanh, Từ Thị Xanh, Từ Hữu Tuấn.", "", ""),
-
-                    ("258.09.1.043", "258.08.0.178", "Từ Thị Xuân", "", "", "", "", "", "Con ông Từ Hữu Hiệt", "Tảo một", ""),
-                    ("258.09.1.044", "258.08.0.178", "Từ Thị Đào", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hiệt. Lấy chồng về Thạch Đỉnh", "", ""),
-                    ("258.09.1.045", "258.08.0.178", "Từ Thị Huệ", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hiệt. Lấy chồng về Thạch Tượng", "", ""),
-                    ("258.09.1.046", "258.08.0.178", "Từ Thị Lan", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hiệt. Lấy chồng về Đức Lâm, Đức Thọ", "", ""),
-
-                    ("258.09.0.047", "258.08.0.178", "Từ Hữu Toàn", "", "Bà Trần Thị Vân", "", "", "", "Con ông Từ Hữu Hiệt. Vợ là Bà Trần Thị Vân người ở Đại Lộc. Sinh hạ: Từ Hữu Nam, Từ Hữu Đông.", "", ""),
-                    ("258.09.0.048", "258.08.0.178", "Từ Hữu Tiến", "", "Bà Trần Thị Hoa", "", "", "", "Con ông Từ Hữu Hiệt. Sinh hạ: Từ Thị Hằng, Từ Hữu Tuấn, Từ Hữu Hải.", "", ""),
-                    ("258.09.0.049", "258.08.0.178", "Từ Hữu Dũng", "", "Bà Trần Thị Hạnh", "", "", "", "Con ông Từ Hữu Hiệt. Sinh hạ: Từ Thị Nga, Từ Hữu Anh, Từ Hữu Sơn.", "", ""),
-
-                    ("258.09.1.050", "258.08.0.180", "Từ Thị Nhu", "", "ông Minh", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Lấy chồng về Đại Lộc ", "", ""),
-                    ("258.09.0.051", "258.08.0.180", "Từ Hữu Giáp", "", "Bà Trần Thị Luận", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Sinh hạ: Từ Hữu Quý, Từ Thị Huyền, Từ Hữu Quyền, Từ Hữu Lợi.", "", ""),
-                    ("258.09.1.052", "258.08.0.180", "Từ Thị Huệ", "", "Ông Bình", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Lấy chồng về Trung Lộc", "", ""),
-                    ("258.09.0.053", "258.08.0.180", "Từ Hữu Huề", "", "Bà Trần Thị Nga", "", "", "", "Con ông Từ Hữu Sàng (Nhu). Sinh hạ: Từ Thị Hạnh, Từ Thị Linh, Từ Hữu Khoa.", "", ""),
-                    ("258.09.0.054", "258.08.0.181", "Từ Hữu Triển", "", "", "", "", "", "Con ông Từ Hữu Trà. Liệt sỹ", "Chưa có con", ""),                     
-                    ("258.09.0.055", "258.08.0.181", "Từ Hữu Đại", "", "Bà Trần Thị Hương", "", "", "", "Con ông Từ Hữu Trà. Sinh hạ: Từ Hữu Thắng, Từ Hữu Đông, Từ Hữu Trường, Từ Thị Hà, Từ Hữu Đồng.", "", ""),
-                    ("258.09.1.056", "258.08.0.181", "Từ Thị Thanh", "", "Trần Hùng", "", "", "", "Con ông Từ Hữu Trà. Lấy Trần Hùng (Xương) trong làng", "", ""),     
-
-                    ("258.09.0.057", "258.08.0.186", "Từ Hữu Nậy", "", "Không lấy vợ", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Mất lúc 47 Tuổi", "Không có con", ""),
-                    ("258.09.0.058", "258.08.0.186", "Từ Hữu Em", "Hoài", "Bà Trần Thị Đợt", "", "", "", "Con ông Từ Hữu Tưu. Vợ là Bà Trần Thị Đợt người ở Thanh Hoá. Sinh hạ: Từ Hữu Sơn, Từ Thị Thuỷ, Từ Hữu Hưng.", "", ""),
-                    ("258.09.1.059", "258.08.0.186", "Từ Thị Tỷ", "", "", "", "", "", "Con ông Từ Hữu Tưu. Lấy Trần Tịnh trong làng", "", ""),
-                    ("258.09.1.060", "258.08.0.186", "Từ Thị Tứ", "", "", "", "", "", "Con ông Từ Hữu Tưu. Lấy chồng về Thanh Hoá", "", ""),
-                    ("258.09.0.061", "258.08.0.186", "Từ Hữu Năm", "", "", "", "", "", "Con ông Từ Hữu Tưu", "Chết sớm", ""),
-                    ("258.09.1.062", "258.08.0.186", "Từ Thị Sáu", "", "Trần Tam", "", "", "", "Con ông Từ Hữu Tưu. Lấy Trần Tam (Cứ) trong làng ", "", ""),
-                    ("258.09.0.063", "258.08.0.186", "Từ Hữu Chất", "", "Bà cả: Trần Thị Vân, bà thứ: Trần Thị Huê", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Sinh hạ: Từ Hữu Phú, Từ Hữu Dũng, Từ Thị Anh, Từ Hữu Văn.", "", ""),
-                    ("258.09.0.064", "258.08.0.186", "Từ Hữu Tạo", "", "Bà Trần Thị Lợi", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Sinh hạ: Từ Thị Xuân, Từ Hữu Hạnh, Từ Thị Hà.", "", ""),
-                    ("258.09.0.065", "258.08.0.186", "Từ Hữu Bình", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Đang cập nhật.", "", ""),
-                    ("258.09.0.066", "258.08.0.186", "Từ Hữu Chín", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Tưu (Khoái). Đang cập nhật.", "", ""),
-
-
-                    # ==========================================================
-                    # ĐỜI 10 
-                    # ==========================================================
-
-                    # ------------------------------------
-                    # CHI 1
-                    # ------------------------------------
-                    ("111.10.0.001", "111.09.0.001", "Từ Hữu Đắc", "", "Bà Nguyễn Thị Luân", "", "", "", "Con ông Vện. Vợ là Bà Nguyễn Thị Luân. Sinh hạ: Từ Hữu Thuận, Từ Thị Tình, Từ Thị Bình, Từ Thị Luận, Từ Hữu Hòa.", "", ""),
-                    ("111.10.0.002", "111.09.0.001", "Từ Hữu Bật", "", "Bà Đặng Thị Đào", "", "", "", "Con ông Vện (Hà). Vợ là Bà Đặng Thị Đào người Hương Khê. Sinh hạ: Từ Hữu Nhâm, Từ Hữu Tý.", "", ""),
-                    ("111.10.0.003", "111.09.0.001", "Từ Hữu Phú", "", "Bà Trần Thị Nho", "", "", "", "Con ông Vện (Hà). Vợ là Bà Trần Thị Nho. Sinh hạ: Từ Thị Long, Từ Thị Thuỷ, Từ Thị Vân, Từ Hữu Quốc, Từ Hữu Kỳ.", "", ""),
-                    ("111.10.0.004", "111.09.0.001", "Từ Hữu Tư", "", "", "", "", "", "Con ông Vện (Hà) .", "Chết sớm", ""),
-
-                    ("111.10.0.005", "111.09.0.001", "Từ Hữu Ngụ", "", "Bà Trần Thị Hồng", "", "", "", "Con ông Vện (Hà). Vợ là Bà Trần Thị Hồng. Sinh hạ: Từ Thị Quảng, Từ Thị Quyền, Từ Hữu Quý, Từ Hữu Báu.", "", ""),
-                    ("111.10.1.006", "111.09.0.001", "Từ Thị Xuân", "", "Không rõ", "", "", "", "Con ông Vện (Hà). Chồng người Thạch Sơn, Thạch Hà.", "", ""),
-                    ("111.10.0.007", "111.09.0.002", "Từ Hữu Tân", "Hải", "Bà Trần Thị An", "", "", "", "Con ông Từ Hữu Cháu. Vợ là Bà Trần Thị An. Sinh hạ: Từ Thị Hải, Từ Thị Dương, Từ Thị Liễu, Từ Thị Lan, Từ Thị Hạnh, Từ Thị Cúc.", "", ""),
-
-
-                    ("111.10.1.008", "111.09.0.003", "Từ Thị Hoà", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thụ (Dụng). Lấy chồng trong làng.", "", ""),
-                    ("111.10.1.009", "111.09.0.003", "Từ Thị Dũng", "", "Ông Trần Đại", "", "", "", "Con ông Từ Hữu Thụ (Dụng). Lấy ông Trần Đại trong làng.", "", ""),
-                    ("111.10.1.010", "111.09.0.003", "Từ Thị Bình", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thụ (Dụng).", "", ""),
-
-                    ("111.10.0.011", "111.09.0.003", "Từ Hữu Đính", "", "Bà Trần Thị Hằng", "", "", "", "Con ông Từ Hữu Thụ (Dụng). Vợ là Bà Trần Thị Hằng. Sinh hạ: Từ Hữu Ý, Từ Hữu Lương, Từ Hữu Linh.", "", ""),
-                    ("111.10.1.012", "111.09.0.003", "Từ Thị Minh", "", "Không rõ", "", "", "", "Con ông Từ Hữu Thụ (Dụng).", "", ""),
-                    ("111.10.0.013", "111.09.0.003", "Từ Hữu Bính", "", "Lê Thị Giang", "", "", "", "Con ông Từ Hữu Thụ (Dụng). Sinh hạ: Từ Hữu Phương.", "", ""),
-                    
-                    ("111.10.1.014", "111.09.0.004", "Từ Thị Hương", "", "Không rõ", "", "", "", "Con ông Từ Hữu Phù (Tửu). Lấy chồng về Xóm Mới.", "", ""),
-                    ("111.10.0.015", "111.09.0.004", "Từ Quang Đạt", "", "Bà Trần Thị Bính", "", "", "", "Con ông Từ Hữu Phù (Tửu). Vợ là Bà Trần Thị Bính. Sinh hạ: Từ Thị Thảo, Từ Thị Hiền, Từ Hữu Trung.", "", ""),
-                    ("111.10.1.016", "111.09.0.004", "Từ Thị Xuân", "", "Trần Tám", "", "", "", "Con ông Từ Hữu Phù (Tửu). Lấy anh Trần Tám (Cân) trong làng.", "", ""),
-                    
-                    ("111.10.0.017", "111.09.0.006", "Từ Hữu Huề", "", "Bà Trần Thị Quế", "", "", "", "Con ông Từ Hữu Dấu. Vợ là Bà Trần Thị Quế. Sinh hạ: Từ Hữu Tuấn, Từ Hữu Anh.", "", ""),
-                    ("111.10.0.018", "111.09.0.006", "Từ Hữu Huê", "", "Đặng Thị Quyền", "", "", "", "Con ông Từ Hữu Dấu. Sinh hạ: Từ Hữu Dũng, Từ Hữu Công.", "", ""),
-                    ("111.10.0.019", "111.09.0.006", "Từ Hữu Hoà", "", "Lê Thị Kim Cúc", "1972", "", "", "Con ông Từ Hữu Dấu. Vợ là Lê Thị Kim Cúc ở Vụ Bản, Nam Định. Sinh hạ: Từ Thị Khánh Linh.", "", ""),
-                    ("111.10.1.020", "111.09.0.006", "Từ Thị Phương", "", "Không rõ", "", "", "", "Con ông Từ Hữu Dấu.", "", ""),
-
-                    ("111.10.0.021", "111.09.0.009", "Từ Hữu Quân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hồng. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.1.022", "111.09.0.009", "Từ Thị Thanh", "", "", "", "", "", "Con ông Từ Hữu Hồng. Mất do chết đuối.", "Chết sớm", ""),
-                    ("111.10.1.023", "111.09.0.009", "Từ Thị Lý", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hồng.", "", ""),
-                    ("111.10.0.024", "111.09.0.009", "Từ Hữu Mạo", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hồng. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("111.10.1.025", "111.09.0.010", "Từ Thị Hoa", "", "Không rõ", "", "", "", "Con ông Từ Hữu Bàng.", "", ""),
-                    ("111.10.0.026", "111.09.0.010", "Từ Hữu Lan", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bàng. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.1.027", "111.09.0.010", "Từ Thị Phương", "", "Không rõ", "", "", "", "Con ông Từ Hữu Bàng.", "", ""),
-
-                    ("111.10.1.028", "111.09.0.012", "Từ Thị Nga", "", "Không rõ", "", "", "", "Con ông Từ Hữu Bính.", "", ""),
-                    ("111.10.0.029", "111.09.0.012", "Từ Hữu Sửu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bính. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("111.10.0.030", "111.09.0.014", "Từ Hữu Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.0.031", "111.09.0.014", "Từ Hữu Hiệp", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.1.032", "111.09.0.014", "Từ Thị Thuỷ", "", "Không rõ", "", "", "", "Con ông Từ Hữu Lương.", "", ""),
-
-                    ("111.10.1.033", "111.09.0.017", "Từ Thị Thanh", "", "Không rõ", "", "", "", "Con ông Từ Hữu Huy.", "", ""),
-                    ("111.10.0.034", "111.09.0.017", "Từ Hữu Danh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huy. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.0.035", "111.09.0.017", "Từ Hữu Nhân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huy. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.0.036", "111.09.0.017", "Từ Hữu Nghĩa", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huy. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("111.10.1.037", "111.09.0.019", "Từ Thị Hoài", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hiếu (vợ cả Nguyễn Thị Vân).", "", ""),
-
-                    ("111.10.0.060", "111.09.0.025", "Từ Hữu Châu", "", "Bà Trương Thị Lương", "", "", "", "Con ông Từ Hữu Lai. Sinh hạ: Từ Thị Hồng Nhung, Từ Quốc Khánh.", "", ""),
-                    ("111.10.1.061", "111.09.0.025", "Từ Thị Lý", "", "Ông Quế", "", "", "", "Con ông Từ Hữu Lai. Chồng là Ông Quế ở trong xã.", "", ""),
-                    ("111.10.0.062", "111.09.0.025", "Từ Hữu Quy", "", "Bà Nguyễn Thị Hiền", "", "", "", "Con ông Từ Hữu Lai. Sinh hạ: Từ Thị Hồng Ngọc, Từ Quang Chung.", "", ""),
-
-                    ("111.10.0.063", "111.09.0.025", "Từ Hữu Định", "", "Trần Thị Bính", "", "", "", "Con ông Từ Hữu Lai. Sinh hạ: Từ Hữu Thắng, Từ Thị Thắm, Từ Hữu Quyết Tiến, Từ Thị Linh.", "", ""),
-                    ("111.10.0.064", "111.09.0.025", "Từ Hữu Luật", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lai. Sinh hạ: Từ Thị Ngọc Linh, Từ Thị Ngọc Hà.", "", ""),
-                    ("111.10.1.065", "111.09.0.025", "Từ Thị Luận", "", "Nguyễn Doãn Tuấn", "", "", "", "Con ông Từ Hữu Lai. Chồng là Nguyễn Doãn Tuấn.", "", ""),
-                    ("111.10.0.066", "111.09.0.025", "Từ Hữu Duẫn", "", "Nguyễn Thị Vân", "", "", "", "Con ông Từ Hữu Lai. Sinh hạ: Từ Hữu Phong, Từ Hữu Việt Anh, Từ Hữu... (đang cập nhật).", "", ""),
-
-
-
-
-                    ("111.10.0.067", "111.09.0.028", "Từ Hữu Cháu", "", "", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm)..", "Tảo vong", ""),
-                    ("111.10.1.068", "111.09.0.028", "Từ Thị Nghiệm", "", "Không rõ", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm).", "", ""),
-                    ("111.10.0.069", "111.09.0.028", "Từ Hữu Sơn", "", "Bà Trần Thị Liên", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Hữu Trường, Từ Thị Vân, Từ Hữu Lý, Từ Hữu Tài, Từ Hữu Giang.", "", ""),
-                    ("111.10.0.070", "111.09.0.028", "Từ Hữu Thân", "", "Bà Trần Thị Diên, Bà Trần Thị Liên", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Hữu Bản, Từ Hữu Mạnh, Từ Thị Cần.", "", ""),
-                    ("111.10.0.071", "111.09.0.028", "Từ Hữu Thìn", "", "Không rõ", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Liệt sỹ.", "", ""),
-                    ("111.10.0.072", "111.09.0.028", "Từ Hữu Hải", "", "Bà Trần Thị Hường", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Hữu Thuận.", "", ""),
-                    ("111.10.1.073", "111.09.0.028", "Từ Thị Hà", "", "Không rõ", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm).", "", ""),
-                    ("111.10.0.074", "111.09.0.028", "Từ Hữu Nga", "", "Bà Trần Thị Cúc", "", "", "", "Con ông Từ Hữu Lượng (Nghiệm). Sinh hạ: Từ Hữu Anh, Từ Hữu Hoàng.", "", ""),
-
-                    ("111.10.1.075", "111.09.0.035", "Từ Minh Nguyệt", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sâm.", "", ""),
-                    ("111.10.1.076", "111.09.0.035", "Từ Nguyệt Nga", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sâm.", "", ""),
-                    ("111.10.1.077", "111.09.0.035", "Từ Lê Nguyệt Ánh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sâm.", "", ""),
-
-                    ("111.10.1.078", "111.09.0.037", "Từ Thị Hường", "", "Không rõ", "", "", "", "Con ông Từ Hữu Hợp.", "", ""),
-                    ("111.10.0.079", "111.09.0.037", "Từ Hữu Định", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hợp. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.0.080", "111.09.0.037", "Từ Hữu Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hợp. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("111.10.0.081", "111.09.0.042", "Từ Hải Minh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đạt. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.1.082", "111.09.0.042", "Từ Ngân Khánh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đạt.", "", ""),
-
-                    ("111.10.0.093", "111.09.0.047", "Từ Ngọc Nhân", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Lương. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.0.094", "111.09.0.047", "Từ Ngọc Vỵ", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Lương. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("111.10.1.095", "111.09.0.048", "Từ Thị Mai", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Long.", "", ""),
-                    ("111.10.1.096", "111.09.0.048", "Từ Thị Huyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Long.", "", ""),
-
-                    ("111.10.0.097", "111.09.0.051", "Từ Ngọc Ý", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Lĩnh. Đang cập nhật thông tin vợ con.", "", ""),
-
-
-
-                    ("111.10.1.101", "111.09.0.055", "Từ Thị Mai", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Cát.", "", ""),
-                    ("111.10.0.102", "111.09.0.055", "Từ Hữu Thuận", "", "Trần Thị Hiền Phương", "", "", "", "Con ông Từ Hữu Cát. Sinh hạ: Từ Quang Minh.", "", ""),
-                    ("111.10.1.103", "111.09.0.055", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Cát.", "", ""),
-                    ("111.10.0.104", "111.09.0.055", "Từ Ngọc Thoả", "", "Trần Thị Thúy Hằng", "", "", "", "Con ông Từ Hữu Cát. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("111.10.0.105", "111.09.0.056", "Từ Ngọc Hoàn", "", "Nguyễn Thị Tuyết", "", "", "", "Con ông Từ Hữu Nhung. Sinh hạ: Từ Ngọc Việt Anh.", "", ""),
-                    ("111.10.0.106", "111.09.0.056", "Từ Ngọc Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("111.10.0.107", "111.09.0.060", "Từ Ngọc Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Xuân. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("111.10.0.111", "111.09.0.061", "Từ Hữu Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bình. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("111.10.1.112", "111.09.0.061", "Từ Thị Tâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bình.", "", ""),
-                   
-                    # ------------------------------------
-                    # CHI 2
-                    # ------------------------------------
-
-                    ("122.10.1.001", "122.09.0.001", "Từ Thị Hoà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuyến.", "", ""),
-                    ("122.10.0.002", "122.09.0.001", "Từ Hữu Thoả", "", "Trần Thị Sơn", "", "", "", "Con ông Từ Hữu Tuyến. Lấy vợ người Hương Sơn.", "", ""),
-                    ("122.10.0.003", "122.09.0.001", "Từ Hữu Thành", "", "Nguyễn Thị Vân", "", "", "", "Con ông Từ Hữu Tuyến. Lấy vợ người Hương Sơn.", "", ""),
-                    ("122.10.0.004", "122.09.0.001", "Từ Hữu Tuyền", "", "Vi Thị Ngọc", "", "", "", "Con ông Từ Hữu Tuyến. Lấy vợ người Nghệ An.", "", ""),
-                    ("122.10.1.005", "122.09.0.001", "Từ Thị Mỏ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuyến.", "", ""),
-                    ("122.10.1.006", "122.09.0.001", "Từ Thị Mậu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuyến.", "", ""),
-                    ("122.10.0.007", "122.09.0.002", "Từ Hữu Hùng", "", "Bỏ vợ", "", "", "", "Con ông Từ Hữu Cừ.", "Không có con", ""),
-                    ("122.10.1.008", "122.09.0.002", "Từ Thị Dũng", "", "Trần Định", "", "", "", "Con ông Từ Hữu Cừ. Lấy chồng người trong xã", "", ""), 
-                    ("122.10.0.009", "122.09.0.002", "Từ Hữu Kiên", "", "", "", "", "", "Con ông Từ Hữu Cừ", "Chết sớm", ""),
-                    ("122.10.0.010", "122.09.0.002", "Từ Hữu Cường", "", "Trần Thị Hiền", "", "", "", "Con ông Từ Hữu Cừ. Lấy vợ người Bình Định", "", ""),
-                    ("122.10.1.011", "122.09.0.002", "Từ Thị Phú", "", "Ông Hào", "", "", "", "Con ông Từ Hữu Cừ. Lấy chồng về Mỹ Lộc.", "", ""),
-                    ("122.10.1.012", "122.09.0.002", "Từ Thị Hựu", "", "Ông Thanh", "", "", "", "Con ông Từ Hữu Cừ. Lấy chồng về Trung Lộc", "", ""),
-                    ("122.10.1.013", "122.09.0.002", "Từ Thị Hạnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Cừ.", "", ""),
-                    ("122.10.0.014", "122.09.0.002", "Từ Hữu Phúc", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Cừ. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("122.10.0.015", "122.09.0.002", "Từ Hữu Vừng", "", "Bà Hiền", "", "", "", "Con ông Từ Hữu Cừ. Vợ là Bà Hiền ở Mỹ Lộc", "", ""),
-
-                    ("122.10.1.030", "122.09.0.016", "Từ Thị Bích Loan", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trung. Lấy chồng về tỉnh Lâm Đồng.", "", ""),
-                    ("122.10.0.031", "122.09.0.016", "Từ Ngọc Luân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trung. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("122.10.0.032", "122.09.0.016", "Từ Ngọc Lễ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trung. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("122.10.0.033", "122.09.0.017", "Từ Hữu Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thông. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("122.10.0.034", "122.09.0.017", "Từ Hữu Ngọc", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thông. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("122.10.0.035", "122.09.0.018", "Từ Hữu Thỏa", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("122.10.1.036", "122.09.0.018", "Từ Thị Hà Ly", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến.", "", ""),
-                    ("122.10.1.037", "122.09.0.018", "Từ Thị Thùy Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến.", "", ""),
-                    ("122.10.1.038", "122.09.0.020", "Từ Ngọc Anh Thư", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường.", "", ""),
-                    ("122.10.0.039", "122.09.0.020", "Từ Vĩnh Cường", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("122.10.1.040", "122.09.0.022", "Từ Thị Ngọc Trân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân.", "", ""),
-                    ("122.10.1.041", "122.09.0.022", "Từ Thị Ngọc Châu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân.", "", ""),
-
-                    ("124.10.1.071", "124.09.0.057", "Từ Nguyễn Gia Hân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hải Thành.", "", ""),
-                    ("124.10.1.072", "124.09.0.057", "Từ Mỹ Duyên", "", "Đang cập nhật", "", "", "", "Con ông Từ Hải Thành.", "", ""),
-                    ("124.10.0.073", "124.09.0.057", "Từ Hải Đăng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hải Thành. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("124.10.1.074", "124.09.0.061", "Từ Ngọc Huyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hoàng.", "", ""),
-
-
-                    # ------------------------------------
-                    # CHI 3
-                    # ------------------------------------
-                    ("135.10.0.001", "135.09.0.001", "Từ Hữu Dũng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hoà. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("135.10.0.002", "135.09.0.001", "Từ Hữu Trung", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hoà. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("135.10.1.003", "135.09.0.002", "Từ Thị Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bình.", "", ""),
-                    ("135.10.1.004", "135.09.0.002", "Từ Thị Mỹ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bình.", "", ""),
-                    ("135.10.0.005", "135.09.0.002", "Từ Hữu Việt", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bình. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("135.10.0.006", "135.09.0.002", "Từ Hữu Đức", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bình. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("135.10.1.007", "135.09.0.003", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hạnh.", "", ""),
-                    ("135.10.0.008", "135.09.0.003", "Từ Hữu Phúc", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hạnh. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("135.10.1.009", "135.09.0.010", "Từ Thị Nhung", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tân.", "", ""),
-                    ("135.10.0.010", "135.09.0.010", "Từ Hữu Tài", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tân. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("135.10.0.011", "135.09.0.010", "Từ Hữu Chiến", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tân. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("135.10.0.012", "135.09.0.011", "Từ Hữu Trung", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("135.10.0.013", "135.09.0.011", "Từ Hữu Thông", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("135.10.0.014", "135.09.0.013", "Từ Hữu Quốc", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hùng. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("135.10.0.015", "135.09.0.013", "Từ Hữu Khánh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hùng. Đang cập nhật thông tin vợ con.", "", ""),
-
-
-                    # ------------------------------------
-                    # CHI 4
-                    # ------------------------------------              
-                    ("246.10.0.001", "246.09.0.002", "Từ Hữu Thông", "", "Đặng Thị Thuyết", "", "", "", "Con ông Từ Hữu Hạ. Vợ là Đặng Thị Thuyết. Sinh hạ: Từ Hữu Thuận, Từ Huy Hoàng.", "", ""),
-                    ("246.10.0.002", "246.09.0.002", "Từ Hữu Minh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hạ. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("246.10.1.003", "246.09.0.002", "Từ Thị Nhung", "", "Hà Duy Khánh", "", "", "", "Con ông Từ Hữu Hạ", "", ""),
-                    ("246.10.1.004", "246.09.0.002", "Từ Thị Nhàn", "", "Nguyễn Văn Giang", "", "", "", "Con ông Từ Hữu Hạ", "", ""),      
-
-                    ("246.10.1.005", "246.09.0.004", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đông.", "", ""),
-                    ("246.10.0.006", "246.09.0.004", "Từ Hữu Hưng", "", "Thân Thị Đào", "", "", "", "Con ông Từ Hữu Đông. Vợ là Trần Thị Đào. Sinh hạ: Từ Hải Đăng", "", ""),
-
-                    ("246.10.1.007", "246.09.0.009", "Từ Thị Nga", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nam.", "", ""),
-                    ("246.10.0.008", "246.09.0.009", "Từ Hữu Vũ", "", "Lê Thị Hương", "", "", "", "Con ông Từ Hữu Nam. Vợ là Lê Thị Hương. Sinh hạ: Từ Quốc Anh.", "", ""),
-                    ("246.10.1.009", "246.09.0.009", "Từ Thị Hằng", "", "Nguyễn Danh Hoàng", "", "", "", "Con ông Từ Hữu Nam.", "", ""),                 
-
-                    ("246.10.1.010", "246.09.0.010", "Từ Thị Thắm", "", "Ngô Đức Hiền", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-                    ("246.10.1.011", "246.09.0.010", "Từ Thị Thuỳ", "", "Cao Thanh Hưng", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-                    ("246.10.1.012", "246.09.0.010", "Từ Thị Thương", "", "Nguyễn Duy Dũng", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-                    ("246.10.1.013", "246.09.0.010", "Từ Thị Thủy", "", "", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-
-                    ("246.10.0.014", "246.09.0.012", "Từ Hữu Bình", "", "Trần Thị Thanh Huyền", "", "", "", "Con ông Từ Hữu Thành. Vợ là Trần Thị Thanh Huyền.", "", ""),
-                    ("246.10.0.015", "246.09.0.012", "Từ Hữu Ngọc", "", "Nguyễn Thị Mỹ Linh", "", "", "", "Con ông Từ Hữu Thành. Vợ là Nguyễn Thị Mỹ Linh. Sinh hạ: Từ Hữu Hiếu.", "", ""),
-                    ("246.10.0.016", "246.09.0.012", "Từ Hữu Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thành. Đang cập nhật.", "", ""),
-                    ("246.10.1.017", "246.09.0.012", "Từ Thị Tú", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thành. Đang cập nhật.", "", ""),
-
-                    ("246.10.0.018", "246.09.0.015", "Từ Mạnh Hùng", "", "Thái Thị Minh Thu", "", "", "", "Con ông Từ Mạnh Mậu. Vợ là Thái Thị Minh Thu Sinh hạ: Từ Thái Đức Anh, Từ Gia Bảo.", "", ""),
-                    ("246.10.1.019", "246.09.0.015", "Từ Thị Việt Hà", "", "Nguyễn Văn Dũng", "", "", "", "Con ông Từ Mạnh Mậu.", "", ""),
-
-                    ("246.10.0.020", "246.09.0.018", "Từ Huy Trung", "", "Nguyễn Thị Kim Oanh", "", "", "", "Con ông Từ Quốc Lệ. Sinh hạ: Từ Quốc Bảo.", "", ""),
-                    ("246.10.1.021", "246.09.0.018", "Từ Thị Huyền Nga", "", "Lê Dũng", "", "", "", "Con ông Từ Quốc Lệ.", "", ""),
-
-                    ("246.10.0.022", "246.09.0.018", "Từ Quốc Việt", "", "Nguyễn Thị Tú Trang", "", "", "", "Con ông Từ Quốc Lệ. Sinh hạ: Từ Quốc Sơn, Từ Quốc Hải, Từ Ngọc Minh Châu.", "", ""),
-                    ("246.10.1.023", "246.09.0.019", "Từ Thị Sâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Quốc Đạt.", "", ""),
-                    ("246.10.0.024", "246.09.0.019", "Từ Hữu Nhung", "", "Phạm Thị Hoài An", "", "", "", "Con ông Từ Quốc Đạt. Sinh hạ: Từ Quốc Tuấn, Từ Nam Phong, Từ Minh Khang, Từ Minh Huy.", "", ""),
-
-                    ("246.10.1.025", "246.09.0.021", "Từ Thị Đức", "", "Hoàng Trọng Hảo", "", "", "", "Con ông Từ Hữu Phúc.", "", ""),
-                    ("246.10.0.026", "246.09.0.021", "Từ Hữu Lành", "", "Nguyễn Mai Lan", "", "", "", "Con ông Từ Hữu Phúc. Vợ là Nguyễn Thị Lan. Sinh hạ: Từ Nguyễn Duy Phước, Từ Duy Khải.", "", ""),
-                    ("246.10.1.027", "246.09.0.021", "Từ Thị Hiền", "", "Ngô Đức Phú", "", "", "", "Con ông Từ Hữu Phúc.", "", ""),
-                    ("246.10.1.028", "246.09.0.021", "Từ Thị Thảo", "", "Đặng Bá Thông", "", "", "", "Con ông Từ Hữu Phúc.", "", ""),
-                    ("246.10.0.029", "246.09.0.021", "Từ Hữu Quang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phúc. Đang cập nhật thông tin vợ con.", "", ""),
-                    
-                    ("246.10.0.030", "246.09.0.023", "Từ Hữu Pháp", "", "Trần Thị Ngọc", "", "", "", "Con ông Từ Hữu Lý. Vợ là Trần Thị Ngọc. Sinh hạ: Từ Nhật Nam, Từ Nhật Đức", "", ""),
-                    ("246.10.0.031", "246.09.0.023", "Từ Hữu Luân", "", "Đặng Thị Phương Thúy", "", "", "", "Con ông Từ Hữu Lý. Vợ là Đặng Thị Phương Thủy. Sinh hạ: Từ Hữu Bắc", "", ""),
-                    ("246.10.1.032", "246.09.0.023", "Từ Thị Hồng Quyên", "", "Phan Công Hoàng", "", "", "", "Con ông Từ Hữu Lý.", "", ""),
-
-                    ("246.10.0.033", "246.09.0.027", "Từ Nam Long", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sơn. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("246.10.0.034", "246.09.0.028", "Từ Quốc Vương", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sơn. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("246.10.1.035", "246.09.0.029", "Từ Thị Hồng", "", "Nguyễn Văn Đức", "", "", "", "Con ông Từ Hữu Lam.", "", ""),
-                    ("246.10.0.036", "246.09.0.029", "Từ Hữu Việt", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lam. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("246.10.1.037", "246.09.0.029", "Từ Thị Duyên", "", "", "", "", "", "Con ông Từ Hữu Lam. ", "", ""),
-
-                    
-                    # ------------------------------------
-                    # CHI 5
-                    # ------------------------------------            
-
-                    ("258.10.0.001", "258.09.0.002", "Từ Hữu Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan. Sinh hạ: Từ Anh Tuấn, Từ Quang Anh.", "", ""),
-                    ("258.10.1.002", "258.09.0.002", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan.", "", ""),
-                    ("258.10.0.003", "258.09.0.002", "Từ Hữu Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan. Sinh hạ: Từ Hữu Quang Huy, Từ Hữu Quang Tùng.", "", ""),
-                    ("258.10.0.004", "258.09.0.002", "Từ Hữu Hùng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Loan. Sinh hạ: Từ Hữu Cường.", "", ""),
-                    
-                    ("258.10.0.005", "258.09.0.003", "Từ Nam Long", "", "Doãn Thu Phương", "", "", "", "Con ông Từ Hữu Ba. Từ Nhật Nam, Từ Nhật Hoàng", "", ""),
-                    ("258.10.1.006", "258.09.0.003", "Từ Thu Mai", "", "Trần Trọng An", "", "", "", "Con ông Từ Hữu Ba. Chồng là Trần Trọng An con Ông Khánh ở giữa làng", "", ""),
-
-                    ("258.10.1.007", "258.09.0.006", "Từ Thị Nga", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán. Lấy chồng về Trường Lộc.", "", ""),
-                    ("258.10.1.008", "258.09.0.006", "Từ Thị Ngân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán.", "", ""),
-                    ("258.10.0.009", "258.09.0.006", "Từ Hữu Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán. Chết sớm.", "", ""),
-                    ("258.10.0.010", "258.09.0.006", "Từ Hữu Hùng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phán. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("258.10.1.011", "258.09.0.011", "Từ Thị Nhung", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-                    ("258.10.1.012", "258.09.0.011", "Từ Thị Thuỷ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-                    ("258.10.1.013", "258.09.0.011", "Từ Thị Lâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-                    ("258.10.0.014", "258.09.0.011", "Từ Hữu Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lục.", "", ""),
-                    
-                    ("258.10.1.015", "258.09.0.012", "Từ Thị Hiền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương.", "", ""),
-                    ("258.10.1.016", "258.09.0.012", "Từ Thị Hữu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương.", "", ""),    
-                    ("258.10.0.017", "258.09.0.012", "Từ Hữu Phương", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.018", "258.09.0.012", "Từ Hữu Đạt", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("258.10.0.019", "258.09.0.013", "Từ Hữu Minh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đàn. Sinh hạ: Từ Hữu Huy.", "", ""),
-                    ("258.10.1.020", "258.09.0.013", "Từ Thị Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đàn.", "", ""),
-
-                    ("258.10.1.021", "258.09.0.014", "Từ Thị Tâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Liêm.", "", ""),
-                    ("258.10.1.022", "258.09.0.014", "Từ Thị Như", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Liêm.", "", ""),
-
-                    ("258.10.0.023", "258.09.0.015", "Từ Hữu Quỳnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.024", "258.09.0.015", "Từ Thị Oanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
-
-                    ("258.10.0.025", "258.09.0.020", "Từ Ngọc Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Sinh hạ: Từ Hữu Ngọc Tuấn, Từ Hữu Ngọc Tú.", "", ""),
-                    ("258.10.0.026", "258.09.0.020", "Từ Ngọc Dũng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Sinh hạ: Từ Hữu Ngọc Hiếu.", "", ""),
-                    ("258.10.0.027", "258.09.0.020", "Từ Ngọc Cường", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.028", "258.09.0.020", "Từ Ngọc Quyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý. Sinh hạ: Từ Hữu Ngọc Đức.", "", ""),
-                    ("258.10.1.029", "258.09.0.020", "Từ Thị Hoa", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuý.", "", ""),
-
-                    ("258.10.1.030", "258.09.0.028", "Từ Thị Thanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu.", "", ""),
-                    ("258.10.0.031", "258.09.0.028", "Từ Hữu Thành", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.032", "258.09.0.028", "Từ Thị Thắm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu.", "", ""),
-                    ("258.10.0.033", "258.09.0.028", "Từ Hữu Thiết", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu. Sinh hạ: Từ Hữu Phát.", "", ""),
-                    ("258.10.0.034", "258.09.0.028", "Từ Hữu Phát", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hậu. Đang cập nhật thông tin vợ con.", "", ""),
-                   
-                    #Thay sTT    
-                    ("258.10.0.040", "258.09.0.035", "Từ Hữu Châu", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Minh. Sinh hạ: Từ Hữu Dũng, Từ Hữu Mạnh", "", ""),
-                    ("258.10.0.041", "258.09.0.035", "Từ Hữu Tiến", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Minh.", "", ""),
-
-                    ("258.10.0.045", "258.09.0.036", "Từ Hữu Tuấn", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Định", "", ""),
-                    ("258.10.0.046", "258.09.0.036", "Từ Hữu Tú", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Định", "", ""),
-                    ("258.10.0.047", "258.09.0.036", "Từ Hữu Tài", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Định", "", ""),
-
-                    ("258.10.0.050", "258.09.0.037", "Từ Hữu Cường", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
-
-                    ("258.10.1.064", "258.09.0.040", "Từ Thị Liễu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý.", "", ""),
-                    ("258.10.1.065", "258.09.0.040", "Từ Thị Lâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý.", "", ""),
-                    ("258.10.0.066", "258.09.0.040", "Từ Hữu Luận", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý. Sinh hạ: Từ Hữu Báu.", "", ""),
-                    ("258.10.0.067", "258.09.0.040", "Từ Hữu Luật", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lý. Sinh hạ: Từ Hữu Bảo.", "", ""),
-
-                    ("258.10.1.068", "258.09.0.042", "Từ Thị Bình", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh.", "", ""),
-                    ("258.10.0.069", "258.09.0.042", "Từ Hữu Thanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh. Sinh hạ: Từ Hữu Hiếu, Từ Hữu Ngọc.", "", ""),
-                    ("258.10.1.070", "258.09.0.042", "Từ Thị Xanh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh.", "", ""),
-                    ("258.10.0.071", "258.09.0.042", "Từ Hữu Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Minh. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("258.10.0.072", "258.09.0.047", "Từ Hữu Nam", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Toàn. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.073", "258.09.0.047", "Từ Hữu Đông", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Toàn. Sinh hạ: Từ Hữu Khang, Từ Hữu Minh.", "", ""),
-
-                    ("258.10.1.074", "258.09.0.048", "Từ Thị Hằng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến.", "", ""),
-                    ("258.10.0.075", "258.09.0.048", "Từ Hữu Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.076", "258.09.0.048", "Từ Hữu Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tiến. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("258.10.1.077", "258.09.0.049", "Từ Thị Nga", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng.", "", ""),
-                    ("258.10.0.078", "258.09.0.049", "Từ Hữu Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.079", "258.09.0.049", "Từ Hữu Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("258.10.0.080", "258.09.0.051", "Từ Hữu Quý", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp. Sinh hạ: Từ Hữu Vũ.", "", ""),
-                    ("258.10.1.081", "258.09.0.051", "Từ Thị Huyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp.", "", ""),
-                    ("258.10.0.082", "258.09.0.051", "Từ Hữu Quyền", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp. Sinh hạ: Từ Hữu Phúc.", "", ""),
-                    ("258.10.0.083", "258.09.0.051", "Từ Hữu Lợi", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Giáp. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("258.10.1.084", "258.09.0.053", "Từ Thị Hạnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề.", "", ""),
-                    ("258.10.1.085", "258.09.0.053", "Từ Thị Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề.", "", ""),
-                    ("258.10.0.086", "258.09.0.053", "Từ Hữu Khoa", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("258.10.0.087", "258.09.0.055", "Từ Hữu Thắng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Sinh hạ: Từ Hữu Long, Từ Hữu Thiên.", "", ""),
-                    ("258.10.0.088", "258.09.0.055", "Từ Hữu Đông", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.0.089", "258.09.0.055", "Từ Hữu Trường", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Sinh hạ: Từ Hữu Nguyên, Từ Hữu Quân.", "", ""),
-                    ("258.10.1.090", "258.09.0.055", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại.", "", ""),
-                    ("258.10.0.091", "258.09.0.055", "Từ Hữu Đồng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đại. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("258.10.0.092", "258.09.0.058", "Từ Hữu Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Em. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.093", "258.09.0.058", "Từ Thị Thuỷ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Em.", "", ""),
-                    ("258.10.0.094", "258.09.0.058", "Từ Hữu Hưng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Em. Đang cập nhật thông tin vợ con.", "", ""),
-
-                    ("258.10.0.095", "258.09.0.063", "Từ Hữu Phú", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất. Sinh hạ: Từ Hữu An, Từ Hữu Huy", "", ""),
-                    ("258.10.0.096", "258.09.0.063", "Từ Hữu Dũng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất. Sinh hạ: Từ Hữu Hiếu, Từ Hữu Phúc.", "", ""),
-                    ("258.10.1.097", "258.09.0.063", "Từ Thị Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất.", "", ""),
-                    ("258.10.0.098", "258.09.0.063", "Từ Hữu Văn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Chất. Sinh hạ: Từ Hữu Khôi", "", ""),
-
-                    ("258.10.1.099", "258.09.0.064", "Từ Thị Xuân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tạo.", "", ""),
-                    ("258.10.0.100", "258.09.0.064", "Từ Hữu Hạnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tạo. Đang cập nhật thông tin vợ con.", "", ""),
-                    ("258.10.1.101", "258.09.0.064", "Từ Thị Hà", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tạo.", "", ""),
-
-                    # ==========================================================
-                    # ĐỜI 11 
-                    # ==========================================================
-
-                    # ------------------------------------
-                    # CHI 1
-                    # ------------------------------------
-                  
-                    ("111.11.0.002", "111.10.0.005", "Từ Hữu Quý", "", "Bà Trần Thị Trang", "", "", "", "Con ông Từ Hữu Ngụ. Sinh hạ: Từ Hữu Khánh Duy, Từ Hải Đăng", "", ""),
-                    ("111.11.0.003", "111.10.0.005", "Từ Hữu Báu", "", "Bà Nguyễn Thị Hòa", "", "", "", "Con ông Từ Hữu Ngụ. Sinh hạ: Từ Hữu Đức", "", ""),
-
-                    ("111.11.0.005", "111.10.0.011", "Từ Hữu Ý", "", "Bà Phạm Khánh Vi", "", "", "", "Con ông Từ Hữu Đính", "", ""),
-                    ("111.11.0.006", "111.10.0.011", "Từ Hữu Lương", "", "Bà Nguyễn Thị Quỳnh Thư", "", "", "", "Con ông Từ Hữu Đính. Sinh hạ: Từ Hữu Phước", "", ""),
-                    ("111.11.0.007", "111.10.0.011", "Từ Hữu Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đính", "", ""),
-                    
-                    ("111.11.0.008", "111.10.0.013", "Từ Hữu Phương", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bính", "", ""),
-            
-                    ("111.11.1.010", "111.10.0.015", "Từ Thị Thảo", "", "Đang cập nhật", "", "", "", "Con ông Từ Quang Đạt", "", ""),
-                    ("111.11.1.011", "111.10.0.015", "Từ Thị Hiền", "", "Đang cập nhật", "", "", "", "Con ông Từ Quang Đạt", "", ""),
-                    ("111.11.0.012", "111.10.0.015", "Từ Hữu Trung", "", "Trần Thị Thu Phương", "", "", "", "Con ông Từ Quang Đạt. Sinh hạ: Từ Minh Hoàng", "", ""),
-
-                    ("111.11.0.020", "111.10.0.017", "Từ Hữu Tuấn", "", "Bà Nguyễn Thị Hồng Ngọc", "", "", "", "Con ông Từ Hữu Huề. Sinh hạ: Từ Hữu Ngọc Khang", "", ""),
-                    ("111.11.0.021", "111.10.0.017", "Từ Hữu Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huề. Đang cập nhật", "", ""),
-              
-                    ("111.11.0.022", "111.10.0.018", "Từ Hữu Dũng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huê", "", ""),
-                    ("111.11.0.023", "111.10.0.018", "Từ Hữu Công", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Huê", "", ""),
-                    ("111.11.1.024", "111.10.0.019", "Từ Thị Khánh Linh", "", "Đang cập nhật", "2006", "", "", "Con ông Từ Hữu Hoà.", "", ""),
-                 
-                    ("111.11.0.060", "111.10.0.063", "Từ Hữu Thắng", "", "Vương Thị Hải Yến", "", "", "", "Con ông Từ Hữu Định. Sinh hạ: Từ Vương Minh Nguyên", "", ""),
-                    ("111.11.0.080", "111.10.0.069", "Từ Hữu Trường", "", "Nguyễn Anh Đào", "", "", "", "Con ông Từ Hữu Sơn(Nghiệm). Sinh hạ: Từ Hữu Long", "", ""),
-                    ("111.11.1.081", "111.10.0.069", "Từ Thị Vân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sơn(Nghiệm)", "", ""),
-                    ("111.11.0.082", "111.10.0.069", "Từ Hữu Lý", "", "Nguyễn Thị Sao", "", "", "", "Con ông Từ Hữu Sơn(Nghiệm)", "", ""),
-                    ("111.11.0.083", "111.10.0.069", "Từ Hữu Tài", "", "Hoàng Thị Tâm", "", "", "", "Con ông Từ Hữu Sơn(Nghiệm)", "", ""),
-                    ("111.11.0.084", "111.10.0.069", "Từ Hữu Giang", "", "Nguyễn Thị Thảo", "", "", "", "Con ông Từ Hữu Sơn(Nghiệm)", "", ""), 
-                    ("111.11.0.085", "111.10.0.070", "Từ Hữu Bản", "", "Bà Võ Thị Hằng", "", "", "", "Con ông Từ Hữu Thân (Nghiệm). Sinh hạ: Từ Hải Đăng.", "", ""),
-                    ("111.11.0.086", "111.10.0.070", "Từ Hữu Mạnh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân (Nghiệm). Sinh hạ: Từ Hải Lâm.", "", ""),
-                    ("111.11.1.087", "111.10.0.070", "Từ Thị Cần", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân (Nghiệm)", "", ""),
-                    ("111.11.0.088", "111.10.0.070", "Từ Hữu Thành", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thân (Nghiệm)", "", ""),
-                    ("111.11.0.089", "111.10.0.072", "Từ Hữu Thuận", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải(Nghiệm)", "", ""),         
-                    ("111.11.0.090", "111.10.0.074", "Từ Hữu Anh", "", "Mạc Thị Quỳnh Anh", "", "", "", "Con ông Từ Hữu Nga (Nghiệm). Sinh hạ: Từ Quang Vinh.", "", ""),
-                    ("111.11.0.091", "111.10.0.074", "Từ Hữu Hoàng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nga (Nghiệm)", "", ""),
-
-                    ("111.11.0.120", "111.10.0.102", "Từ Quang Minh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thuận.", "", ""),
-        
-                    ("111.11.0.130", "111.10.0.105", "Từ Ngọc Việt Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Hoàn", "", ""),
-                    
-                    # ------------------------------------
-                    # CHI 4
-                    # ------------------------------------
-
-                    ("246.11.0.001", "246.10.0.001", "Từ Hữu Thuận", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thông.", "", ""),
-                    ("246.11.1.002", "246.10.0.001", "Từ Thị Linh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thông.", "", ""),
-                    ("246.11.0.003", "246.10.0.001", "Từ Huy Hoàng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thông.", "", ""),
-
-                    ("246.11.0.004", "246.10.0.006", "Từ Hải Đăng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hưng", "", ""),
-                    ("246.11.1.005", "246.10.0.006", "Từ Thị Vân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hưng", "", ""),
-                    ("246.11.1.006", "246.10.0.006", "Từ Thị Thư", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hưng", "", ""),
-
-                    ("246.11.0.007", "246.10.0.008", "Từ Quốc Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Vũ", "", ""),
-
-                    ("246.11.1.008", "246.10.0.014", "Từ Thị An", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bình. ", "", ""),
-
-                    ("246.11.0.009", "246.10.0.015", "Từ Hữu Hiếu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Ngọc", "", ""),
-
-                    ("246.11.0.010", "246.10.0.018", "Từ Thái Đức Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Mạnh Hùng", "", ""),
-                    ("246.11.0.011", "246.10.0.018", "Từ Gia Bảo", "", "Đang cập nhật", "", "", "", "Con ông Từ Mạnh Hùng", "", ""),
-
-                    ("246.11.0.012", "246.10.0.020", "Từ Quốc Bảo", "", "Đang cập nhật", "", "", "", "Con ông Từ Huy Trung", "", ""),
-                    ("246.11.1.013", "246.10.0.020", "Từ Bảo Trâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Huy Trung", "", ""),
-     
-                    ("246.11.0.014", "246.10.0.022", "Từ Quốc Sơn", "", "Đang cập nhật", "", "", "", "Con ông Từ Quốc Việt", "", ""),
-                    ("246.11.0.015", "246.10.0.022", "Từ Quốc Hải", "", "Đang cập nhật", "", "", "", "Con ông Từ Quốc Việt", "", ""),
-                    ("246.11.1.016", "246.10.0.022", "Từ Ngọc Minh Châu", "", "Đang cập nhật", "", "", "", "Con ông Từ Quốc Việt", "", ""),
-                 
-                    ("246.11.0.017", "246.10.0.024", "Từ Quốc Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung", "", ""),
-                    ("246.11.0.018", "246.10.0.024", "Từ Nam Phong", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung", "", ""),
-                    ("246.11.0.019", "246.10.0.024", "Từ Minh Khang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung", "", ""),
-                    ("246.11.0.020", "246.10.0.024", "Từ Minh Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Nhung", "", ""),
-    
-                    ("246.11.1.021", "246.10.0.026", "Từ Thị Thiên", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lành", "", ""),
-                    ("246.11.0.022", "246.10.0.026", "Từ Nguyễn Duy Phước", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lành", "", ""),
-                    ("246.11.0.023", "246.10.0.026", "Từ Duy Khải", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lành", "", ""),
-
-                    ("246.11.0.024", "246.10.0.030", "Từ Nhật Nam", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Pháp", "", ""),
-                    ("246.11.0.025", "246.10.0.030", "Từ Nhật Đức", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Pháp", "", ""),
-                     
-                    ("246.11.0.026", "246.10.0.031", "Từ Hữu Luân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Luân", "", ""),
-
-                    # ------------------------------------
-                    # CHI 5
-                    # ------------------------------------
-
-                    ("258.11.0.001", "258.10.0.001", "Từ Anh Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sơn. Sinh hạ: Từ Anh Quân.", "", ""),
-                    ("258.11.0.002", "258.10.0.001", "Từ Quang Anh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Sơn", "", ""),
-                                      
-                    ("258.11.0.005", "258.10.0.003", "Từ Hữu Quang Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải", "", ""),
-                    ("258.11.0.006", "258.10.0.003", "Từ Hữu Quang Tùng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hải", "", ""),
-                  
-                    ("258.11.0.008", "258.10.0.004", "Từ Hữu Cường", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Hùng", "", ""),
-
-                    ("258.11.0.010", "258.10.0.005", "Từ Nhật Nam", "", "Phan Vân Khanh", "2001", "", "", "Con ông Từ Hữu Long. Sinh hạ: Từ Nhật Khang (2026)", "", ""),
-                    ("258.11.0.011", "258.10.0.005", "Từ Nhật Hoàng", "", "Đang cập nhật", "2006", "", "", "Con ông Từ Hữu Long", "", ""),
-              
-                    ("258.11.0.040", "258.10.0.025", "Từ Hữu Ngọc Tuấn", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Anh.", "", ""),
-                    ("258.11.0.041", "258.10.0.025", "Từ Hữu Ngọc Tú", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Anh.", "", ""),
-                    
-                    ("258.11.0.045", "258.10.0.026", "Từ Hữu Ngọc Hiếu", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Dũng.", "", ""),
-                    
-                    ("258.11.0.050", "258.10.0.028", "Từ Hữu Ngọc Đức", "", "Đang cập nhật", "", "", "", "Con ông Từ Ngọc Quyền.", "", ""),
-
-                    ("258.11.0.055", "258.10.0.033", " Từ Hữu Phát", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thiết.", "", ""),
-          
-                    ("258.11.0.070", "258.10.0.040", "Từ Hữu Dũng", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Châu.", "", ""),
-                    ("258.11.0.071", "258.10.0.040", "Từ Hữu Mạnh", "", "đang cập nhật", "", "", "", "Con ông Từ Hữu Châu.", "", ""),
-            
-                    ("258.11.0.090", "258.10.0.066", "Từ Hữu Báu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Luận.", "", ""),
-
-                    ("258.11.0.091", "258.10.0.067", "Từ Hữu Bảo", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Luật", "", ""),
-               
-                    ("258.11.0.098", "258.10.0.069", "Từ Hữu Hiếu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
-                    ("258.11.0.099", "258.10.0.069", "Từ Hữu Ngọc", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thanh.", "", ""),
-                                  
-                    ("258.11.0.105", "258.10.0.073", "Từ Hữu Khang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đông.", "", ""),
-                    ("258.11.0.106", "258.10.0.073", "Từ Hữu Minh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Đông.", "", ""),
-                    
-                    ("258.11.0.120", "258.10.0.080", "Từ Hữu Vũ", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Quý", "", ""),
-                   
-                    ("258.11.0.122", "258.10.0.082", "Từ Hữu Phúc", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Quyền", "", ""),
-                  
-                    ("258.11.0.131", "258.10.0.087", "Từ Hữu Long", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thắng", "", ""),
-                    ("258.11.0.132", "258.10.0.087", "Từ Hữu Thiên", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Thắng", "", ""),
-                    
-                    ("258.11.0.140", "258.10.0.089", "Từ Hữu Nguyên", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường", "", ""),
-                    ("258.11.0.141", "258.10.0.089", "Từ Hữu Quân", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường", "", ""),
-                   
-                    ("258.11.0.145", "258.10.0.095", "Từ Hữu An", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phú", "", ""),
-                    ("258.11.0.146", "258.10.0.095", "Từ Hữu Huy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Phú", "", ""),
-
-                    ("258.11.0.148", "258.10.0.096", "Từ Hữu Hiếu", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng", "", ""),
-                    ("258.11.0.149", "258.10.0.096", "Từ Hữu Phúc", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Dũng", "", ""),
-                  
-                    ("258.11.0.150", "258.10.0.098", "Từ Hữu Khôi", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Văn", "", ""),
-                    
-                    # ==========================================================
-                    # ĐỜI 12 
-                    # ==========================================================
-                    # ------------------------------------
-                    # CHI 1
-                    # ------------------------------------
-                     
-                    ("111.12.0.002", "111.11.0.002", "Từ Hữu Khánh Duy", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Quý", "", ""),
-                    ("111.12.0.003", "111.11.0.002", "Từ Hải Đăng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Quý", "", ""),
-                    
-                    ("111.12.0.004", "111.11.0.003", "Từ Hữu Đức", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Báu", "", ""),
-
-                    ("111.12.0.005", "111.11.0.006", "Từ Hữu Phước", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Lương", "", ""),
-
-
-                    ("111.12.0.008", "111.11.0.012", "Từ Minh Hoàng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trung", "", ""),
-
-                    ("111.12.0.010", "111.11.0.020", "Từ Hữu Ngọc Khang", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Tuấn", "", ""),
-                  
-                    ("111.12.0.050", "111.11.0.063", "Từ Vương Minh Nguyên", "", "", "", "", "", "Con ông Từ Hữu Thắng", "", ""),
-       
-                    ("111.12.0.090", "111.11.0.080", "Từ Hữu Long", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Trường", "", ""),
-                    ("111.12.0.092", "111.11.0.085", "Từ Hải Đăng", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Bản", "", ""),               
-                    ("111.12.0.095", "111.11.0.086", "Từ Hải Lâm", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Mạnh", "", ""),                 
-                    ("111.12.0.098", "111.11.0.090", "Từ Quang Vinh", "", "Đang cập nhật", "", "", "", "Con ông Từ Hữu Anh.", "", ""),
-
-
-                    # ------------------------------------
-                    # CHI 5
-                    # ------------------------------------
-
-                    ("258.12.0.001", "258.11.0.001", "Từ Anh Quân", "", "Đang cập nhật", "", "", "", "Con ông Từ Anh Tuấn", "", ""),
-                    
-                    ("258.12.0.010", "258.11.0.010", "Từ Nhật Khang", "", "Đang cập nhật", "2026", "", "", "Con ông Từ Nhật Nam", "", "")
-
-                    
-
-                ]
-
-
-                # 🔍 DÁN ĐOẠN KIỂM TRA VÀO ĐÂY:
+                # 2. Vòng lặp kiểm tra lỗi nằm ở App chính
                 for index, record in enumerate(raw_data):
-                    if len(record) != 16:
+                    if len(record) != 11:
                         print(f"⚠️ Phát hiện lỗi ở record thứ {index + 1} (ID: {record[0]} - {record[2]}): Có {len(record)} phần tử (Yêu cầu đúng 11).")
 
+                # Kiểm tra ID trùng lặp trong mảng raw_data
+                seen_ids = set()
+                duplicate_ids = set()
+                for record in raw_data:
+                    rid = record[0]
+                    if rid in seen_ids:
+                        duplicate_ids.add(rid)
+                    else:
+                        seen_ids.add(rid)
 
+                if duplicate_ids:
+                    print(f"⚠️ Phát hiện các ID bị trùng lặp trong raw_data: {duplicate_ids}")
+                else:
+                    print("✅ Mảng raw_data hoàn toàn sạch, không có ID nào bị trùng.")
+
+
+                # ==========================================
+                # ĐOẠN CODE THỐNG KÊ TỔNG SỐ LƯỢNG, NAM, NỮ TRÊN BẢNG ĐEN
+                # ==========================================
+                total_members = len(raw_data)
+                count_nu = 0
+                count_nam = 0
+                
+                for record in raw_data:
+                    member_id = str(record[0]).replace(".", "").strip()
+                    # Ký tự thứ 6 của mã định danh (index 5) quy định giới tính: '1' là Nữ, ngược lại là Nam
+                    if len(member_id) >= 6 and member_id[5] == '1':
+                        count_nu += 1
+                    else:
+                        count_nam += 1
+                
+                print("==================================================")
+                print(f"📊 THỐNG KÊ DỮ LIỆU GIA PHẢ HỌ TỪ XUÂN LỘC:")
+                print(f"   - Tổng số            : {total_members}")
+                print(f"   - Tổng số Nam        : {count_nam}")
+                print(f"   - Tổng số Nữ         : {count_nu}")
+                print("==================================================")
 
                 
                 insert_query = """
@@ -1639,12 +462,13 @@ class KhoDuLieuSQL:
                 conn.commit()
 
     #=====================================================================
-    # [PHÂN LÔ B2]: Hàm con tải dữ liệu từ SQLite sang DataFrame DataFrame
+    # [PHÂN LÔ B2]: Hàm con tải dữ liệu từ SQLite sang DataFrame
     #=====================================================================
-    @classmethod
-    def load_data(cls):
-        cls.init_database()
-        with sqlite3.connect(cls.DB_FILE) as conn:
+    @staticmethod
+    @st.cache_data(show_spinner="Đang đồng bộ dữ liệu huyết mạch...") # 🟢 LỆNH KÍCH HOẠT CACHE
+    def load_data():
+        KhoDuLieuSQL.init_database() # Đổi cls thành KhoDuLieuSQL
+        with sqlite3.connect(KhoDuLieuSQL.DB_FILE) as conn: # Đổi cls thành KhoDuLieuSQL
             query = """
             SELECT 
                 rowid AS RecordIndex,
@@ -1741,6 +565,8 @@ class KhoDuLieuSQL:
                 ghi_chu.strip(), tinh_trang.strip(), hinh_anh
             ))
             conn.commit()
+            
+        KhoDuLieuSQL.load_data.clear() # 🟢 XÓA CACHE ĐỂ CẬP NHẬT NGƯỜI MỚI VÀO BẢNG
         return True, ["Thêm thành viên thành công!"]
 
     #=====================================================================
@@ -1752,7 +578,8 @@ class KhoDuLieuSQL:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM GiaPha WHERE ID = ?", (member_id,))
             conn.commit()
-
+            
+        KhoDuLieuSQL.load_data.clear() # 🟢 XÓA CACHE ĐỂ LÀM BIẾN MẤT NGƯỜI VỪA XÓA
 
 # ==============================================================================
 # ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -1861,28 +688,34 @@ class KyThuatBanVeGiaPha:
         chi = str(member.get('Chi', ''))
         
         di_cu_tag = "\n(Di cư, không rõ)" if "di cư" in tinh_trang.lower() and "không rõ" in tinh_trang.lower() else ""
+        con_nuoi_tag = "\n(Con nuôi)" if "con nuôi" in tinh_trang.lower() or member_id == "100.03.0.004" else ""
         
-        con_nuoi_tag = ""
-        if "con nuôi" in tinh_trang.lower() or member_id == "100.03.0.004":
-            con_nuoi_tag = "\n(Con nuôi)"
+        # 🟢 FIX: Nhận diện cả "chờ duyệt" và "chờ xử lý"
+        cho_duyet_tag = "\n(Chờ duyệt)" if "chờ duyệt" in tinh_trang.lower() or "chờ xử lý" in tinh_trang.lower() else ""
         
         if doi_num == 1:
             hien_tu = f" (Tự: {ten_tu})" if ten_tu else " (Tự: Huy Cán)"
-            return f"Từ Dương Đốc {doi_khoanh}\n(Thủy Tổ{hien_tu}){di_cu_tag}{con_nuoi_tag}"
+            return f"Từ Dương Đốc {doi_khoanh}\n(Thủy Tổ{hien_tu}){di_cu_tag}{con_nuoi_tag}{cho_duyet_tag}"
+
         elif doi_num == 2:
             ten_rut_gon = ho_ten.split("(")[0].strip()
-            if member_id == "000.02.1.003":
-                return f"{ten_rut_gon} {doi_khoanh}\n(Lấy chồng)"
-            return f"{ten_rut_gon} {doi_khoanh}\n(Đứng đầu Cửa {cua}){di_cu_tag}{con_nuoi_tag}"
+            if member_id == "000.02.1.003" or "lấy chồng" in str(member.get('GhiChu', '')).lower():
+                return f"{ten_rut_gon} {doi_khoanh}\n(Lấy chồng){cho_duyet_tag}"
+            elif any(kw in tinh_trang.lower() for kw in ["tảo vong", "tảo một", "chết sớm"]):
+                return f"{ten_rut_gon} {doi_khoanh}\n({tinh_trang.capitalize()}){cho_duyet_tag}"
+            elif any(kw in tinh_trang.lower() for kw in ["phạp tự", "không có con"]): 
+                return f"{ten_rut_gon} {doi_khoanh}{cho_duyet_tag}"
+            return f"{ten_rut_gon} {doi_khoanh}\n(Đứng đầu {cua}){di_cu_tag}{con_nuoi_tag}{cho_duyet_tag}"
+
         elif doi_num == 3:
             ten_rut_gon = ho_ten.split("(")[0].strip()
             if member_id == "100.03.0.004" or "con nuôi" in tinh_trang.lower():
-                return f"{ten_rut_gon} {doi_khoanh}\n(Con nuôi)"
+                return f"{ten_rut_gon} {doi_khoanh}\n(Con nuôi){cho_duyet_tag}"
             ten_chi = chi.split("(")[0].strip() if "(" in chi else chi
-            return f"{ten_rut_gon} {doi_khoanh}\n({ten_chi}){di_cu_tag}{con_nuoi_tag}"
+            return f"{ten_rut_gon} {doi_khoanh}\n({ten_chi}){di_cu_tag}{con_nuoi_tag}{cho_duyet_tag}"
         else:
             ten_rut_gon = ho_ten.split("(")[0].strip()
-            return f"{ten_rut_gon} {doi_khoanh}{di_cu_tag}{con_nuoi_tag}"
+            return f"{ten_rut_gon} {doi_khoanh}{di_cu_tag}{con_nuoi_tag}{cho_duyet_tag}"
 
     #=====================================================================
     # [PHÂN LÔ C4]: Hàm con vẽ biểu đồ sơ đồ trực hệ tập trung
@@ -1918,19 +751,38 @@ class KyThuatBanVeGiaPha:
             children = df_data[(df_data["ChaMe_ID"] == str(focus_id)) & (df_data["TrangThai"] == "Đã duyệt")]
 
         if not children.empty and "STT" in children.columns:
-            children = children.sort_values(by="STT")
+            # Sửa lại sắp xếp children theo STT_Con thay vì STT cũ để chuẩn xác
+            children['STT_Con'] = children['ID'].apply(
+                lambda x: int(str(x).replace('.', '').strip()[-3:]) if len(str(x).replace('.', '').strip()) >= 9 else 999
+            )
+            children = children.sort_values(by="STT_Con")
 
         for _, child in children.iterrows():
             c_id = str(child['ID'])
             c_label = cls.tao_nhan_ton_kinh(child.to_dict())
             gioi_tinh = str(child.get('GioiTinh', 'Nam'))
             c_doi_num = int(child['DoiThu'])
+            tinh_trang_child = str(child.get('TinhTrang', '')).lower()
             
-            c_fill = "#FFF0F5" if gioi_tinh == "Nữ" else QuanTriTaiNguyen.COLOR_PALETTE.get(c_doi_num, "#E8F5E9")
-            c_shape = "box" if gioi_tinh == "Nữ" else "box"
+            is_con_nuoi = ("con nuôi" in tinh_trang_child or c_id == "100.03.0.004")
             
-            dot.node(c_id, c_label, fillcolor=c_fill, color="#2E7D32", shape=c_shape, style="filled,rounded", penwidth="1.2")
+            # 🟢 FIX: Áp dụng nền vàng nhạt, viền cam nét đứt cho người đang "Chờ duyệt" vào Trực Hệ
+            is_cho_duyet = ("chờ duyệt" in tinh_trang_child or "chờ xử lý" in tinh_trang_child)
+            
+            if is_cho_duyet:
+                c_fill, c_style, c_pen = "#FFF8E1", "filled,dashed", "1.5"
+                c_border = "#F57C00"
+            elif is_con_nuoi:
+                c_fill, c_style, c_pen = "#E0F7FA", "filled,dashed", "1.5"
+                c_border = "#00838F"
+            else:
+                c_fill = "#FFF0F5" if gioi_tinh == "Nữ" else QuanTriTaiNguyen.COLOR_PALETTE.get(c_doi_num, "#E8F5E9")
+                c_style, c_pen = "filled,rounded", "1.2"
+                c_border = "#2E7D32"
+            
+            dot.node(c_id, c_label, fillcolor=c_fill, color=c_border, shape="box", style=c_style, penwidth=c_pen)
             dot.edge(str(focus_id), c_id, color="#2E7D32", penwidth="1.5")
+
         return dot
 
 
@@ -1938,8 +790,8 @@ class KyThuatBanVeGiaPha:
     # [PHÂN LÔ C5]: Hàm con vẽ sơ đồ toàn cảnh / Trục dọc theo ID
     #=====================================================================
     @classmethod
-    def draw_family_tree(cls, df_data, cua_loc="Tất cả", chi_loc="Tất cả", phai_loc="Tất cả", che_do_xem="1. Chỉ Đinh Nam (Gọn: Tên ⑦)", target_id="", nhanh_chon="Tất cả", nhanh_dict=None):
-        dot = Digraph(comment='Gia Phả Toàn Cảnh', node_attr={'style': 'filled,rounded', 'fontname': 'Arial', 'fontsize': '10', 'margin': '0.04,0.04', 'width': '0', 'height': '0'})
+    def draw_family_tree(cls, df_data, cua_loc="Tất cả", chi_loc="Tất cả", phai_loc="Tất cả", che_do_xem="1. Chỉ Đinh Nam (Gọn: Tên ⑦)", target_id="", nhanh_chon="Tất cả", nhanh_dict=None, so_doi_tren="Tất cả", so_doi_duoi="Tất cả", highlight_ids=None):
+        dot = Digraph(comment='Gia Phả Toàn Cảnh', node_attr={'style': 'filled,rounded', 'fontname': 'Arial, Segoe UI Symbol, Arial Unicode MS', 'fontsize': '10', 'margin': '0.04,0.04', 'width': '0', 'height': '0'})
         dot.attr(rankdir='TB', splines='polyline', ordering='out')
         
         df_approved = df_data[df_data["TrangThai"] == "Đã duyệt"].copy()
@@ -1950,30 +802,37 @@ class KyThuatBanVeGiaPha:
         clean_target_id = str(target_id).strip()
         if clean_target_id:
             valid_ids = set()
-            # 1. Truy ngược toàn bộ tổ tiên lên trên (Thủy tổ -> Ông -> Cha) tạo thành hàng dọc
+            # 1. Truy ngược tổ tiên lên trên (Hỗ trợ giới hạn số đời hoặc lấy tất cả)
             curr = clean_target_id
             visited = set()
+            count_tren = 0
             while curr and curr != "0" and curr not in visited:
+                if so_doi_tren != "Tất cả" and count_tren >= int(so_doi_tren):
+                    break
                 visited.add(curr)
                 valid_ids.add(curr)
                 p_row = df_approved[df_approved["ID"] == curr]
                 if p_row.empty:
                     break
                 curr = str(p_row.iloc[0].get("ChaMe_ID", ""))
+                count_tren += 1
                 
-            # 2. Quét toàn bộ con cháu tỏa ra bên dưới từ ID mục tiêu
-            queue = [clean_target_id]
+            # 2. Quét con cháu tỏa ra bên dưới từ ID mục tiêu (Hỗ trợ giới hạn số đời hoặc lấy tất cả)
+            queue = [(clean_target_id, 0)]
             descendant_visited = set()
             while queue:
-                c_curr = queue.pop(0)
+                c_curr, depth = queue.pop(0)
                 if c_curr in descendant_visited:
+                    continue
+                if so_doi_duoi != "Tất cả" and depth > int(so_doi_duoi):
                     continue
                 descendant_visited.add(c_curr)
                 valid_ids.add(c_curr)
                 
-                children = df_approved[df_approved["ChaMe_ID"] == c_curr]
-                for _, ch in children.iterrows():
-                    queue.append(str(ch["ID"]))
+                if so_doi_duoi == "Tất cả" or depth < int(so_doi_duoi):
+                    children = df_approved[df_approved["ChaMe_ID"] == c_curr]
+                    for _, ch in children.iterrows():
+                        queue.append((str(ch["ID"]), depth + 1))
                     
             df_draw = df_approved[df_approved["ID"].isin(valid_ids)].copy()
         else:
@@ -2064,11 +923,16 @@ class KyThuatBanVeGiaPha:
                 if doi_num == 1:
                     hien_tu = f" (Tự: {ten_tu})" if ten_tu else " (Tự: Huy Cán)"
                     label = f"Từ Dương Đốc {doi_khoanh}\n(Thủy Tổ{hien_tu}){di_cu_tag}{con_nuoi_tag}"
+
+
                 elif doi_num == 2:
-                    if node_id == "000.02.1.003":
+                    if node_id == "000.02.1.003" or "lấy chồng" in str(row.get('GhiChu', '')).lower():
                         label = f"{ho_ten} {doi_khoanh}\n(Lấy chồng)"
+                    elif any(kw in tinh_trang.lower() for kw in ["tảo vong", "tảo một", "chết sớm"]):
+                        label = f"{ho_ten} {doi_khoanh}\n({tinh_trang.capitalize()})"
                     else:
-                        label = f"{ho_ten} {doi_khoanh}\n(Đứng đầu Cửa {cua}){di_cu_tag}{con_nuoi_tag}"
+                        label = f"{ho_ten} {doi_khoanh}\n(Đứng đầu {cua}){di_cu_tag}{con_nuoi_tag}"
+
                 elif doi_num == 3:
                     if node_id == "100.03.0.004":
                         label = f"{ho_ten} {doi_khoanh}\n(Con nuôi)"
@@ -2084,7 +948,8 @@ class KyThuatBanVeGiaPha:
             elif che_do_xem == "3. Chỉ Đinh Nam (Đủ vợ và chồng)":
                 parts = [f"{ho_ten} {doi_khoanh}"]
                 tinh_trang_lower = str(tinh_trang).lower()
-                la_mat_som = any(kw in tinh_trang_lower for kw in ["chết sớm", "tảo vong", "tảo một"])
+                
+                la_mat_som = any(kw in tinh_trang_lower for kw in ["chết sớm", "tảo vong", "tảo một", "liệt sỹ", "Liệt sĩ", "tử sỹ", "tử sĩ"])
                 
                 if la_mat_som:
                     parts.append(f"({tinh_trang.capitalize()})")
@@ -2107,10 +972,12 @@ class KyThuatBanVeGiaPha:
                                 parts.append(f"{p_prefix}: {v_clean}")
                 label = "\n".join(parts) + di_cu_tag + con_nuoi_tag
                 
+
+
             elif che_do_xem == "4. Cả Nam & Nữ (Đủ: Chồng, Vợ, Con)":
                 parts = [f"{ho_ten} {doi_khoanh}"]
                 tinh_trang_lower = str(tinh_trang).lower()
-                la_mat_som = any(kw in tinh_trang_lower for kw in ["chết sớm", "tảo vong", "tảo một"])
+                la_mat_som = any(kw in tinh_trang_lower for kw in ["chết sớm", "tảo vong", "tảo một", "liệt sỹ", "Liệt sĩ", "tử sỹ", "tử sĩ"])
                 
                 if node_id == "000.02.1.003":
                     parts.append("(Lấy chồng)")
@@ -2138,14 +1005,42 @@ class KyThuatBanVeGiaPha:
             else:
                 label = f"{ho_ten} {doi_khoanh}"
 
-            if is_target:
-                fill, shape, color, pen_width = "#FFE082", "box", "#C62828", "2.5"
-            elif node_id == "000.02.1.003" or gioi_tinh == "Nữ":
-                fill, shape, color, pen_width = "#FFF0F5", "box", "#D81B60", "1.2"
-            else:
-                fill, shape, color, pen_width = QuanTriTaiNguyen.COLOR_PALETTE.get(doi_num, "#FFFFFF"), "box", "#455A64", "1.2"
+            # 🟢 [THÊM MỚI]: Nhận diện cờ Chờ duyệt hoặc Chờ xử lý
+            is_cho_duyet = ("chờ duyệt" in tinh_trang.lower() or "chờ xử lý" in tinh_trang.lower())
+
+            # 🟢 Nhận diện con nuôi (bao gồm cả Nguyễn Bá Hoan mã 100.03.0.004)
+            is_con_nuoi = ("con nuôi" in tinh_trang.lower() or node_id == "100.03.0.004")
+
+            is_ancestor_root = (node_id == "000.01.0.001")
             
-            dot.node(node_id, label, fillcolor=fill, shape=shape, color=color, penwidth=pen_width)
+            if highlight_ids is None:
+                highlight_ids = []
+            is_highlight = (node_id in highlight_ids)
+
+            # 1. CỤ TỔ: DÙNG NODE CHUẨN, CỠ CHỮ 18, VIỀN ĐỎ DÀY, NỀN VÀNG (HOẠT ĐỘNG HOÀN HẢO MỌI CHẾ ĐỘ)
+            if is_ancestor_root:
+                fill, shape, color, pen_width, style, f_size = "#FFE082", "box", "#C62828", "3.5", "filled,rounded", "18"
+                dot.node(node_id, label, fillcolor=fill, shape=shape, color=color, penwidth=pen_width, style=style, fontsize=f_size)
+            
+            # 2. NHÂN VẬT ĐIỂN HÌNH VÀ MỤC TIÊU: VIỀN ĐƠN, NỀN VÀNG TIÊU CHUẨN
+            elif is_target or is_highlight:
+                fill, shape, color, pen_width, style = "#FFE082", "box", "#C62828", "2.5", "filled,rounded"
+                dot.node(node_id, label, fillcolor=fill, shape=shape, color=color, penwidth=pen_width, style=style)
+            
+            # 3. CÁC THÀNH VIÊN KHÁC
+            else:
+                # 🟢 [CẬP NHẬT Ở ĐÂY]: Ưu tiên trạng thái Chờ duyệt lên hàng đầu để luôn luôn hiển thị viền cam
+                if is_cho_duyet:
+                    fill, shape, color, pen_width, style = "#FFF8E1", "box", "#F57C00", "1.5", "filled,dashed"
+                elif is_con_nuoi:
+                    fill, shape, color, pen_width, style = "#E0F7FA", "box", "#00838F", "1.5", "filled,dashed"
+                elif node_id == "000.02.1.003" or gioi_tinh == "Nữ":
+                    fill, shape, color, pen_width, style = "#FFF0F5", "box", "#D81B60", "1.2", "filled,rounded"
+                else:
+                    fill, shape, color, pen_width, style = QuanTriTaiNguyen.COLOR_PALETTE.get(doi_num, "#FFFFFF"), "box", "#455A64", "1.2", "filled,rounded"
+                
+                dot.node(node_id, label, fillcolor=fill, shape=shape, color=color, penwidth=pen_width, style=style)
+
 
         for _, row in df_draw.iterrows():
             node_id = str(row['ID'])
@@ -2154,7 +1049,9 @@ class KyThuatBanVeGiaPha:
                 edge_color = "#C62828" if (curr_parent == clean_target_id or node_id == clean_target_id) else "#546E7A"
                 dot.edge(curr_parent, node_id, color=edge_color, penwidth="1.2")
         return dot
-    
+
+
+
     #=====================================================================
     # [PHÂN LÔ C6]: Hàm con nhúng SVG tương tác pan/zoom (Tối ưu cảm ứng di động)
     #=====================================================================
@@ -2241,19 +1138,35 @@ class KyThuatBanVeGiaPha:
 # [PHÂN LÔ D] - KHU VỰC QUẢN TRỊ HÌNH ẢNH CHÂN DUNG
 # ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 
+
 class QuanTriHinhAnh:
     #=====================================================================
-    # [PHÂN LÔ D1]: Hàm con nén và lưu trữ ảnh tải lên
+    # [PHÂN LÔ D1]: Hàm con xử lý và lưu trữ ảnh siêu bền vững
     #=====================================================================
     @staticmethod
     def xu_ly_va_nen_anh(uploaded_file, save_path):
         try:
+            # 1. Đọc tệp ảnh tải lên (hỗ trợ cả HEIC từ album)
             img = Image.open(uploaded_file)
-            if img.mode in ("RGBA", "P"): img = img.convert("RGB")
+            
+            # 2. Tự động xoay ảnh đúng chiều dựa trên EXIF (Khắc phục lỗi quay ngang)
+            try:
+                img = ImageOps.exif_transpose(img)
+            except Exception:
+                pass
+                
+            # 3. Ép kiểu về hệ màu RGB để lưu chuẩn JPEG an toàn
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+            elif img.mode != "RGB":
+                img = img.convert("RGB")
+                
+            # 4. Nén tối ưu dung lượng, giữ nguyên độ nét chân dung
             img.thumbnail((500, 500), Image.Resampling.LANCZOS)
             img.save(save_path, "JPEG", quality=85)
             return True
-        except:
+        except Exception as e:
+            print(f"⚠️ Chi tiết lỗi xử lý ảnh: {e}")
             return False
 
     #=====================================================================
@@ -2268,7 +1181,6 @@ class QuanTriHinhAnh:
             if file.name.startswith(f"{member_id} ") and clean_name.lower() in file.name.lower():
                 return f"images/{file.name}"
         return ""
-
 
 # ==============================================================================
 # ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
@@ -2309,23 +1221,53 @@ class SoChiHuyGiaoDien:
                 .desktop-view {{ display: block; }}
                 .mobile-view {{ display: none; }}
                 
+                /* 🟢 TINH CHỈNH RIÊNG CHO NÚT CHUYỂN SANG TRỰC HỆ TẠI MỤC LỌC THEO ID */
+                div:has(> button[key*="btn_goto_tructhe_from_id"]) {{
+                    display: flex;
+                    justify-content: center;
+                }}
+                button[key*="btn_goto_tructhe_from_id"] {{
+                    max-width: 50% !important;
+                    margin: 0 auto !important;
+                    display: block !important;
+                }}
+                
                 @media (max-width: 768px) {{
                     .desktop-view {{ display: none !important; }}
                     .mobile-view {{ display: block !important; }}
                     .hide-on-mobile {{ display: none !important; }}
                     h1.mobile-view {{ font-size: 1.15rem !important; font-weight: bold; white-space: nowrap; margin-bottom: -22px !important; }}
                     h2.mobile-view {{ font-size: 1.15rem !important; margin-top: -5px !important; margin-bottom: 0px !important; }}
+                    
+                    /* Trên điện thoại cho nút rộng hơn một chút để dễ bấm */
+                    button[key*="btn_goto_tructhe_from_id"] {{
+                        max-width: 90% !important;
+                    }}
                 }}
             </style>
         """, unsafe_allow_html=True)
 
-
-
     #=====================================================================
-    # [PHÂN LÔ E1.5]: Hàm con render màn hình Giới thiệu dòng họ chuẩn HTML
+    # [PHÂN LÔ E2]: Hàm con render màn hình Giới thiệu dòng họ chuẩn HTML
     #=====================================================================
     @staticmethod
     def render_gioithieu_1trang():
+        # --- TÍCH HỢP NÚT PHÁT NHẠC NỀN GIA PHẢ ---
+        st.markdown("### 🎵 Âm Vang Cội Nguồn")
+        col_au1, col_au2 = st.columns([1, 2])
+        with col_au1:
+            phat_nhac = st.toggle("Bật nhạc nền gia phả", value=False, key="toggle_nhac_nen_gioithieu")
+        
+        if phat_nhac:
+            audio_path = Path(__file__).resolve().parent / "nhac_nen.mp3"
+            if audio_path.exists():
+                with col_au2:
+                    st.audio(str(audio_path), format="audio/mp3", autoplay=True)
+                st.success("🎶 Đang phát khúc ca cội nguồn dòng họ Từ Xuân Lộc...")
+            else:
+                st.warning("⚠️ Chưa tìm thấy tệp 'nhac_nen.mp3' trong thư mục dự án. Ông chủ vui lòng đưa tệp nhạc vào cùng thư mục với mã nguồn nhé!")
+        st.markdown("---")
+
         html_content = """
         <!DOCTYPE html>
         <html>
@@ -2359,11 +1301,11 @@ class SoChiHuyGiaoDien:
                 </div>
 
                 <p style="text-align: justify; font-size: 1.05rem; text-indent: 30px; margin-bottom: 15px;">
-                    "Uống nước nhớ nguồn, ăn quả nhớ kẻ trồng cây" là đạo lý ngàn đời của dân tộc ta. Đối với mỗi dòng tộc, cuốn gia phả trước đây thường chỉ nằm lặng lẽ ở một góc tủ trong nhà, nay đã được <b>số hóa toàn diện</b> để vượt qua mọi giới hạn về không gian và thời gian. Ứng dụng <b>Gia phả điện tử dòng Họ Từ Xuân Lộc</b> ra đời với sứ mệnh đưa dữ liệu huyết mạch đến với tất cả mọi người; giúp con cháu dù đi làm ăn xa muôn phương hay ở bất cứ chân trời góc bể nào cũng có thể dễ dàng tiếp cận, tra cứu cội nguồn và hướng về tổ tiên với lòng thành kính sâu sắc nhất.
+                    "Uống nước nhớ nguồn, ăn quả nhớ người trồng cây" là đạo lý ngàn đời của dân tộc ta. Đối với mỗi dòng tộc, cuốn gia phả trước đây thường chỉ nằm lặng lẽ ở một góc tủ trong nhà, nay đã được <b>số hóa toàn diện</b> để vượt qua mọi giới hạn về không gian và thời gian. Ứng dụng <b>Gia phả điện tử dòng Họ Từ Xuân Lộc</b> ra đời với sứ mệnh đưa dữ liệu huyết mạch đến với tất cả mọi người; giúp con cháu dù đi làm ăn xa muôn phương hay ở bất cứ chân trời góc bể nào cũng có thể dễ dàng tiếp cận, tra cứu cội nguồn và hướng về tổ tiên với lòng thành kính sâu sắc nhất.
                 </p>
 
                 <p style="text-align: justify; font-size: 1.05rem; text-indent: 30px; margin-bottom: 15px;">
-                    Theo tư liệu quý giá và các bản phổ ký do các bậc cao niên để lại, Thủy tổ dòng họ ta là cụ <b>Từ Dương Đốc</b> (huyết danh <i>Huy Cán</i>), một bậc thầy thuốc y dược tế sinh đầy đức độ. Nhân thời buổi binh đao ly loạn cuối thời Hậu Lê (Lê Mạt), Ngài cùng hiền thê là bà <b>Trần Thị Niêm</b> đã rời quê hương Cổ Kính (Thạch Hà), tha hương lên làng Hoa Cử (Văn Cử) khai hoang phá thạch, lập nghiệp sinh cơ.
+                    Theo tư liệu quý giá và các bản phổ ký do các bậc cao niên để lại, Thủy tổ dòng họ ta là cụ <b>Từ Dương Đốc</b> (huyết danh <i>Huy Cán</i>), một bậc thầy thuốc y dược tế sinh đầy đức độ. Nhân thời buổi binh đao ly loạn cuối thời Hậu Lê (Lê Mạt), Ngài cùng hiền thê là bà <b>Trần Thị Niêm</b> đã rời quê hương Cổ Kênh (Thạch Hà), tha hương lên làng Hoa Cử (Văn Cử) khai hoang phá thạch, lập nghiệp sinh cơ.
                 </p>
 
                 <p style="text-align: justify; font-size: 1.05rem; text-indent: 30px; margin-bottom: 15px;">
@@ -2403,14 +1345,30 @@ class SoChiHuyGiaoDien:
         </html>
         """
         components.html(html_content, height=1150, scrolling=True)
-        
 
+        # --- CÔNG TẮC PHÁT GIỌNG ĐỌC LỜI GIỚI THIỆU ---
+        st.markdown("---")
+        bat_giong_doc = st.toggle("🔊 Bật giọng đọc Lời giới thiệu (Nữ miền Bắc truyền cảm)")
+
+        if bat_giong_doc:
+            voice_path = Path(__file__).resolve().parent / "giong_doc_gioi_thieu.mp3"
+            if voice_path.exists():
+                st.audio(str(voice_path), format="audio/mp3", autoplay=True)
+                st.success("🎙️ Đang phát giọng đọc Lời giới thiệu dòng họ...")
+            else:
+                st.warning("⚠️ Chưa tìm thấy tệp 'giong_doc_gioi_thieu.mp3'. Ông chủ vui lòng chạy file tạo âm thanh trước nhé!")
+
+
+ 
     #=====================================================================
-    # [PHÂN LÔ E2]: Hàm con render màn hình Trực Hệ
+    # [PHÂN LÔ E3]: Hàm con render màn hình Trực Hệ
     #=====================================================================
+
     @staticmethod
     def render_tructhe(df):
+
         st.markdown('<h2 class="desktop-view" style="font-size: 1.3rem; font-weight: bold;">🎯 Tuyến Phả Hệ Trọng Tâm</h2>', unsafe_allow_html=True)
+        
         st.markdown('<h2 class="mobile-view" style="font-size: 1.2rem; font-weight: bold;">🎯 Xem Trực Hệ</h2>', unsafe_allow_html=True)
        
         chain = KyThuatBanVeGiaPha.get_ancestors_chain(df, st.session_state.focus_id)
@@ -2441,16 +1399,59 @@ class SoChiHuyGiaoDien:
             curr_person = curr_row.iloc[0]
             ten_tu_txt = f" (Tự: {curr_person['TenTu']})" if curr_person['TenTu'] else ""
             
+
+            
+            # --- HIỂN THỊ ẢNH CHÂN DUNG HIỆN TẠI ---
             hop_le_path = QuanTriHinhAnh.lay_anh_chuan_xac(curr_person['ID'], curr_person['HoTen'])
             if hop_le_path and (Path(__file__).resolve().parent / hop_le_path).exists():
                 st.image(str(Path(__file__).resolve().parent / hop_le_path), width=180, caption=f"Chân dung: {curr_person['HoTen']}")
+
+            # 🟢 TÍNH NĂNG MỞ CHO CON CHÁU TỰ TẢI ẢNH (ĐỌC TRỰC TIẾP TỪ CSDL ĐỂ ĐỒNG BỘ TOÀN HỆ THỐNG)
+
+
+
+            # 🟢 ĐỌC CÔNG TẮC TỪ CSDL SQLite
+            try:
+                with sqlite3.connect(KhoDuLieuSQL.DB_FILE) as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT GiaTri FROM CauHinhHeThong WHERE Khoa = 'cho_phep_tai_anh'")
+                    res = cursor.fetchone()
+                    cho_phep_tai_anh = (res[0] == 'True') if res else False
+            except Exception:
+                cho_phep_tai_anh = False
+
+            if cho_phep_tai_anh:
+                with st.expander("📷 Tự tải/Cập nhật ảnh chân dung"):
+                    st.info(f"Đang cập nhật ảnh cho: **{curr_person['HoTen']}** (ID: `{curr_person['ID']}`)")
+                    
+                    # Chấp nhận mọi định dạng chữ thường và chữ hoa
+                    up_file_user = st.file_uploader(
+                        "Chọn ảnh (JPG, PNG, HEIC):", 
+                        type=["jpg", "jpeg", "png", "heic", "heif", "JPG", "JPEG", "PNG", "HEIC"], 
+                        key=f"up_{curr_person['ID']}"
+                    )
+                    if up_file_user is not None:
+                        if st.button("💾 Xác nhận lưu ảnh lên hệ thống", key=f"btn_save_{curr_person['ID']}"):
+                            os.makedirs("images", exist_ok=True)
+                            clean_name = re.sub(r'[\(\)].*?[\(\)]', '', curr_person['HoTen']).strip()
+                            save_file_path = Path(__file__).resolve().parent / "images" / f"{curr_person['ID']} {clean_name}.jpg"
+                            if QuanTriHinhAnh.xu_ly_va_nen_anh(up_file_user, save_file_path):
+                                st.success("✅ Tải ảnh lên thành công! Ảnh đã được cập nhật vào sơ đồ.")
+                                st.rerun()
+                            else:
+                                st.error("❌ Lỗi xử lý ảnh. Vui lòng thử lại.")
+            else:
+                st.caption("🔒 Chức năng tự tải ảnh Đang tạm khóa.")
 
             st.markdown(f"### 👤 Cụ: **{curr_person['HoTen']}{ten_tu_txt} {QuanTriTaiNguyen.get_circled_doi(curr_person['DoiThu'], curr_person['TinhTrang'])}**")
             st.write(f"- **Mã định danh:** `{curr_person['ID']}`")
             st.write(f"- **Thuộc:** {curr_person['Cua']} — {curr_person['Chi']} {('— ' + curr_person['Phai']) if curr_person['Phai'] else ''}")
             
+            # Thay vì hiển thị nhãn "Bà:" cho thành viên Nam, đổi thành "Vợ:"
             if curr_person['VoChong']:
-                st.write(f"- **{'Bà' if curr_person.get('GioiTinh') == 'Nam' else 'Chồng'}:** {curr_person['VoChong']}")
+                st.write(f"- **{'Vợ' if curr_person.get('GioiTinh') == 'Nam' else 'Chồng'}:** {curr_person['VoChong']}")
+
+                
             if curr_person['NgayGio']: st.write(f"- **Ngày giỗ:** {curr_person['NgayGio']}")
             if curr_person['NamSinh'] or curr_person['NamMat']: st.write(f"- **Năm sinh/mất:** {curr_person['NamSinh']} - {curr_person['NamMat']}")
             if curr_person['GhiChu']: st.write(f"- **Ghi chú:** {curr_person['GhiChu']}")
@@ -2462,7 +1463,7 @@ class SoChiHuyGiaoDien:
             
             # Lọc bỏ nữ giới và các trường hợp có chấm tròn tuyệt tôn / chết sớm / phạp tự / tảo vong...
             filtered_children = []
-            keyword_list = ["phạp tự", "không có con", "tảo vong", "tảo một", "chết sớm"]
+            keyword_list = ["phạp tự", "không có con", "tảo vong", "tảo một", "chết sớm", "liệt sỹ", "Liệt sĩ", "tử sỹ", "tử sĩ"]
             for _, ch in raw_children.iterrows():
                 gioi_tinh = str(ch.get("GioiTinh", "")).strip()
                 tinh_trang = str(ch.get("TinhTrang", "")).lower()
@@ -2497,8 +1498,34 @@ class SoChiHuyGiaoDien:
                 st.rerun()
 
 
+            # 🟢 ĐẶT ĐOẠN NÀY Ở DÒNG CUỐI CÙNG CỦA HÀM render_tructhe (BÊN NGOÀI MỌI KHUNG CỘT CŨ)
+            if st.session_state.get("return_to_menu"):
+                prev_menu = st.session_state.return_to_menu
+                st.markdown("---")
+                
+                # Sử dụng cú pháp container thu gọn và canh giữa thay vì chia cột bị kẹt trong layout cũ
+                st.markdown("""
+                    <style>
+                    div.stButton > button[key*="btn_back_to_previous_menu"] {
+                        max-width: 50% !important;
+                        margin: 0 auto !important;
+                        display: block !important;
+                    }
+                    div:has(> button[key*="btn_back_to_previous_menu"]) {
+                        display: flex;
+                        justify-content: center;
+                    }
+                    </style>
+                """, unsafe_allow_html=True)
+
+                if st.button(f"🔙 Quay lại màn hình {prev_menu}", key="btn_back_to_previous_menu", use_container_width=True):
+                    st.session_state.pending_menu = prev_menu
+                    del st.session_state.return_to_menu
+                    st.rerun()
+
+
     #=====================================================================
-    # [PHÂN LÔ E3]: Hàm con render màn hình Toàn Cảnh
+    # [PHÂN LÔ E4]: Hàm con render màn hình Toàn Cảnh
     #=====================================================================
    
     @staticmethod
@@ -2543,7 +1570,7 @@ class SoChiHuyGiaoDien:
             st.error(f"Lỗi hiển thị: {e}")
 
     #=====================================================================
-    # [PHÂN LÔ E4]: Hàm con render màn hình Tra Cứu
+    # [PHÂN LÔ E5]: Hàm con render màn hình Tra Cứu
     #=====================================================================
     @staticmethod
     def render_tracuu(df):
@@ -2561,605 +1588,154 @@ class SoChiHuyGiaoDien:
             df_chi_sub = df_app[df_app['Chi'] == loc_chi] if loc_chi != "Tất cả" else df_app
             sorted_phai = QuanTriTaiNguyen.sap_xep_danh_sach_phai(df_chi_sub['Phai'].unique())
             loc_phai = st.selectbox("Phái:", ["Tất cả"] + sorted_phai)
-            
+
         if tim_ten:
             df_app = df_app[df_app["HoTen"].str.contains(tim_ten, case=False, na=False) | df_app["ID"].str.contains(tim_ten, case=False, na=False)]
         if loc_cua != "Tất cả": df_app = df_app[df_app["Cua"] == loc_cua]
         if loc_chi != "Tất cả": df_app = df_app[df_app["Chi"] == loc_chi]
         if loc_phai != "Tất cả": df_app = df_app[df_app["Phai"] == loc_phai]
-            
-        st.dataframe(df_app[["STT", "ID", "ChaMe_ID", "HoTen", "TenTu", "VoChong", "NamSinh", "NamMat", "NgayGio", "GhiChu", "TinhTrang", "HinhAnh"]], use_container_width=True, hide_index=True)
 
 
+        # 🟢 [LOGIC MỚI]: SẮP XẾP CHUẨN XÁC THEO 6 LỚP KHÓA HUYẾT MẠCH
+        def lay_doi_tu_id(m_id):
+            try:
+                parts = str(m_id).split('.')
+                if len(parts) > 1 and parts[1].isdigit():
+                    return int(parts[1])
+            except: pass
+            return 999 
 
-    
+        def lay_cua_sort(cua_str):
+            c = str(cua_str).lower()
+            if "giáp" in c: return 1
+            if "ất" in c: return 2
+            return 3
+
+        def lay_chi_sort(chi_str):
+            m = re.search(r'Chi\s*(\d+)', str(chi_str), flags=re.IGNORECASE)
+            return int(m.group(1)) if m else 99
+
+        def lay_phai_sort(phai_str):
+            m = re.search(r'Phái\s*(\d+)', str(phai_str), flags=re.IGNORECASE)
+            return int(m.group(1)) if m else 99
+
+        # 1. Tạo các cột phân loại
+        df_app['Doi_Sort'] = df_app['ID'].apply(lay_doi_tu_id)
+        df_app['Cua_Sort'] = df_app['Cua'].apply(lay_cua_sort)
+        df_app['Chi_Sort'] = df_app['Chi'].apply(lay_chi_sort)
+        df_app['Phai_Sort'] = df_app['Phai'].apply(lay_phai_sort)
         
+        # 2. Ánh xạ RecordIndex của Cha để xếp: gia đình anh lớn trước, gia đình em nhỏ sau
+        dict_record = df_app.set_index('ID')['RecordIndex'].to_dict()
+        df_app['Cha_RecordIndex'] = df_app['ChaMe_ID'].map(dict_record).fillna(999999)
 
-    #=====================================================================
-    # [PHÂN LÔ E5]: Hàm con render màn hình Thêm Thành Viên
-    #=====================================================================
-    @staticmethod
-    def render_themthanhvien(df):
-        st.subheader("Gửi đề xuất thêm thành viên mới")
-        with st.form("form_add_member"):
-            c1, c2 = st.columns(2)
-            with c1:
-                new_id = st.text_input("Mã định danh [9 số, ví dụ: 123.04.0.011] (*):")
-                ho_ten = st.text_input("Họ và Tên (*):")
-                ten_tu = st.text_input("Tên tự / Tên hiệu:")
-            with c2:
-                df_parents = df[(df["TrangThai"] == "Đã duyệt") & (df["GioiTinh"] == "Nam")][["ID", "HoTen", "DoiThu"]]
-                parent_dict = {row['ID']: f"{row['ID']} - {row['HoTen']} (Đời {row['DoiThu']})" for _, row in df_parents.iterrows()}
-                parent_dict[""] = "Không rõ / Gốc khởi đầu"
-                cha_id = st.selectbox("Mã định danh của Cha (ChaID):", options=list(parent_dict.keys()), format_func=lambda x: parent_dict[x])
-                vo_chong = st.text_input("Vợ / Chồng:")
-
-            c3, c4 = st.columns(2)
-            with c3:
-                nam_sinh = st.text_input("Năm sinh:")
-                nam_mat = st.text_input("Năm mất:")
-            with c4:
-                ngay_gio = st.text_input("Ngày giỗ Âm lịch (ví dụ: 15/07 AL):")
-                tinh_trang = st.selectbox("Tình trạng:", ["", "Phạp tự", "Không có con", "Tảo vong", "Tảo một", "Chết sớm", "Con nuôi", "di cư, không rõ"])
-
-            ghi_chu = st.text_area("Chức danh / Ghi chú lịch sử:")
-            uploaded_file = st.file_uploader("Hình ảnh chân dung:", type=["jpg", "jpeg", "png"])
-            btn_submit = st.form_submit_button("📤 Gửi đề xuất ghi vào SQL")
-            
-            if btn_submit:
-                hinh_anh_path = ""
-                if uploaded_file is not None:
-                    os.makedirs("images", exist_ok=True)
-                    file_path = Path(__file__).resolve().parent / "images" / f"{ho_ten.strip()}.jpg"
-                    if QuanTriHinhAnh.xu_ly_va_nen_anh(uploaded_file, file_path):
-                        hinh_anh_path = f"images/{ho_ten.strip()}.jpg"
-
-                success, messages = KhoDuLieuSQL.insert_member(
-                    new_id=new_id, ho_ten=ho_ten, ten_tu=ten_tu, cha_id=cha_id,
-                    vo_chong=vo_chong, nam_sinh=nam_sinh, nam_mat=nam_mat, ngay_gio=ngay_gio,
-                    ghi_chu=ghi_chu, tinh_trang=tinh_trang, hinh_anh=hinh_anh_path
-                )
-                if success: st.success(messages[0])
-                else: 
-                    for err in messages: st.error(err)
+        # 3. THỰC THI SẮP XẾP 6 TẦNG: Đời -> Cửa -> Chi -> Phái -> Vị trí Cha -> Vị trí Con
+        df_app = df_app.sort_values(by=['Doi_Sort', 'Cua_Sort', 'Chi_Sort', 'Phai_Sort', 'Cha_RecordIndex', 'RecordIndex'])
 
 
-    #=====================================================================
-    # [PHÂN LÔ E6]: Trung tâm Xuất Báo cáo & In ấn Phả Hệ (Tổng lực Bìa nền tràn viền 100% A4)
-    #=====================================================================
-    @staticmethod
-    def render_xuatbaocao(df):
-        st.subheader("🖨️ Trung tâm Xuất Báo cáo & In ấn Phả Hệ")
-        df_app = df[df["TrangThai"] == "Đã duyệt"].copy()
+        # 🟢 HÀM XỬ LÝ CHUẨN HÓA VỢ CHỒNG GIỐNG 100% FILE PDF
+        def format_vo_chong_html(text, gioi_tinh="Nam"):
+            if not text or str(text).lower() in ["nan", "none", ""]:
+                return ""
+            raw_list = [p.strip() for p in str(text).split(',') if p.strip()]
+            cleaned_parts = []
+            for item in raw_list:
+                item_clean = re.sub(r'^(bà chính|bà thứ|bà cả|bà hai|bà ba|bà nhất|bà nhì|bà út|chính|thứ|cả|hai|ba|nhất|nhì|út|chồng|vợ|bà)\s*', '', item, flags=re.IGNORECASE).strip()
+                if str(gioi_tinh).strip() == "Nữ":
+                    if not item_clean.lower().startswith("chồng"):
+                        item_clean = f"Chồng: {item_clean}"
+                else:
+                    item_clean = f"Vợ: {item_clean}"
+                cleaned_parts.append(item_clean)
+            return '<br>'.join(cleaned_parts)
+
+        # 🟢 HÀM ĐỊNH DẠNG TÊN ĐỜI (Tách đời giống hệt bản in PDF)
+        def get_gen_title_html(doi_thu):
+            try:
+                gen = int(doi_thu)
+                if gen <= 3:
+                    return "ĐỜI THỨ NHẤT ĐẾN ĐỜI THỨ 3"
+                else:
+                    roman_map = {4: 'TƯ', 5: 'NĂM', 6: 'SÁU', 7: 'BẢY', 8: 'TÁM', 9: 'CHÍN', 10: 'MƯỜI', 11: 'MƯỜI MỘT', 12: 'MƯỜI HAI', 13: 'MƯỜI BA', 14: 'MƯỜI BỐN', 15: 'MƯỜI LĂM'}
+                    gen_label = roman_map.get(gen, str(gen))
+                    return f"ĐỜI THỨ {gen_label}"
+            except:
+                return "CHƯA XÁC ĐỊNH"
+
+        html_table = """
+        <div style="max-height: 600px; overflow-y: auto; border: 1px solid #d4c5a9; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <table style="width: 100%; border-collapse: collapse; font-family: 'Times New Roman', Times, serif; background: #FFFDF9;">
+            <thead>
+                <tr style="background-color: #8B0000; color: #FFF8DC; text-align: center; position: sticky; top: 0; z-index: 10;">
+                    <th style="padding: 10px; border: 1px solid #c2b292; width: 4%;">STT</th>
+                    <th style="padding: 10px; border: 1px solid #c2b292; width: 8%;">Mã ĐD</th>
+                    <th style="padding: 10px; border: 1px solid #c2b292; width: 12%;">Họ Tên</th>
+                    <th style="padding: 10px; border: 1px solid #c2b292; width: 8%;">Tên Tự</th>
+                    <th style="padding: 10px; border: 1px solid #c2b292; width: 12%;">Vợ/Chồng</th>
+                    <th style="padding: 10px; border: 1px solid #c2b292; width: 8%;">Sinh/Mất</th>
+                    <th style="padding: 10px; border: 1px solid #c2b292; width: 6%;">Ngày Giỗ</th>
+                    <th style="padding: 10px; border: 1px solid #c2b292; width: 34%;">Ghi Chú</th>
+                    <th style="padding: 10px; border: 1px solid #c2b292; width: 8%;">Hình ảnh</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
         
-        tab1, tab2 = st.tabs(["📥 Xuất dữ liệu (CSV)", "📄 In ấn báo cáo"])
-        with tab1:
-            export_df_csv = df_app[["STT", "ID", "ChaMe_ID", "HoTen", "TenTu", "VoChong", "NamSinh", "NamMat", "NgayGio", "GhiChu", "TinhTrang", "HinhAnh"]].rename(columns={
-                "ID": "Mã Định Danh", "ChaMe_ID": "Mã Cha/Mẹ", "HoTen": "Họ và Tên", "TenTu": "Tên Tự", 
-                "VoChong": "Vợ/Chồng", "NamSinh": "Năm Sinh", "NamMat": "Năm Mất", "NgayGio": "Ngày Giỗ", 
-                "GhiChu": "Ghi Chú", "TinhTrang": "Tình Trạng", "HinhAnh": "Hình Ảnh"
-            })
-            st.download_button("📥 Tải xuống tệp CSV", export_df_csv.to_csv(index=False).encode('utf-8-sig'), "GiaPha_HoTu.csv", "text/csv")
+        last_rendered_gen = None 
+        
+        for _, row in df_app.iterrows():
+            m_id = row.get('ID', '')
+            m_name = row.get('HoTen', '')
+            m_gioi_tinh = row.get('GioiTinh', 'Nam')
+            m_doi = lay_doi_tu_id(m_id) # Lấy số đời chuẩn xác đã được trích xuất
             
-        with tab2:
-            st.markdown("🖼️ **Chọn ảnh bìa cho tập tài liệu (Tùy chọn):**")
-            uploaded_cover = st.file_uploader("Tải lên tệp ảnh bìa (JPG, PNG)", type=["jpg", "jpeg", "png"], key="upload_cover_pdf")
-            
-            # --- Hộp chọn tùy chỉnh Auto và các số dòng từ 14 đến 20 (mặc định 17) ---
-            st.markdown("---")
-            st.markdown("⚙️ **Cấu hình định dạng trang in:**")
-            page_mode_options = ["Auto", 14, 15, 16, 17, 18, 19, 20]
-            selected_page_mode = st.selectbox(
-                "Chọn chế độ trình bày trang in:",
-                options=page_mode_options,
-                index=4  # Vị trí số 4 tương ứng với giá trị 17 (mặc định)
-            )
-            
-            if st.button("🖨️ Mở cửa sổ In ấn / Xuất PDF"):
-                records = df_app.to_dict('records')
-    
-                import base64
-                import os
-                cover_image_base64 = ""
-                
-                # 1. Ưu tiên lấy ảnh người dùng vừa tải lên trực tiếp từ giao diện
-                if uploaded_cover is not None:
+            # KIỂM TRA VÀ CHÈN DÒNG TIÊU ĐỀ ĐỜI THEO LOGIC PDF
+            curr_gen_title = get_gen_title_html(m_doi)
+            if curr_gen_title != last_rendered_gen:
+                html_table += f"""
+                <tr>
+                    <td colspan="9" style="background: #F4EBD0; color: #8B0000; border: 1.5px solid #8B0000; font-weight: bold; text-align: center; font-size: 13px; letter-spacing: 2px; padding: 6px; text-transform: uppercase;">
+                        📜 {curr_gen_title}
+                    </td>
+                </tr>
+                """
+                last_rendered_gen = curr_gen_title
+
+            anh_path = QuanTriHinhAnh.lay_anh_chuan_xac(m_id, m_name)
+            img_html = "<span style='color: #999; font-size: 11px; font-style: italic;'>Chưa có</span>"
+            if anh_path:
+                full_img_path = Path(__file__).resolve().parent / anh_path
+                if full_img_path.exists():
                     try:
-                        bytes_data = uploaded_cover.getvalue()
-                        encoded_string = base64.b64encode(bytes_data).decode("utf-8")
-                        mime_type = uploaded_cover.type
-                        cover_image_base64 = f"data:{mime_type};base64,{encoded_string}"
-                    except Exception as e:
-                        st.error(f"Lỗi đọc ảnh bìa tải lên: {e}")
-                else:
-                    # 2. Tự động quét tìm tệp bia_giapha trong thư mục images hoặc thư mục gốc
-                    current_dir = os.path.dirname(os.path.abspath(__file__)) if "__file__" in locals() else os.getcwd()
-                    possible_paths = [
-                        os.path.join(current_dir, "images", "bia_giapha"),
-                        os.path.join(current_dir, "images", "bia_giapha.jpg"),
-                        os.path.join(current_dir, "images", "bia_giapha.png"),
-                        os.path.join(current_dir, "images", "bia_giapha.jpeg"),
-                        os.path.join("images", "bia_giapha"),
-                        os.path.join("images", "bia_giapha.jpg"),
-                        os.path.join("images", "bia_giapha.png"),
-                        "bia_giapha.jpg",
-                        "bia_giapha.png"
-                    ]
-                    found_cover_path = None
-                    for path in possible_paths:
-                        if os.path.exists(path):
-                            found_cover_path = path
-                            break
-                        for ext in [".jpg", ".png", ".jpeg", ""]:
-                            if os.path.exists(f"{path}{ext}"):
-                                found_cover_path = f"{path}{ext}" if ext != "" else path
-                                break
-                        if found_cover_path:
-                            break
-                    
-                    if found_cover_path:
-                        try:
-                            with open(found_cover_path, "rb") as img_file:
-                                encoded_string = base64.b64encode(img_file.read()).decode("utf-8")
-                                mime_type = "image/png" if "png" in found_cover_path.lower() else "image/jpeg"
-                                cover_image_base64 = f"data:{mime_type};base64,{encoded_string}"
-                        except Exception:
-                            pass
-
-                def get_gen_title(r):
-                    gen = int(r.get('DoiThu', 1))
-                    if gen <= 3:
-                        return "ĐỜI THỨ NHẤT ĐẾN ĐỜI THỨ 3"
-                    else:
-                        roman_map = {4: 'TƯ', 5: 'NĂM', 6: 'SÁU', 7: 'BẢY', 8: 'TÁM', 9: 'CHÍN', 10: 'MƯỜI', 11: 'MƯỜI MỘT', 12: 'MƯỜI HAI'}
-                        gen_label = roman_map.get(gen, str(gen))
-                        return f"ĐỜI THỨ {gen_label}"
-
-                def format_multiline(text):
-                    if not text or str(text).lower() in ["nan", "none", ""]:
-                        return ""
-                    parts = [p.strip() for p in str(text).split(',') if p.strip()]
-                    return '<br>'.join(parts)
-
-                def format_vo_chong(text):
-                    if not text or str(text).lower() in ["nan", "none", ""]:
-                        return ""
-                    raw_list = [p.strip() for p in str(text).split(',') if p.strip()]
-                    cleaned_parts = []
-                    for item in raw_list:
-                        item_clean = re.sub(r'^(bà chính|bà thứ|bà cả|bà hai|bà ba|bà nhất|bà nhì|bà út|chính|thứ|cả|hai|ba|nhất|nhì|út)\s*', '', item, flags=re.IGNORECASE).strip()
-                        if item_clean.lower().startswith("bà"):
-                            item_clean = "Bà" + item_clean[2:]
-                        else:
-                            item_clean = f"Bà: {item_clean}"
-                        cleaned_parts.append(item_clean)
-                    return '<br>'.join(cleaned_parts)
-
-                # ==========================================
-                # ĐIỀU PHỐI LOGIC: AUTO HOẶC SỐ DÒNG CỐ ĐỊNH
-                # ==========================================
-                is_auto_mode = (selected_page_mode == "Auto")
-
-                if is_auto_mode:
-                    html_report = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-                        @page {{ size: A4 landscape; margin: 10mm; }} 
-                        body {{ font-family: 'Times New Roman', serif; background-color: #FDFBF7; color: #2C2C2C; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }} 
-                        
-                        .cover-image-container {{
-                            page-break-after: always; break-after: page;
-                            width: 100%; height: 190mm;
-                            background-color: #590000;
-                            background-image: url("{cover_image_base64}");
-                            background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
-                            box-sizing: border-box; margin-bottom: 10mm;
-                        }}
-                        table {{ width: 100%; border-collapse: collapse; margin-top: 6px; background-color: #fff; }} 
-                        th {{ border: 1px solid #8B0000; padding: 5px; font-size: 11px; background: #8B0000; color: #FFF8DC; text-align: center; font-weight: bold; display: table-header-group; }} 
-                        tr {{ page-break-inside: avoid; break-inside: avoid; }}
-                        td {{ border: 1px solid #c2b292; padding: 4px; font-size: 11.5px; word-break: break-word; vertical-align: middle; color: #1a1a1a; }} 
-                        .main-title {{ text-align: center; font-size: 16px; font-weight: bold; color: #8B0000; margin-top: 10px; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1.5px; }}
-                        .sub-title {{ text-align: center; font-size: 10px; font-style: italic; color: #555; margin-bottom: 10mm; }}
-                        .doi-header {{ background: #F4EBD0; color: #8B0000; border: 1.5px solid #8B0000; font-weight: bold; text-align: center; font-size: 12px; letter-spacing: 2px; padding: 5px; text-transform: uppercase; page-break-after: avoid; break-after: avoid; }}
-                    </style></head><body>"""
-                    
-                    html_report += f"""<div class="cover-image-container">"""
-                    if not cover_image_base64:
-                        html_report += f"""<div style="color: #FFD700; font-size: 16px; font-family: 'Times New Roman', serif; padding: 20px; text-align: center; margin: auto;">[Chưa có ảnh bìa. Vui lòng chọn tệp ảnh bìa từ giao diện]</div>"""
-                    html_report += f"""</div>"""
-
-                    html_report += f"""<h2 class="main-title">DÒNG HỌ TỪ XUÂN LỘC - PHẢ HỆ ĐỊNH DANH</h2>"""
-                    html_report += f"""<div class="sub-title">Lưu giữ huyết mạch dòng tộc — Trân trọng kính dâng tiên tổ</div>"""
-                    
-                    html_report += f"""<table><thead><tr>
-                        <th style="width: 4%;">STT</th>
-                        <th style="width: 9%;">Mã Định Danh</th>
-                        <th style="width: 11%;">Họ Tên</th>
-                        <th style="width: 8%;">Tên Tự</th>
-                        <th style="width: 13%;">Vợ/Chồng</th>
-                        <th style="width: 5%;">Năm Sinh</th>
-                        <th style="width: 5%;">Năm Mất</th>
-                        <th style="width: 6%;">Ngày Giỗ</th>
-                        <th style="width: 40%;">Ghi Chú</th>
-                    </tr></thead><tbody>"""
-                    
-                    stt_in = 1
-                    last_rendered_gen = None
-                    for r in records:
-                        curr_gen_title = get_gen_title(r)
-                        if curr_gen_title != last_rendered_gen:
-                            html_report += f"""<tr><td colspan="9" class="doi-header">📜 {curr_gen_title}</td></tr>"""
-                            last_rendered_gen = curr_gen_title
-                        
-                        ten_tu_fmt = format_multiline(r.get('TenTu', ''))
-                        vo_chong_fmt = format_vo_chong(r.get('VoChong', ''))
-                        
-                        html_report += f"""<tr>
-                            <td style="text-align:center; font-weight: bold; color: #8B0000;">{stt_in}</td>
-                            <td style="text-align:center; font-family: monospace; font-size: 11px; white-space: nowrap; color: #333;">{r.get('ID', '')}</td>
-                            <td><b style="color: #8B0000; font-size: 12.5px;">{r.get('HoTen', '')}</b></td>
-                            <td>{ten_tu_fmt}</td>
-                            <td>{vo_chong_fmt}</td>
-                            <td style="text-align:center;">{r.get('NamSinh', '')}</td>
-                            <td style="text-align:center;">{r.get('NamMat', '')}</td>
-                            <td style="text-align:center; font-weight: bold; color: #700;">{r.get('NgàyGiỗ') if 'NgàyGiỗ' in r else r.get('NgayGio', '')}</td>
-                            <td>{r.get('GhiChu', '')}</td>
-                        </tr>"""
-                        stt_in += 1
-
-                    html_report += "</tbody></table><script>window.print();</script></body></html>"
-
-                else:
-                    ROWS_PER_PAGE = int(selected_page_mode) 
-                    page_chunks = [records[i:i + ROWS_PER_PAGE] for i in range(0, len(records), ROWS_PER_PAGE)]
-
-                    html_report = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-                        @page {{ 
-                            size: A4 landscape; 
-                            margin: 6mm;
-                        }} 
-                        
-                        body {{ 
-                            font-family: 'Times New Roman', serif; 
-                            background-color: #FDFBF7; 
-                            color: #2C2C2C; 
-                            margin: 0; 
-                            padding: 0; 
-                            -webkit-print-color-adjust: exact;
-                        }} 
-                        
-                        /* ---------------- TRANG BÌA LÀM NỀN PHỦ KHÍT 100% ---------------- */
-                        .cover-image-container {{
-                            page-break-after: always; 
-                            break-after: page;
-                            page-break-inside: avoid;
-                            break-inside: avoid;
-                            width: 100%;
-                            height: 194mm;
-                            max-height: 194mm;
-                            position: relative; 
-                            background-color: #590000;
-                            background-image: url("{cover_image_base64}");
-                            background-size: 100% 100%; /* Ép ảnh dãn đều khít trọn vẹn 100% A4 ngang */
-                            background-position: center;
-                            background-repeat: no-repeat;
-                            box-sizing: border-box;
-                            margin-bottom: 15mm;
-                            overflow: hidden;
-                        }}
-
-                        /* ---------------- CÁC TRANG NỘI DUNG SỔ TAY CỔ ĐIỂN ---------------- */
-                        .page-container {{ 
-                            page-break-after: always; 
-                            break-after: page;
-                            page-break-inside: avoid;
-                            break-inside: avoid;
-                            height: 194mm; 
-                            max-height: 194mm;
-                            position: relative; 
-                            background: linear-gradient(135deg, #fdfbf7 0%, #f4ebd0 100%);
-                            border: 3px double #8B0000;
-                            padding: 10px;
-                            padding-top: 26px;
-                            box-sizing: border-box;
-                            margin-bottom: 15mm;
-                            overflow: hidden;
-                        }}
-                        .page-container:last-child {{ page-break-after: avoid; break-after: avoid; margin-bottom: 0; }}
-                        
-                        .page-number-badge {{
-                            position: absolute;
-                            top: 0px;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            width: 26px;
-                            height: 26px;
-                            border: 2px solid #8B0000;
-                            border-radius: 50%;
-                            background-color: #FDFBF7;
-                            color: #8B0000;
-                            font-family: 'Times New Roman', serif;
-                            font-weight: bold;
-                            font-size: 11px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            z-index: 100;
-                            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
-                        }}
-
-                        .watermark-draft {{
-                            position: absolute;
-                            top: 28px;
-                            left: 35px;
-                            border: 3.5px solid #C62828;
-                            color: #C62828;
-                            font-family: 'Times New Roman', serif;
-                            font-weight: bold;
-                            font-size: 22px;
-                            padding: 6px 18px;
-                            text-transform: uppercase;
-                            letter-spacing: 3.5px;
-                            border-radius: 6px;
-                            background-color: rgba(255, 235, 238, 0.85);
-                            transform: rotate(-10deg);
-                            z-index: 99;
-                            box-shadow: 2px 2px 5px rgba(0,0,0,0.15);
-                        }}
-
-                        table {{ width: 100%; border-collapse: collapse; margin-top: 6px; background-color: rgba(255, 255, 255, 0.85); }} 
-                        th {{ 
-                            border: 1px solid #8B0000; 
-                            padding: 3px; 
-                            font-size: 11px; 
-                            background: #8B0000; 
-                            color: #FFF8DC; 
-                            text-align: center; 
-                            font-weight: bold; 
-                        }}
-                        td {{ 
-                            border: 1px solid #c2b292; 
-                            padding: 3px; 
-                            font-size: 11.5px; 
-                            height: 20px; 
-                            word-break: break-word; 
-                            vertical-align: middle; 
-                            color: #1a1a1a;
-                        }} 
-                        .main-title {{ 
-                            text-align: center; 
-                            font-size: 15px; 
-                            font-weight: bold; 
-                            color: #8B0000; 
-                            margin-top: 2px;
-                            margin-bottom: 1px; 
-                            text-transform: uppercase; 
-                            letter-spacing: 1.5px; 
-                        }}
-                        .sub-title {{
-                            text-align: center;
-                            font-size: 9.5px;
-                            font-style: italic;
-                            color: #555;
-                            margin-bottom: 3px;
-                        }}
-                        .doi-header {{ 
-                            background: #F4EBD0; 
-                            color: #8B0000; 
-                            border: 1.5px solid #8B0000; 
-                            font-weight: bold; 
-                            text-align: center; 
-                            font-size: 12px; 
-                            letter-spacing: 2px; 
-                            padding: 3px; 
-                            text-transform: uppercase; 
-                        }}
-                        .empty-row td {{ color: transparent; border: 1px solid #c2b292; background-color: rgba(255,255,255,0.2); }}
-                    </style></head><body>"""
-                    
-                    # --- TRANG 1: ẢNH BÌA LÀM NỀN PHỦ KHÍT TUYỆT ĐỐI ---
-                    html_report += f"""<div class="cover-image-container">"""
-                    if not cover_image_base64:
-                        html_report += f"""<div style="color: #FFD700; font-size: 16px; font-family: 'Times New Roman', serif; padding: 20px; text-align: center; margin: auto;">[Chưa có ảnh bìa. Vui lòng chọn tệp ảnh bìa từ giao diện]</div>"""
-                    html_report += f"""</div>"""
-
-                    # --- CÁC TRANG NỘI DUNG TIẾP THEO (Từ trang 2 trở đi) ---
-                    stt_in = 1
-                    last_rendered_gen = None
-
-                    for chunk_idx, chunk in enumerate(page_chunks):
-                        page_idx = chunk_idx + 2
-                        html_report += f"""<div class="page-container">"""
-                        
-                        page_str = f"{page_idx:02d}"
-                        html_report += f"""<div class="page-number-badge">{page_str}</div>"""
-                        html_report += f"""<div class="watermark-draft">BẢN NHÁP</div>"""
-                        html_report += f"""<h2 class="main-title">DÒNG HỌ TỪ XUÂN LỘC - PHẢ HỆ ĐỊNH DANH</h2>"""
-                        html_report += f"""<div class="sub-title">Lưu giữ huyết mạch dòng tộc — Trân trọng kính dâng tiên tổ</div>"""
-                        
-                        html_report += f"""<table><thead><tr>
-                            <th style="width: 4%;">STT</th>
-                            <th style="width: 9%;">Mã Định Danh</th>
-                            <th style="width: 11%;">Họ Tên</th>
-                            <th style="width: 8%;">Tên Tự</th>
-                            <th style="width: 13%;">Vợ/Chồng</th>
-                            <th style="width: 5%;">Năm Sinh</th>
-                            <th style="width: 5%;">Năm Mất</th>
-                            <th style="width: 6%;">Ngày Giỗ</th>
-                            <th style="width: 40%;">Ghi Chú</th>
-                        </tr></thead><tbody>"""
-                        
-                        row_count = 0
-                        for r in chunk:
-                            curr_gen_title = get_gen_title(r)
-                            if curr_gen_title != last_rendered_gen:
-                                html_report += f"""<tr><td colspan="9" class="doi-header">📜 {curr_gen_title}</td></tr>"""
-                                last_rendered_gen = curr_gen_title
-                                row_count += 1
-                            
-                            ten_tu_fmt = format_multiline(r.get('TenTu', ''))
-                            vo_chong_fmt = format_vo_chong(r.get('VoChong', ''))
-                            
-                            html_report += f"""<tr>
-                                <td style="text-align:center; font-weight: bold; color: #8B0000;">{stt_in}</td>
-                                <td style="text-align:center; font-family: monospace; font-size: 11px; white-space: nowrap; color: #333;">{r.get('ID', '')}</td>
-                                <td><b style="color: #8B0000; font-size: 12.5px;">{r.get('HoTen', '')}</b></td>
-                                <td>{ten_tu_fmt}</td>
-                                <td>{vo_chong_fmt}</td>
-                                <td style="text-align:center;">{r.get('NamSinh', '')}</td>
-                                <td style="text-align:center;">{r.get('NamMat', '')}</td>
-                                <td style="text-align:center; font-weight: bold; color: #700;">{r.get('NgàyGiỗ') if 'NgàyGiỗ' in r else r.get('NgayGio', '')}</td>
-                                <td>{r.get('GhiChu', '')}</td>
-                            </tr>"""
-                            stt_in += 1
-                            row_count += 1
-
-                        while row_count < ROWS_PER_PAGE:
-                            html_report += f"""<tr class="empty-row">
-                                <td style="text-align:center;">&nbsp;</td>
-                                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
-                                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
-                            </tr>"""
-                            row_count += 1
-
-                        html_report += "</tbody></table></div>"
-
-                    html_report += "<script>window.print();</script></body></html>"
-
-                components.html(html_report, height=650, scrolling=True)
-                
-    #=====================================================================
-    # [PHÂN LÔ E7]: Hàm con render màn hình Quản Trị Hệ Thống
-    #=====================================================================
-    @staticmethod
-    def render_quantri(df):
-        st.subheader("Bảng Quản Trị Hệ Thống")
-        mat_khau = st.sidebar.text_input("Mật khẩu Quản trị:", type="password")
-        if mat_khau == "admin123":
-            st.success("Xác thực Quản trị viên thành công!")
-            chon_id = st.selectbox("Chọn Mã định danh thành viên cần xóa:", df["ID"].tolist())
-            if st.button("❌ Xóa khỏi CSDL"):
-                KhoDuLieuSQL.delete_member(chon_id)
-                st.error(f"Đã xóa thành viên mã {chon_id}!")
-                st.rerun()
-        else:
-            st.warning("Nhập mật khẩu quản trị (Mặc định: admin123).")
-
-
-    #=====================================================================
-    # [PHÂN LÔ E8]: Hàm con điều phối đầu não giao diện với menu chuẩn xác mới (Tối ưu Mobile Title)
-    #=====================================================================
-
-    @classmethod
-    def render_app(cls):
-        cls.thiet_lap_giao_dien()
-        df = KhoDuLieuSQL.load_data()
-
-        st.markdown('<h1 class="desktop-view" style="font-weight: bold; margin-bottom: 0px;">📜 Gia phả điện tử dòng Họ Từ Xuân Lộc</h1>', unsafe_allow_html=True)
-        st.markdown('<h1 class="mobile-view" style="font-size: 1.15rem; font-weight: bold; white-space: nowrap; margin-bottom: 0px;">📜 Gia phả Họ Từ Xuân Lộc</h1>', unsafe_allow_html=True)
-        
-        st.markdown("""
-            <div class="hide-on-mobile">
-                <p style="color: #546E7A; margin-top: 5px; margin-bottom: 15px;">Hệ thống quản lý phả hệ chuẩn mực — Cơ sở dữ liệu SQLite tối ưu đa thiết bị</p>
-            </div>
-        """, unsafe_allow_html=True)
-
-        if "focus_id" not in st.session_state:
-            st.session_state.focus_id = "000.01.0.001"
-
-        # 🌟 Đưa khối điều hướng lên sát hết cỡ phía trên (Sát nút << mặc định)
-        st.sidebar.markdown("""
-            <style>
-                @keyframes runSameWayFar {
-                    0% { transform: translateX(-8px); opacity: 0.2; }
-                    50% { transform: translateX(8px); opacity: 1; }
-                    100% { transform: translateX(-8px); opacity: 0.2; }
-                }
-                .run-arrow-far {
-                    display: inline-block;
-                    color: #D32F2F;
-                    font-weight: 900;
-                    animation: runSameWayFar 1.0s infinite ease-in-out;
-                }
-                /* Dịch toàn bộ vùng chứa sidebar lên sát phía trên cùng */
-                [data-testid="stSidebarUserContent"] {
-                    padding-top: 0rem !important;
-                }
-            </style>
-            <div style="text-align: center; font-weight: bold; color: #C62828; margin-top: -32px; margin-bottom: 8px; padding: 6px; background: #FFEBEE; border-radius: 6px; border: 1px dashed #EF9A9A;">
-                <span class="run-arrow-far">&gt;&gt;</span> &nbsp;&nbsp;&nbsp; ĐIỀU HƯỚNG &nbsp;&nbsp;&nbsp; <span class="run-arrow-far">&gt;&gt;</span>
-            </div>
-        """, unsafe_allow_html=True)
-
-
-        menu_options = [
-            "📖 Lời Giới thiệu",
-            "🎯 Trực Hệ", 
-            "🌳 Toàn Cảnh", 
-            "🆔 Lọc theo ID", 
-            "🔍 Tra Cứu",
-            "👤 Cá nhân hóa",
-            "✍ Thêm Thành Viên", 
-            "🖨 Xuất Báo Cáo", 
-            "🛡 Quản Trị Hệ Thống",
-            "🚪 EXIT"
-        ]
-
-        # Kiểm tra nếu có lệnh quay lại trang chủ
-        if st.session_state.get("reset_to_intro", False):
-            st.session_state["CHỌN CHỨC NĂNG"] = "📖 Lời Giới thiệu"
-            st.session_state["reset_to_intro"] = False
-
-        # 🎯 Menu chính
-        menu = st.sidebar.radio("CHỌN CHỨC NĂNG:", menu_options, key="CHỌN CHỨC NĂNG")
-        
-        # Điều phối giao diện (Đưa "🚪 EXIT" lên đầu để phản hồi ngay lập tức khi người dùng bấm vào)
-        if menu == "🚪 EXIT":
-            st.markdown("""
-                <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #fdfbf7 0%, #f4ebd0 100%); border-radius: 12px; border: 1px solid #d4c5a9; margin-top: 30px; font-family: 'Times New Roman', Times, serif;">
-                    <h2 style="color: #8B0000; text-transform: uppercase; margin-bottom: 15px;">📜 KẾT THÚC PHIÊN TRA CỨU</h2>
-                    <p style="font-size: 1.15rem; color: #2C3E50; font-style: italic; margin-bottom: 15px;">
-                        "Cây có gốc mới nở cành xanh ngọn, nước có nguồn mới chảy khắp sông sâu."
-                    </p>
-                    <p style="font-size: 1.05rem; color: #555; line-height: 1.6; margin-bottom: 20px;">
-                        Cảm ơn quý vị đã sử dụng ứng dụng Gia phả điện tử của dòng Họ.<br>
-                        Chúc quý vị luôn mạnh khỏe, hạnh phúc và an khang thịnh vượng!
-                    </p>
-                    <p style="font-size: 0.95rem; color: #666;">
-                        Quý vị có thể đóng tab trình duyệt hoặc bấm nút bên dưới để tiếp tục quay lại trang chủ.
-                    </p>
-                </div>
-            """, unsafe_allow_html=True)
+                        with open(full_img_path, "rb") as f:
+                            b64_str = base64.b64encode(f.read()).decode("utf-8")
+                            img_html = f'<img src="data:image/jpeg;base64,{b64_str}" style="width: 42px; height: 52px; object-fit: cover; border-radius: 4px; border: 1px solid #8B0000; box-shadow: 1px 1px 3px rgba(0,0,0,0.15);" />'
+                    except:
+                        pass
             
-            st.markdown("<br>", unsafe_allow_html=True)
-            col_bt1, col_bt2, col_bt3 = st.columns([1, 2, 1])
-            with col_bt2:
-                if st.button("🔄 Quay lại trang chủ hệ thống", use_container_width=True):
-                    st.session_state["reset_to_intro"] = True
-                    st.rerun()
-
-        elif menu == "📖 Lời Giới thiệu":
-            cls.render_gioithieu_1trang()
-        elif menu == "🎯 Trực Hệ": 
-            cls.render_tructhe(df)
-        elif menu == "🌳 Toàn Cảnh": 
-            cls.render_toancanh(df)
-        elif menu == "🆔 Lọc theo ID": 
-            cls.render_loc_theo_id(df)
-        elif menu == "🔍 Tra Cứu": 
-            cls.render_tracuu(df)
-        elif menu == "👤 Cá nhân hóa": 
-            cn_hoa = QuanLyCaNhanHoa()
-            cn_hoa.hien_thi_menu_ca_nhan_hoa()
-        elif menu == "✍ Thêm Thành Viên": 
-            cls.render_themthanhvien(df)
-        elif menu == "🖨 Xuất Báo Cáo": 
-            cls.render_xuatbaocao(df)
-        elif menu == "🛡 Quản Trị Hệ Thống":
-            cls.render_quantri(df)
-
+            vo_chong_raw = str(row.get('VoChong', ''))
+            vo_chong_fmt = format_vo_chong_html(vo_chong_raw, m_gioi_tinh)
             
+            html_table += f"""
+                <tr style="border-bottom: 1px solid #e0d5be;">
+                    <td style="padding: 6px; border: 1px solid #c2b292; text-align: center; font-weight: bold; color: #8B0000;">{row.get('STT', '')}</td>
+                    <td style="padding: 6px; border: 1px solid #c2b292; text-align: center; font-family: monospace; font-size: 11.5px; color: #333;">{row.get('ID', '')}</td>
+                    <td style="padding: 6px; border: 1px solid #c2b292;"><b style="color: #8B0000; font-size: 12px;">{row.get('HoTen', '')}</b></td>
+                    <td style="padding: 6px; border: 1px solid #c2b292; font-size: 11.5px;">{row.get('TenTu', '')}</td>
+                    <td style="padding: 6px; border: 1px solid #c2b292; font-size: 11.5px;">{vo_chong_fmt}</td>
+                    <td style="padding: 6px; border: 1px solid #c2b292; text-align: center; font-size: 11.5px; white-space: nowrap;">{row.get('NamSinh', '')} - {row.get('NamMat', '')}</td>
+                    <td style="padding: 6px; border: 1px solid #c2b292; text-align: center; font-weight: bold; color: #700; font-size: 11.5px;">{row.get('NgayGio', '')}</td>
+                    <td style="padding: 6px; border: 1px solid #c2b292; font-size: 11.5px;">{row.get('GhiChu', '')}</td>
+                    <td style="padding: 6px; border: 1px solid #c2b292; text-align: center; background: #fff;">{img_html}</td>
+                </tr>
+            """
+            
+        html_table += "</tbody></table></div>"
+        components.html(html_table, height=620, scrolling=True)
+     
+
     #=====================================================================
-    # [PHÂN LÔ E9]: Màn hình chuyên biệt Lọc theo ID hoặc Tên
+    # [PHÂN LÔ E6]: Màn hình Lọc theo ID hoặc Tên(Truy vết nhánh)
     #=====================================================================
     @staticmethod
     def render_loc_theo_id(df):
@@ -3168,17 +1744,21 @@ class SoChiHuyGiaoDien:
         
         df_app = df[df["TrangThai"] == "Đã duyệt"].copy()
         
-        c1, c2, c3 = st.columns([2, 2, 2])
+        c1, c2, c3, c4 = st.columns([2, 2, 1, 1])
         with c1:
             nhap_lieu = st.text_input("Nhập Họ và tên hoặc Mã định danh:", value="Từ Quang Diệu", placeholder="Ví dụ: Từ Quang Diệu, 124070049 hoặc 124.07.0.049")
         with c2:
-            # Mặc định index=3 để chọn sẵn chế độ 4 (đầy đủ nhất) cho cả PC và Mobile
             che_do_xem = st.selectbox("Chế độ hiển thị nhãn:", [
                 "1. Chỉ Đinh Nam (Gọn: Tên ⑦)", 
                 "2. Chỉ Đinh Nam (Đủ: Họ Và Tên)", 
                 "3. Chỉ Đinh Nam (Đủ vợ và chồng)", 
                 "4. Cả Nam & Nữ (Đủ: Chồng, Vợ, Con)"
             ], index=3, key="che_do_xem_id")
+        with c3:
+            so_doi_tren = st.selectbox("Số đời trên:", ["Tất cả"] + list(range(1, 11)), index=0, key="sel_so_doi_tren")
+        with c4:
+            so_doi_duoi = st.selectbox("Số đời dưới:", ["Tất cả"] + list(range(1, 11)), index=0, key="sel_so_doi_duoi")
+
 
         target_id = ""
         nhap_lieu_clean = nhap_lieu.strip()
@@ -3190,7 +1770,7 @@ class SoChiHuyGiaoDien:
             
             if not matched_by_id.empty:
                 target_id = str(matched_by_id.iloc[0]['ID'])
-                # PC hiện "Đã tìm thấy", Mobile hiện "Đã thấy"
+                # PC hiện "Đã tìm thấy", Mobile hiện "Đã thấy" (Giữ nguyên khung xanh nguyên bản)
                 st.markdown(f"""
                     <div style="padding: 8px 12px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px; color: #155724; font-size: 13px; margin-bottom: 10px;">
                         <span class="desktop-view">✅ Đã tìm thấy: <b>{matched_by_id.iloc[0]['HoTen']}</b> (ID: <code>{target_id}</code>, {matched_by_id.iloc[0]['Chi']}, Đời {matched_by_id.iloc[0]['DoiThu']})</span>
@@ -3238,13 +1818,3006 @@ class SoChiHuyGiaoDien:
                 else:
                     st.warning(f"❌ Không tìm thấy thành viên nào khớp với từ khóa: '{nhap_lieu_clean}'")
 
+        # Nút bấm chuyển nhanh sang Trực Hệ được đặt ở cột giữa để tự động thu gọn và canh giữa
         if target_id:
+            # 1. Vẽ sơ đồ và hiển thị tương tác trước (đặt lên trên)
             try:
-                tree_graph = KyThuatBanVeGiaPha.draw_family_tree(df, target_id=target_id, che_do_xem=che_do_xem)
+                tree_graph = KyThuatBanVeGiaPha.draw_family_tree(df, target_id=target_id, che_do_xem=che_do_xem, so_doi_tren=so_doi_tren, so_doi_duoi=so_doi_duoi)
                 KyThuatBanVeGiaPha.hien_thi_so_do_tuong_tac(tree_graph, chieu_cao=750)
             except Exception as e:
                 st.error(f"Lỗi hiển thị sơ đồ: {e}")
 
+            # 2. Đặt nút bấm ở dưới cùng sau khi sơ đồ đã hiện xong
+            st.markdown("---")
+            col_l, col_c, col_r = st.columns([1, 2, 1])
+            with col_c:
+                if st.button("👉 Bấm vào đây để mở xem chi tiết của ID này", key="btn_goto_tructhe_from_id", use_container_width=True):
+                    st.session_state.focus_id = target_id
+                    st.session_state.return_to_menu = "🆔 Lọc theo ID"
+                    st.session_state.pending_menu = "🎯 Trực Hệ"
+                    
+                    # 🟢 THÊM ĐOẠN JAVASCRIPT ÉP TRÌNH DUYỆT CUỘN LÊN ĐẦU TRANG KHI SANG TRANG
+                    components.html("""
+                        <script>
+                            window.parent.window.scrollTo({ top: 0, behavior: 'smooth' });
+                        </script>
+                    """, height=0)
+                    
+                    st.rerun()
+
+
+    #=====================================================================
+    # [PHÂN LÔ E7]: Hàm con render màn hình Thêm Thành Viên (TỐI ƯU MOBILE UX)
+    #=====================================================================
+    @staticmethod
+    def render_themthanhvien(df):
+        # 🟢 1. TRẠM ĐÓN THÔNG BÁO
+        if "msg_thanh_cong" in st.session_state:
+            st.success(st.session_state.msg_thanh_cong)
+            st.balloons()
+            del st.session_state.msg_thanh_cong
+
+        st.subheader("Thêm thành viên mới")
+        st.info("💡 Nhập thông tin cơ bản, hệ thống tự cấp Mã ID.")
+        
+        col_trai, col_phai = st.columns(2)
+        
+        with col_trai:
+            ho_ten = st.text_input("Họ và tên (*):", placeholder="Ví dụ: Từ Văn Nam")
+            gioi_tinh = st.selectbox("Giới tính (*):", ["Nam", "Nữ"])
+            
+        with col_phai:
+            df_parents = df[(df["TrangThai"] == "Đã duyệt") & (df["GioiTinh"] == "Nam")][["ID", "HoTen", "DoiThu"]]
+            parent_dict = {row['ID']: f"{row['HoTen']} (Đời {row['DoiThu']} - {row['ID']})" for _, row in df_parents.iterrows()}
+            parent_dict[""] = "-- Chọn Cha --"
+            cha_id = st.selectbox("Chọn Cha (*):", options=list(parent_dict.keys()), format_func=lambda x: parent_dict[x])
+
+        # 🟢 2. ĐƯA NĂM SINH RA NGOÀI MÀN HÌNH CHÍNH (KHÔNG BẮT BUỘC)
+        nam_sinh = st.text_input("Năm sinh:", placeholder="Ví dụ: 2026")
+
+        # =================================================================
+        # CÂU HỎI Y/N & SẮP XẾP ANH CHỊ EM CHUẨN XÁC
+        # =================================================================
+        xac_nhan_vi_tri = "Y"
+        vi_tri_mong_muon = 1
+        
+        if cha_id:
+            ten_cha = df[df["ID"] == cha_id]["HoTen"].iloc[0].split("(")[0].strip()
+            df_con = df[df["ChaMe_ID"] == cha_id].copy()
+            so_luong_con = len(df_con)
+            
+            st.markdown("---")
+            if so_luong_con > 0:
+                df_con['STT_Con'] = df_con['ID'].apply(
+                    lambda x: int(str(x).replace('.', '').strip()[-3:]) if len(str(x).replace('.', '').strip()) >= 9 else 999
+                )
+                df_con = df_con.sort_values(by="STT_Con")
+                
+                danh_sach_ten_con = ", ".join([QuanTriTaiNguyen.lay_ten_chinh(name) for name in df_con["HoTen"]])
+                cau_hoi = f"❓ **Ông {ten_cha} có {so_luong_con} con ({danh_sach_ten_con}). Bạn là con thứ {so_luong_con + 1}?**"
+            else:
+                cau_hoi = f"❓ **Ông {ten_cha} chưa có con. Bạn là con thứ 1?**"
+            
+            xac_nhan_vi_tri = st.radio(cau_hoi, options=["Y", "N"], format_func=lambda x: "✅ Đúng" if x == "Y" else "❌ Khác", horizontal=True)
+            
+            if xac_nhan_vi_tri == "N":
+                vi_tri_mong_muon = st.number_input("👉 Số thứ tự ĐÚNG:", min_value=1, max_value=99, step=1)
+                st.warning(f"⚠️ Đã ghi nhận chờ Admin xếp vào vị trí thứ {vi_tri_mong_muon}.")
+        
+        st.markdown("---")
+
+        # =================================================================
+        # 3. THÔNG TIN BỔ SUNG (ĐÃ SẮP XẾP LẠI TRÌNH TỰ NĂM MẤT -> NGÀY GIỖ)
+        # =================================================================
+        with st.expander("➕ Thông tin bổ sung nâng cao (Vợ/chồng, năm mất, ngày giỗ, ảnh...)"):
+            col_sub_1, col_sub_2 = st.columns(2)
+            with col_sub_1:
+                ten_tu = st.text_input("Tên tự/hiệu:")
+                vo_chong = st.text_input("Vợ/Chồng:")
+            with col_sub_2:
+                tinh_trang_nhap = st.selectbox("Tình trạng:", ["", "Phạp tự", "Không có con", "Tảo vong", "Tảo một", "Chết sớm", "Con nuôi", "di cư, không rõ"])
+            
+            col_nam_1, col_nam_2 = st.columns(2)
+            with col_nam_1: 
+                nam_mat = st.text_input("Năm mất:")
+            with col_nam_2: 
+                ngay_gio = st.text_input("Ngày giỗ (AL):") # Đã bố trí chuẩn ngay sau năm mất
+            
+            ghi_chu = st.text_area("Tiểu sử/Ghi chú:")
+            
+            # Khung tải ảnh chân dung
+            uploaded_file = st.file_uploader("🖼️ Tải lên ảnh chân dung (tùy chọn):", type=["jpg", "jpeg", "png"])
+
+        btn_submit = st.button("📤 LƯU THÀNH VIÊN", use_container_width=True)
+        
+        if btn_submit:
+            if not ho_ten.strip() or not cha_id:
+                st.error("⚠️ Thiếu Họ tên hoặc chưa chọn Cha!")
+            else:
+                try:
+                    import random
+                    from pathlib import Path
+                    
+                    parsed_cha = BoGiaiMaDinhDanh.phan_tich_ma(cha_id)
+                    new_doi = parsed_cha['DoiThu'] + 1
+                    prefix_chi = str(cha_id).replace(".", "").strip()[:3]
+                    khoi_gt = "1" if gioi_tinh == "Nữ" else "0"
+                    
+                    existing_ids = df[df["ID"].str.contains(rf"\.{new_doi:02d}\.", na=False)]["ID"].tolist()
+                    existing_suffixes = [str(x).replace(".", "").strip()[-3:] for x in existing_ids if len(str(x).replace(".", "").strip()) >= 9]
+                    
+                    random_suffix = "600" 
+                    for _ in range(1000):
+                        rnd_val = random.randint(600, 799)
+                        rnd_str = f"{rnd_val:03d}"
+                        if rnd_str not in existing_suffixes:
+                            random_suffix = rnd_str
+                            break
+                            
+                    raw_auto_id = f"{prefix_chi}{new_doi:02d}{khoi_gt}{random_suffix}"
+                    new_id = f"{raw_auto_id[:3]}.{raw_auto_id[3:5]}.{raw_auto_id[5]}.{raw_auto_id[6:]}"
+
+                    # Xử lý lưu file ảnh
+                    hinh_anh_path = ""
+                    if uploaded_file is not None:
+                        image_dir = Path(__file__).resolve().parent / "images"
+                        image_dir.mkdir(parents=True, exist_ok=True)
+                        file_ext = Path(uploaded_file.name).suffix.lower()
+                        if file_ext not in [".jpg", ".jpeg", ".png"]:
+                            file_ext = ".jpg"
+                        file_name = f"{new_id} {ho_ten.strip()}{file_ext}"
+                        save_path = image_dir / file_name
+                        with open(save_path, "wb") as f:
+                            f.write(uploaded_file.getbuffer())
+                        hinh_anh_path = f"images/{file_name}"
+
+                    tinh_trang_final = "Chờ duyệt"
+                    if tinh_trang_nhap:
+                        tinh_trang_final = f"Chờ duyệt, {tinh_trang_nhap}"
+                        
+                    ghi_chu_final = ghi_chu.strip()
+                    if xac_nhan_vi_tri == "N":
+                        ghi_chu_final = f"[Xin xếp vào vị trí thứ {vi_tri_mong_muon}] " + ghi_chu_final
+
+                    success, messages = KhoDuLieuSQL.insert_member(
+                        new_id=new_id, ho_ten=ho_ten, ten_tu=ten_tu, cha_id=cha_id,
+                        vo_chong=vo_chong, nam_sinh=nam_sinh, nam_mat=nam_mat, ngay_gio=ngay_gio,
+                        ghi_chu=ghi_chu_final, tinh_trang=tinh_trang_final, hinh_anh=hinh_anh_path
+                    )
+                    
+                    if success:
+                        msg = f"🎉 Thêm thành công ({tinh_trang_final})"
+                        st.session_state.msg_thanh_cong = msg
+
+                        try:
+                            cha_row = df[df['ID'] == cha_id]
+                            ten_cha_hien_thhi = cha_row.iloc[0]['HoTen'] if not cha_row.empty else "Không rõ"
+                            
+                            member_info = {
+                                "HoTen": ho_ten,
+                                "ID": new_id,
+                                "TenCha": ten_cha_hien_thhi,
+                                "TinhTrang": tinh_trang_final,
+                                "GhiChu": ghi_chu_final
+                            }
+                            TelegramBotManager.gui_thong_bao_cho_duyet(member_info, hinh_anh_path)
+                        except Exception as tele_err:
+                            print(f"Lỗi gửi Telegram: {tele_err}")
+                        KhoDuLieuSQL.load_data.clear()
+                        st.rerun()
+                    else:
+                        for err in messages: st.error(err)
+                        
+                except Exception as e:
+                    st.error(f"Lỗi: {e}")
+
+
+    # ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+    # [PHÂN LÔ E8]: TRUNG TÂM XUẤT BÁO CÁO & IN ẤN PHẢ HỆ (ĐÃ TỐI ƯU NGẮT TRANG ĐỜI 3)
+    # ==============================================================================
+
+    @staticmethod
+    def render_xuatbaocao(df):
+        st.subheader("🖨️ Trung tâm Xuất Báo cáo & In ấn Phả Hệ")
+        df_app = df[df["TrangThai"] == "Đã duyệt"].copy()
+        
+        tab_csv, tab_word, tab_in, tab_phado = st.tabs(["📥 Xuất dữ liệu (CSV)", "📄 Xuất Thế phả (Word)", "🖨️ In ấn báo cáo", "🖼 Xuất ảnh Phả đồ"])
+        
+        with tab_csv:
+            export_df_csv = df_app[["STT", "ID", "ChaMe_ID", "HoTen", "TenTu", "VoChong", "NamSinh", "NamMat", "NgayGio", "GhiChu", "TinhTrang", "HinhAnh"]].rename(columns={
+                "ID": "Mã Định Danh", "ChaMe_ID": "Mã Cha/Mẹ", "HoTen": "Họ và Tên", "TenTu": "Tên Tự", 
+                "VoChong": "Vợ/Chồng", "NamSinh": "Năm Sinh", "NamMat": "Năm Mất", "NgayGio": "Ngày Giỗ", 
+                "GhiChu": "Ghi Chú", "TinhTrang": "Tình Trạng", "HinhAnh": "Hình Ảnh"
+            })
+            st.download_button("📥 Tải xuống tệp CSV", export_df_csv.to_csv(index=False).encode('utf-8-sig'), "GiaPha_HoTu.csv", "text/csv")
+
+
+        ### bắt đầu tab_word ###
+        with tab_word:
+            st.markdown("Tính năng kết xuất **Thế Phả truyền thống định dạng cao cấp** sang file Word (.docx) chuẩn phong cách bản in gốc.")
+            
+            # --- 1. THÊM NÚT TẢI ẢNH BÌA & HÌNH NỀN CHO FILE WORD ---
+            col_bia, col_nen = st.columns(2)
+            with col_bia:
+                anh_bia_word = st.file_uploader("🖼️ Tải lên ảnh bìa (Tùy chọn)", type=["jpg", "jpeg", "png"], key="upload_cover_word")
+            with col_nen:
+                anh_nen_word = st.file_uploader("🖼️ Tải lên hình nền các trang (Tùy chọn)", type=["jpg", "jpeg", "png"], key="upload_bg_word")
+            st.markdown("---")
+            # ---------------------------------------------
+
+            try:
+                from docx import Document
+                from docx.shared import Pt, Inches, RGBColor
+                from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_TAB_ALIGNMENT
+                from docx.oxml import OxmlElement, parse_xml
+                from docx.oxml.ns import qn
+                from io import BytesIO
+                import re
+                
+                # --- HÀM MỚI: XỬ LÝ ẢNH NỀN (BEHIND TEXT BẰNG VML WATERMARK) ---
+                def chen_watermark_full_trang(header_obj, img_file):
+                    # 1. Đảm bảo đọc ảnh từ đầu dòng
+                    img_file.seek(0)
+                    
+                    # 2. Thêm ảnh vào document part để lấy rel_id
+                    rel_id, _ = header_obj.part.get_or_add_image(img_file)
+                    
+                    # 3. Tạo thẻ đoạn văn
+                    p = header_obj.paragraphs[0] if header_obj.paragraphs else header_obj.add_paragraph()
+                    p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                    
+                    # 4. XML cấu trúc VML Shape Watermark (Phủ kín trang A4, nằm dưới chữ)
+                    vml_xml = f'''
+                        <w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+                             xmlns:v="urn:schemas-microsoft-com:vml"
+                             xmlns:o="urn:schemas-microsoft-com:office:office"
+                             xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+                            <w:pict>
+                                <v:shape id="WatermarkShape"
+                                         o:spid="_x0000_s2049"
+                                         type="#_x0000_t75"
+                                         style="position:absolute;margin-left:-70pt;margin-top:-50pt;width:595.3pt;height:785.9pt;z-index:-251657216;"
+                                         stroked="f">
+                                    <v:imagedata r:id="{rel_id}" o:title="hinh_nen"/>
+                                    <o:lock v:ext="edit" aspectratio="t"/>
+                                </v:shape>
+                            </w:pict>
+                        </w:r>
+                    '''
+
+                    p._p.append(parse_xml(vml_xml))
+                # --------------------------------------------------------------------
+
+                # 1. Hàm hỗ trợ trích xuất Đời từ ID
+                def lay_doi_tu_id(m_id):
+                    try:
+                        parts = str(m_id).split('.')
+                        if len(parts) > 1 and parts[1].isdigit():
+                            return int(parts[1])
+                    except:
+                        pass
+                    return 999
+
+                # 2. Hàm hỗ trợ trích xuất 3 số cuối (STT) từ ID
+                def lay_stt_tu_id(m_id):
+                    try:
+                        clean_id = str(m_id).replace('.', '').strip()
+                        if len(clean_id) >= 3:
+                            return int(clean_id[-3:])
+                    except:
+                        pass
+                    return 9999
+
+                # 3. Hàm hỗ trợ lấy mã CHI (2 số đầu tiên của ID)
+                def lay_ma_chi_tu_id(m_id):
+                    try:
+                        clean_id = str(m_id).replace('.', '').strip()
+                        if len(clean_id) >= 2:
+                            return clean_id[:2]
+                    except:
+                        pass
+                    return "99"
+
+                # 4. Hàm sắp xếp Cửa (Giáp trước, Ất sau)
+                def lay_cua_sort(cua_str):
+                    c = str(cua_str).lower()
+                    if "giáp" in c: return 1
+                    if "ất" in c: return 2
+                    return 3
+
+                # 5. Từ điển khoanh tròn số thứ tự cho con cái
+                circled_children_num = {
+                    1: "①", 2: "②", 3: "③", 4: "④", 5: "⑤",
+                    6: "⑥", 7: "⑦", 8: "⑧", 9: "⑨", 10: "⑩",
+                    11: "⑪", 12: "⑫", 13: "⑬", 14: "⑭", 15: "⑮",
+                    16: "⑯", 17: "⑰", 18: "⑑", 19: "⑒", 20: "⑓", 21: "㉑",
+                    22: "㉒", 23: "㉓", 24: "㉔", 25: "㉕", 26: "㉖", 27: "㉗", 28: "㉘"
+                }
+
+                # Tập hợp từ khóa sinh tử
+                death_keywords = ["tảo vong", "tảo một", "chết sớm", "mất sớm"]
+                parent_ids = set(df_app['ChaMe_ID'].dropna().unique())
+
+                def should_keep_for_heading(row):
+                    tinh_trang = str(row.get('TinhTrang', '')).lower()
+                    ghi_chu = str(row.get('GhiChu', '')).lower()
+                    m_id = str(row.get('ID', '')).strip()
+                    
+                    # 🟢 Tách riêng phần tiểu sử bản thân, không đọc lẹm sang phần "sinh hạ" của con cái
+                    ghi_chu_ban_than = ghi_chu.split('sinh hạ:')[0] if 'sinh hạ:' in ghi_chu else ghi_chu
+                    
+                    # Quét từ khóa tử vong ở cột Tình trạng hoặc phần Tiểu sử cá nhân
+                    has_death_kw = any(kw in tinh_trang for kw in death_keywords) or any(kw in ghi_chu_ban_than for kw in death_keywords)
+                    is_adopted = "con nuôi" in tinh_trang or m_id == "100.03.0.004"
+                    
+                    if (has_death_kw and m_id not in parent_ids) or is_adopted:
+                        return False
+                    return True
+
+                df_word = df_app[df_app['GioiTinh'] == 'Nam'].copy()
+                df_word = df_word[df_word.apply(should_keep_for_heading, axis=1)]
+                
+                df_word['Doi_Sort'] = df_word['ID'].apply(lay_doi_tu_id)
+                df_word['STT_Sort'] = df_word['ID'].apply(lay_stt_tu_id)
+                df_word['Cua_Sort'] = df_word['Cua'].apply(lay_cua_sort)
+                df_word['Chi_Sort'] = df_word.apply(lambda row: "00" if row['Doi_Sort'] <= 8 else lay_ma_chi_tu_id(row['ID']), axis=1)
+                
+                df_word = df_word.sort_values(by=['Doi_Sort', 'Cua_Sort', 'Chi_Sort', 'STT_Sort'])
+
+                # Bắt đầu khởi tạo Word
+                doc = Document()
+                from docx.enum.section import WD_SECTION_START
+
+                # ==============================================================
+                # PHẦN 1: TRANG BÌA (CẤU TRÚC RIÊNG - PHỦ KÍN 100%)
+                # ==============================================================
+                if anh_bia_word is not None:
+                    # Lấy section đầu tiên làm trang bìa
+                    section_cover = doc.sections[0]
+                    
+                    # Ép lề về 0 để ảnh tràn viền hoàn toàn
+                    section_cover.top_margin = Inches(0)
+                    section_cover.bottom_margin = Inches(0)
+                    section_cover.left_margin = Inches(0)
+                    section_cover.right_margin = Inches(0)
+
+                    p_img = doc.add_paragraph()
+                    p_img.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                    p_img.paragraph_format.space_before = Pt(0)
+                    p_img.paragraph_format.space_after = Pt(0)
+                    
+                    run_img = p_img.add_run()
+                    run_img.add_picture(anh_bia_word, width=Inches(8.27))
+                    
+                    # QUAN TRỌNG: Ngắt Section mới để tách hoàn toàn cấu trúc trang bìa với phần nội dung bên dưới
+                    doc.add_section(WD_SECTION_START.NEW_PAGE)
+
+       
+                # ==============================================================
+                # PHẦN 2: TỪ TRANG 2 TRỞ ĐI (CẤU TRÚC CHUẨN - CÓ KHUNG ĐỎ & SỐ TRANG)
+                # ==============================================================
+                for i, section in enumerate(doc.sections):
+                    # Bỏ qua Section 0 (Trang bìa)
+                    if anh_bia_word is not None and i == 0:
+                        continue
+
+                    # --- BỨC TƯỜNG VÔ HÌNH: ÉP KHỐI CHỮ VÀO GIỮA KHUNG ẢNH NỀN ---
+                    # Ông chủ thay đổi các con số (Inches) dưới đây để xê dịch toàn bộ khối chữ nhé:
+                    section.top_margin = Inches(1.3)    # Tăng/giảm để đẩy khối chữ xuống/lên
+                    section.bottom_margin = Inches(1.0) # Canh lề dưới
+                    section.left_margin = Inches(1.3)   # Tăng/giảm để xô khối chữ sang phải/trái
+                    section.right_margin = Inches(0.9)  # Canh lề phải
+                    section.header_distance = Inches(0.8)  
+
+                    sectPr = section._sectPr
+
+                    # Ép số trang bắt đầu từ số 1 ở trang nội dung đầu tiên
+                    if anh_bia_word is not None and i == 1:
+                        pgNumType = OxmlElement('w:pgNumType')
+                        pgNumType.set(qn('w:start'), '1')
+                        sectPr.append(pgNumType)
+  
+                    # --- QUAN TRỌNG: CẮT ĐỨT LIÊN KẾT HEADER VỚI TRANG BÌA ---
+                    section.header.is_linked_to_previous = False
+                    section.first_page_header.is_linked_to_previous = False
+                    # --------------------------------------------------------
+
+                    # Giữ chỗ trang đầu của nội dung
+                    section.different_first_page_header_footer = True
+                    first_header = section.first_page_header
+                    first_p = first_header.paragraphs[0] if first_header.paragraphs else first_header.add_paragraph()
+                    first_p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                    
+                    first_run = first_p.add_run("\u00A0")  
+                    first_run.font.name = 'Times New Roman'
+                    first_run.font.size = Pt(10)           
+
+                    # Đánh số trang chuẩn cho các trang tiếp theo
+                    header = section.header
+                    header_p = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+                    header_p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                    
+                    run_l = header_p.add_run("--- ")
+                    run_l.font.name = 'Times New Roman'
+                    run_l.font.size = Pt(10)
+                    run_l.font.color.rgb = RGBColor(120, 120, 120)
+                    
+                    fld = OxmlElement('w:fldSimple')
+                    fld.set(qn('w:instr'), 'PAGE')
+                    header_p._p.append(fld)
+                    
+                    run_r = header_p.add_run(" ---")
+                    run_r.font.name = 'Times New Roman'
+                    run_r.font.size = Pt(10)
+                    run_r.font.color.rgb = RGBColor(120, 120, 120)
+
+                    # --- CHÈN HÌNH NỀN VÀO CÁC TRANG NỘI DUNG ---
+                    if anh_nen_word is not None:
+                        if section.different_first_page_header_footer:
+                            anh_nen_word.seek(0)
+                            chen_watermark_full_trang(section.first_page_header, anh_nen_word)
+                        
+                        anh_nen_word.seek(0)
+                        chen_watermark_full_trang(section.header, anh_nen_word)
+
+                # Định nghĩa màu sắc chuẩn in màu
+                COLOR_PRIMARY = RGBColor(139, 0, 0)     # Đỏ đun (#8B0000)
+                COLOR_SECONDARY = RGBColor(139, 69, 19) # Nâu đồng (#8B4513)
+                COLOR_TEXT = RGBColor(44, 44, 44)       # Xám than đậm (#2C2C2C)
+                COLOR_BLACK = RGBColor(0, 0, 0)         # Đen tuyền cho tên bố
+                
+                # BỐ CỤC TRANG ĐẦU CHUẨN THEO BẢN IN GỐC
+                p_title = doc.add_paragraph()
+                p_title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+                p_title.paragraph_format.space_before = Pt(10)
+                p_title.paragraph_format.space_after = Pt(2)
+                run_title = p_title.add_run('TỪ TỘC TIỂU TÔN PHỔ KÝ')
+                run_title.bold = True
+                run_title.font.size = Pt(22)
+                run_title.font.color.rgb = COLOR_PRIMARY
+                run_title.font.name = 'Times New Roman'
+                
+                p_sub = doc.add_paragraph()
+                p_sub.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                p_sub.paragraph_format.space_after = Pt(18)
+                run_sub = p_sub.add_run('Bản ghi chép chi tiết tiểu sử, niên biểu và huyết mạch các thế hệ')
+                run_sub.italic = True
+                run_sub.font.size = Pt(11.5)
+                run_sub.font.color.rgb = COLOR_SECONDARY
+                run_sub.font.name = 'Times New Roman'
+
+                # Khối Nguồn gốc (Tiểu tôn phổ ký)
+                p_nguongoc = doc.add_paragraph()
+                p_nguongoc.paragraph_format.left_indent = Inches(0.2)
+                p_nguongoc.paragraph_format.space_after = Pt(16)
+                p_nguongoc.paragraph_format.line_spacing = 1.15
+
+                r_notitle = p_nguongoc.add_run("Nguồn gốc:\n")
+                r_notitle.bold = True
+                r_notitle.font.size = Pt(11.5)
+                r_notitle.font.color.rgb = COLOR_PRIMARY
+                r_notitle.font.name = 'Times New Roman'
+
+                nguon_goc_text = (
+                    "• Truy xưng: Ông Từ Hữu Bương — Chết ngày 14 tháng 2 âm\n"
+                    "                     Bà Nguyễn Thị Nhỏ — Chết\n"
+                    "                     (Ông bà này thuộc Đông Hải Quận)\n"
+                    "• Truyền xưng: Ông Từ Cẩn Thận — Chết ngày 9 tháng 7 âm\n"
+                    "                        Bà Đinh Thị Thuần Tâm — Chết ngày 16 tháng 12 âm\n"
+                    "                        (Ông bà này thuộc Đông Hải Quận)"
+                )
+                r_nocontent = p_nguongoc.add_run(nguon_goc_text + "\n")
+                r_nocontent.italic = True
+                r_nocontent.font.size = Pt(10.5)
+                r_nocontent.font.color.rgb = COLOR_TEXT
+                r_nocontent.font.name = 'Times New Roman'
+
+                r_tail = p_nguongoc.add_run("          Truy xưng và truyền xưng lên theo Đại Tôn phổ ký")
+                r_tail.italic = True
+                r_tail.font.size = Pt(10.5)
+                r_tail.font.color.rgb = COLOR_TEXT
+                r_tail.font.name = 'Times New Roman'
+                
+                roman_map = {1: 'NHẤT', 2: 'HAI', 3: 'BA', 4: 'TƯ', 5: 'NĂM', 6: 'SÁU', 7: 'BẢY', 8: 'TÁM', 9: 'CHÍN', 10: 'MƯỜI', 11: 'MƯỜI MỘT', 12: 'MƯỜI HAI', 13: 'MƯỜI BA', 14: 'MƯỜI BỐN', 15: 'MƯỜI LĂM'}
+                
+                current_doi = -1
+                current_cua = ""
+                current_chi_sort = ""
+                gen_stt_counter = 1
+
+                for index, row in df_word.iterrows():
+                    doi = row['Doi_Sort']
+                    chi_sort_val = row['Chi_Sort']
+                    cua_val = str(row.get('Cua', '')).strip()
+                    chi_val = str(row.get('Chi', '')).strip()
+                    
+                    # 1. TIÊU ĐỀ ĐỜI
+                    if doi != current_doi:
+                        if doi != 999:
+                            doi_name = roman_map.get(doi, str(doi))
+                            p_doi = doc.add_paragraph()
+                            p_doi.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                            p_doi.paragraph_format.space_before = Pt(18)
+                            p_doi.paragraph_format.space_after = Pt(8)
+                            p_doi.paragraph_format.keep_with_next = True
+                            
+                            run_doi = p_doi.add_run(f'📜 ĐỜI THỨ {doi_name}')
+                            run_doi.bold = True
+                            run_doi.font.size = Pt(14.5)
+                            run_doi.font.color.rgb = COLOR_PRIMARY
+                            run_doi.font.name = 'Times New Roman'
+                        
+                        current_doi = doi
+                        current_cua = ""
+                        current_chi_sort = ""
+                        if doi <= 2:
+                            gen_stt_counter = 1
+
+                    # 2. TIÊU ĐỀ CỬA (Từ đời 3 trở đi)
+                    if doi >= 3 and cua_val != current_cua:
+                        if "Giáp" in cua_val: prefix_cua = "A. "
+                        elif "Ất" in cua_val: prefix_cua = "B. "
+                        else: prefix_cua = "C. "
+                        
+                        p_cua = doc.add_paragraph()
+                        p_cua.paragraph_format.space_before = Pt(12)
+                        p_cua.paragraph_format.space_after = Pt(6)
+                        p_cua.paragraph_format.left_indent = Inches(0.1)
+                        p_cua.paragraph_format.keep_with_next = True
+                        
+                        cua_text = cua_val if cua_val and cua_val != "Khác" else "NHÁNH KHÁC"
+                        run_cua = p_cua.add_run(f'{prefix_cua}{cua_text.upper()}')
+                        run_cua.bold = True
+                        run_cua.font.size = Pt(13)
+                        run_cua.font.color.rgb = COLOR_PRIMARY
+                        run_cua.font.name = 'Times New Roman'
+                        
+                        current_cua = cua_val
+                        if doi <= 8:
+                            gen_stt_counter = 1
+
+                    # 3. TIÊU ĐỀ CHI (Từ đời 9 trở đi - Rút gọn chỉ còn CHI X)
+                    if doi >= 9 and chi_sort_val != current_chi_sort:
+                        chi_clean = re.sub(r'\s*\(.*?\)', '', chi_val).strip()
+                        chi_text = chi_clean if (chi_clean and chi_clean != "Khác") else "Nhánh Khác"
+                        
+                        p_chi = doc.add_paragraph()
+                        p_chi.paragraph_format.space_before = Pt(8)
+                        p_chi.paragraph_format.space_after = Pt(4)
+                        p_chi.paragraph_format.left_indent = Inches(0.2)
+                        p_chi.paragraph_format.keep_with_next = True
+                        
+                        run_chi = p_chi.add_run(f'❖ {chi_text.upper()}')
+                        run_chi.bold = True
+                        run_chi.font.size = Pt(12)
+                        run_chi.font.color.rgb = COLOR_SECONDARY
+                        run_chi.font.name = 'Times New Roman'
+                        
+                        current_chi_sort = chi_sort_val
+                        gen_stt_counter = 1
+
+                    # --- TRÍCH XUẤT THÔNG TIN THÀNH VIÊN ---
+                    ho_ten = str(row.get('HoTen', '')).strip()
+                    ma_id = str(row.get('ID', '')).strip()
+                    ten_tu = str(row.get('TenTu', '')).strip()
+                    vo_chong = str(row.get('VoChong', '')).strip()
+                    nam_sinh = str(row.get('NamSinh', '')).strip()
+                    nam_mat = str(row.get('NamMat', '')).strip()
+                    ngay_gio = str(row.get('NgayGio', '')).strip()
+                    ghi_chu = str(row.get('GhiChu', '')).strip()
+                    tinh_trang = str(row.get('TinhTrang', '')).strip()
+                    cha_me_id = str(row.get('ChaMe_ID', '')).strip()
+                    
+                    # Truy tìm tên bố từ CSDL
+                    ten_cha = ""
+                    if cha_me_id and cha_me_id != "":
+                        cha_row = df_app[df_app['ID'] == cha_me_id]
+                        if not cha_row.empty:
+                            raw_cha_name = str(cha_row.iloc[0].get('HoTen', '')).strip()
+                            ten_cha = raw_cha_name.split("(")[0].strip()
+
+                    # Làm sạch nội dung tiểu sử
+                    ghi_chu_clean = re.sub(r'(?i)Sinh hạ:.*$', '', ghi_chu).strip()
+                    ghi_chu_clean = re.sub(r'\[.*?\]', '', ghi_chu_clean).strip()
+
+                    # --- TRÌNH BÀY ĐOẠN VĂN TIỂU SỬ ---
+                    p = doc.add_paragraph()
+                    p.paragraph_format.left_indent = Inches(0.2)
+                    p.paragraph_format.space_after = Pt(8)
+                    p.paragraph_format.line_spacing = 1.15
+                    
+                    p.paragraph_format.tab_stops.add_tab_stop(Inches(3.8), WD_TAB_ALIGNMENT.LEFT)
+
+                    if doi == 1:
+                        prefix_label = "✦ THỦY TỔ TIÊN KHẢO: "
+                    else:
+                        prefix_label = f"{gen_stt_counter:02d}. "
+                        gen_stt_counter += 1
+
+                    # Tên thành viên
+                    run_name = p.add_run(f"{prefix_label}{ho_ten}")
+                    run_name.bold = True
+                    run_name.font.size = Pt(11.5)
+                    run_name.font.color.rgb = COLOR_PRIMARY
+                    run_name.font.name = 'Times New Roman'
+
+                    # Mã ID
+                    run_id = p.add_run(f" [{ma_id}]")
+                    run_id.font.size = Pt(10)
+                    run_id.font.color.rgb = RGBColor(100, 100, 100)
+                    run_id.font.name = 'Courier New'
+                    
+                    # 1. Tên tự / Tên hiệu (Đặt ngay sát sau Mã ID)
+                    if ten_tu and ten_tu.lower() not in ['nan', 'none']:
+                        run_tu = p.add_run(f" — (Tự/Hiệu: {ten_tu})")
+                        run_tu.italic = True
+                        run_tu.font.size = Pt(10.5)
+                        run_tu.font.color.rgb = COLOR_TEXT
+                        run_tu.font.name = 'Times New Roman'
+
+                    # 2. Quan hệ "Con ông..." đặt sau Tự/Hiệu, có tab để căn lề ngay ngắn
+                    if ten_cha:
+                        run_cha = p.add_run(f"\tCon ông {ten_cha}")
+                        run_cha.bold = False
+                        run_cha.font.size = Pt(10.5)
+                        run_cha.font.color.rgb = COLOR_BLACK
+                        run_cha.font.name = 'Times New Roman'
+                        
+                    p.add_run("\n")
+
+                    # --- XỬ LÝ THÔNG TIN VỢ/CHỒNG ---
+                    if vo_chong and vo_chong.lower() not in ['nan', 'none']:
+                        r_lbl1 = p.add_run("   + Vợ/Chồng: ")
+                        r_lbl1.bold = True
+                        r_lbl1.font.size = Pt(10.5)
+                        r_lbl1.font.color.rgb = COLOR_SECONDARY
+                        r_lbl1.font.name = 'Times New Roman'
+                        
+                        r_val1 = p.add_run(f"{vo_chong}\n")
+                        r_val1.font.size = Pt(10.5)
+                        r_val1.font.color.rgb = COLOR_TEXT
+                        r_val1.font.name = 'Times New Roman'
+                        
+                    # Niên biểu
+                    thong_tin_thoi_gian = []
+                    if nam_sinh and nam_sinh.lower() not in ['nan', 'none']: thong_tin_thoi_gian.append(f"Sinh: {nam_sinh}")
+                    if nam_mat and nam_mat.lower() not in ['nan', 'none']: thong_tin_thoi_gian.append(f"Mất: {nam_mat}")
+                    if ngay_gio and ngay_gio.lower() not in ['nan', 'none']: thong_tin_thoi_gian.append(f"Ngày giỗ: {ngay_gio}")
+                    
+                    if thong_tin_thoi_gian:
+                        r_lbl = p.add_run(f"   + Niên biểu: ")
+                        r_lbl.bold = True
+                        r_lbl.font.size = Pt(10.5)
+                        r_lbl.font.color.rgb = COLOR_SECONDARY
+                        r_lbl.font.name = 'Times New Roman'
+                        
+                        r_val = p.add_run(" | ".join(thong_tin_thoi_gian) + "\n")
+                        r_val.font.size = Pt(10.5)
+                        r_val.font.color.rgb = COLOR_TEXT
+                        r_val.font.name = 'Times New Roman'
+                        
+                    # Tiểu sử
+                    if ghi_chu_clean and ghi_chu_clean.lower() not in ['nan', 'none']:
+                        r_lbl = p.add_run(f"   + Tiểu sử: ")
+                        r_lbl.bold = True
+                        r_lbl.font.size = Pt(10.5)
+                        r_lbl.font.color.rgb = COLOR_SECONDARY
+                        r_lbl.font.name = 'Times New Roman'
+                        
+                        r_val = p.add_run(f"{ghi_chu_clean}\n")
+                        r_val.font.size = Pt(10.5)
+                        r_val.font.color.rgb = COLOR_TEXT
+                        r_val.font.name = 'Times New Roman'
+                        
+                    # Tình trạng đặc biệt
+                    if tinh_trang and tinh_trang.lower() not in ['nan', 'none']:
+                        r_lbl = p.add_run(f"   + Tình trạng: ")
+                        r_lbl.bold = True
+                        r_lbl.font.size = Pt(10.5)
+                        r_lbl.font.color.rgb = COLOR_SECONDARY
+                        r_lbl.font.name = 'Times New Roman'
+                        
+                        r_val = p.add_run(f"{tinh_trang}\n")
+                        r_val.font.size = Pt(10.5)
+                        r_val.font.color.rgb = COLOR_TEXT
+                        r_val.font.name = 'Times New Roman'
+
+         
+            
+                    # --- TÍCH HỢP DANH SÁCH CON CÁI (LỌC BỎ "KHÔNG RÕ", "ĐANG CẬP NHẬT") ---
+                    main_children_list = []
+                    bracket_children_list = []
+                    
+                    if ghi_chu:
+                        m_sinhha = re.search(r'(?i)Sinh hạ:\s*(.*?)(?=\.|$|\[)', ghi_chu)
+                        raw_sub_main = m_sinhha.group(1).strip() if m_sinhha else ""
+                        if raw_sub_main:
+                            parts_sub = re.split(r',\s*(?![^()]*\))', raw_sub_main)
+                            for ps in parts_sub:
+                                clean_ps = ps.strip()
+                                if clean_ps:
+                                    if not any(kw in clean_ps.lower() for kw in ["pháp tự", "phạp tự", "cố phù", "tên khác"]):
+                                        main_children_list.append(clean_ps)
+                        
+                        bracket_matches = re.findall(r'\[(.*?)\]', ghi_chu)
+                        for bm in bracket_matches:
+                            bracket_children_list.append(bm.strip())
+
+                    children_df = df_app[df_app['ChaMe_ID'] == ma_id].copy()
+
+                    if main_children_list or bracket_children_list or not children_df.empty:
+                        r_lbl = p.add_run(f"   + Ông bà sinh hạ:\n")
+                        r_lbl.bold = True
+                        r_lbl.font.size = Pt(10.5)
+                        r_lbl.font.color.rgb = COLOR_SECONDARY
+                        r_lbl.font.name = 'Times New Roman'
+                        
+                        total_lines_count = len(main_children_list) + len(bracket_children_list)
+                        current_line_idx = 1
+                        
+                        if main_children_list:
+                            for nc_name in main_children_list:
+                                matched_row = None
+                                clean_nc_name = nc_name.split('(')[0].strip().lower()
+                                
+                                if not children_df.empty:
+                                    for _, crow in children_df.iterrows():
+                                        c_hoten = str(crow.get('HoTen', '')).strip().lower()
+                                        if c_hoten == clean_nc_name:
+                                            matched_row = crow
+                                            break
+
+                                if matched_row is not None:
+ 
+                                    c_name = str(matched_row.get('HoTen', '')).strip()
+                                    c_name_huy = re.sub(r'\s*\(.*?\)', '', c_name).strip()
+                                    
+                                    c_tinhtrang = str(matched_row.get('TinhTrang', '')).strip()
+                                    c_gioitinh = str(matched_row.get('GioiTinh', 'Nam')).strip()
+                                    c_ghichu_con = str(matched_row.get('GhiChu', '')).strip()
+                                    c_vochong_con = str(matched_row.get('VoChong', '')).strip()
+                                    
+                                    death_keywords = ["chết sớm", "tảo vong", "tảo một", "mất sớm", "tử sỹ", "tử sĩ", "liệt sỹ", "Liệt sĩ", "hy sinh"]
+                                    extra = []
+                                    
+                                    if c_tinhtrang and c_tinhtrang.lower() not in ['nan', 'none', '']:
+                                        if c_gioitinh != "Nữ":
+                                            if any(kw in c_tinhtrang.lower() for kw in death_keywords):
+                                                extra.append(c_tinhtrang)
+                                        else:
+                                            extra.append(c_tinhtrang)
+                                    else:
+                                        if c_gioitinh == "Nữ":
+                                            # Kiểm tra nếu tình trạng hoặc ghi chú có chứa "không lấy chồng"
+                                            full_check_str = f"{c_tinhtrang} {c_ghichu_con}".lower()
+                                            if "không lấy chồng" in full_check_str:
+                                                extra.append("Không lấy chồng")
+                                            else:
+                                                # Làm sạch ghi chú
+                                                g_text_cleaned = ""
+                                                if c_ghichu_con and c_ghichu_con.lower() not in ['nan', 'none', '']:
+                                                    g_text_cleaned = re.sub(r'^Con\s+[^.]*\.?\s*', '', c_ghichu_con, flags=re.IGNORECASE).strip()
+                                                    g_text_cleaned = re.sub(r'\.+$', '', g_text_cleaned).strip()
+                                                    # LỌC BỎ RÁC
+                                                    if any(bad in g_text_cleaned.lower() for bad in ["đang cập nhật", "không rõ"]):
+                                                        g_text_cleaned = ""
+
+                                                # Lọc bỏ rác ở cột vợ/chồng
+                                                has_vc = c_vochong_con and c_vochong_con.lower() not in ['nan', 'none', 'không rõ', 'đang cập nhật']
+                                                has_gc = bool(g_text_cleaned)
+
+                                                # LOGIC THÔNG MINH: TRÁNH LẶP TỪ "LẤY" VÀ "ÔNG"
+                                                vc_display = ""
+                                                if has_vc:
+                                                    vc_lower = c_vochong_con.lower()
+                                                    if vc_lower.startswith("lấy ông "):
+                                                        vc_display = "Lấy ông " + c_vochong_con[8:].lstrip()
+                                                    elif vc_lower.startswith("lấy "):
+                                                        vc_display = "Lấy " + c_vochong_con[4:].lstrip()
+                                                    elif vc_lower.startswith("ông "):
+                                                        vc_display = f"Lấy {c_vochong_con}"
+                                                    else:
+                                                        vc_display = f"Lấy ông {c_vochong_con}"
+
+                                                if has_vc and has_gc:
+                                                    if c_vochong_con.lower() in g_text_cleaned.lower():
+                                                        extra.append(g_text_cleaned)
+                                                    else:
+                                                        extra.append(f"{vc_display} {g_text_cleaned}".strip())
+                                                elif has_vc and not has_gc:
+                                                    extra.append(vc_display)
+                                                elif not has_vc and has_gc:
+                                                    extra.append(g_text_cleaned)
+
+                                    extra_str = f" ( {', '.join(extra)} )" if extra else ""
+                                    display_str = f"{c_name_huy}{extra_str}"
+                                    
+                                else:
+                                    display_str = nc_name.strip()
+                               
+                                circled_num = circled_children_num.get(current_line_idx, f"({current_line_idx})")
+                                newline = "\n" if current_line_idx < total_lines_count else ""
+                                
+                                r_val = p.add_run(f"      {circled_num}. {display_str}{newline}")
+                                r_val.font.size = Pt(10.5)
+                                r_val.font.color.rgb = COLOR_TEXT
+                                r_val.font.name = 'Times New Roman'
+                                current_line_idx += 1
+                                
+                        elif not children_df.empty and not bracket_children_list:
+                            children_df['STT_Sort'] = children_df['ID'].apply(lay_stt_tu_id)
+                            children_df = children_df.sort_values(by='STT_Sort')
+                            total_lines_count = len(children_df)
+                            
+                            death_keywords = ["chết sớm", "tảo vong", "tảo một", "mất sớm", "tử sỹ", "tử sĩ", "liệt sỹ", "Liệt sĩ", "hy sinh"]
+                            
+                            for c_idx, c_row in enumerate(children_df.itertuples(), 1):
+                                c_tinhtrang = str(getattr(c_row, 'TinhTrang', '')).strip()
+                                c_gioitinh = str(getattr(c_row, 'GioiTinh', 'Nam')).strip()
+                                c_ghichu = str(getattr(c_row, 'GhiChu', '')).strip()
+                                c_vochong = str(getattr(c_row, 'VoChong', '')).strip()
+                                
+                                c_name = str(getattr(c_row, 'HoTen', '')).strip()
+                                c_name_huy = re.sub(r'\s*\(.*?\)', '', c_name).strip()
+                                
+                                extra = []
+                                
+                                if c_tinhtrang and c_tinhtrang.lower() not in ['nan', 'none', '']:
+                                    if c_gioitinh != "Nữ":
+                                        if any(kw in c_tinhtrang.lower() for kw in death_keywords):
+                                            extra.append(c_tinhtrang)
+                                    else:
+                                        extra.append(c_tinhtrang)
+                                else:
+                                    if c_gioitinh == "Nữ":
+                                        full_check_str = f"{c_tinhtrang} {c_ghichu}".lower()
+                                        if "không lấy chồng" in full_check_str:
+                                            extra.append("Không lấy chồng")
+                                        else:
+                                            g_text_cleaned = ""
+                                            if c_ghichu and c_ghichu.lower() not in ['nan', 'none', '']:
+                                                g_text_cleaned = re.sub(r'^Con\s+[^.]*\.?\s*', '', c_ghichu, flags=re.IGNORECASE).strip()
+                                                g_text_cleaned = re.sub(r'\.+$', '', g_text_cleaned).strip()
+                                                if any(bad in g_text_cleaned.lower() for bad in ["đang cập nhật", "không rõ"]):
+                                                    g_text_cleaned = ""
+
+                                            has_vc = c_vochong and c_vochong.lower() not in ['nan', 'none', 'không rõ', 'đang cập nhật']
+                                            has_gc = bool(g_text_cleaned)
+
+                                            # LOGIC THÔNG MINH: TRÁNH LẶP TỪ "LẤY" VÀ "ÔNG"
+                                            vc_display = ""
+                                            if has_vc:
+                                                vc_lower = c_vochong.lower()
+                                                if vc_lower.startswith("lấy ông "):
+                                                    vc_display = "Lấy ông " + c_vochong[8:].lstrip()
+                                                elif vc_lower.startswith("lấy "):
+                                                    vc_display = "Lấy " + c_vochong[4:].lstrip()
+                                                elif vc_lower.startswith("ông "):
+                                                    vc_display = f"Lấy {c_vochong}"
+                                                else:
+                                                    vc_display = f"Lấy ông {c_vochong}"
+
+                                            if has_vc and has_gc:
+                                                if c_vochong.lower() in g_text_cleaned.lower():
+                                                    extra.append(g_text_cleaned)
+                                                else:
+                                                    extra.append(f"{vc_display} {g_text_cleaned}".strip())
+                                            elif has_vc and not has_gc:
+                                                extra.append(vc_display)
+                                            elif not has_vc and has_gc:
+                                                extra.append(g_text_cleaned)
+
+                                extra_str = f" ( {', '.join(extra)} )" if extra else ""
+                                circled_num = circled_children_num.get(c_idx, f"({c_idx})")
+                                newline = "\n" if c_idx < total_lines_count else ""
+                                
+                                r_val = p.add_run(f"      {circled_num}. {c_name_huy}{extra_str}{newline}")
+                                r_val.font.size = Pt(10.5)
+                                r_val.font.color.rgb = COLOR_TEXT
+                                r_val.font.name = 'Times New Roman'
+
+                        if bracket_children_list:
+                            for b_idx, bracket_text in enumerate(bracket_children_list, 1):
+                                newline = "\n" if current_line_idx < total_lines_count else ""
+                                r_val = p.add_run(f"      * {bracket_text}{newline}")
+                                r_val.font.size = Pt(10.5)
+                                r_val.font.color.rgb = COLOR_TEXT
+                                r_val.font.name = 'Times New Roman'
+                                current_line_idx += 1
+
+                # Lưu và tải xuống
+                bio = BytesIO()
+                doc.save(bio)
+                word_data = bio.getvalue()
+                
+                st.download_button(
+                    label="📄 Tải xuống cuốn Thế Phả định dạng cao cấp (.docx)",
+                    data=word_data,
+                    file_name='The_Pha_Ho_Tu_Xuan_Loc_Cao_Cap.docx',
+                    mime='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                )
+            except Exception as e:
+                st.error(f"Lỗi khởi tạo file Word: {e}")
+               
+                
+            ### Kết thúc tab_word ###
+                
+
+
+
+        # KHU VỰC IN ẤN BÁO CÁO (GIỮ NGUYÊN)
+        with tab_in:
+            st.markdown("🖼️ **Chọn ảnh bìa và ảnh sơ đồ cho tập tài liệu (Tùy chọn):**")
+
+            
+            col_img1, col_img2 = st.columns(2)
+            with col_img1:
+                uploaded_cover = st.file_uploader("1. Tải lên tệp Ảnh Bìa (JPG, PNG)", type=["jpg", "jpeg", "png"], key="upload_cover_pdf")
+            with col_img2:
+                uploaded_tree_img = st.file_uploader("2. Tải lên Ảnh Sơ đồ 3 đời đầu (JPG, PNG)", type=["jpg", "jpeg", "png"], key="upload_tree_pdf")
+            
+            # --- CẤU HÌNH 2 LỰA CHỌN CHÍNH (TIÊU CHUẨN HOẶC TÙY CHỈNH TỪNG TRANG) ---
+            st.markdown("---")
+            st.markdown("⚙️ **Cấu hình định dạng trang in:**")
+            
+            print_mode_type = st.radio(
+                "Chọn phương thức định dạng trang:",
+                options=["Tiêu chuẩn (Auto, 14-23)", "Tùy chỉnh chi tiết theo từng trang"],
+                horizontal=True,
+                key="print_mode_type_radio"
+            )
+            
+            selected_page_mode = "Auto"
+            default_rows_val = 17
+            custom_rules = {}
+            
+            if print_mode_type == "Tiêu chuẩn (Auto, 14-23)":
+                page_mode_options = ["Auto", 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+                curr_val = st.session_state.get('selected_page_mode', 17)
+                try:
+                    default_idx = page_mode_options.index(curr_val)
+                except ValueError:
+                    default_idx = 4  # Mặc định là số 17
+                    
+                selected_page_mode = st.selectbox(
+                    "Chọn chế độ trình bày trang in:",
+                    options=page_mode_options,
+                    index=default_idx,
+                    key="selected_page_mode_selectbox"
+                )
+            else:
+                default_rows_val = st.selectbox(
+                    "Số dòng mặc định cho các trang còn lại:",
+                    options=[14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+                    index=3,  # Mặc định là 17
+                    key="default_rows_val_selectbox"
+                )
+                custom_text = st.text_area(
+                    "Nhập quy tắc tùy chỉnh theo trang (Ví dụ: Trang 15, 18, 20 = 15 dòng; Trang 35, 37 = 20 dòng):",
+                    value=st.session_state.get('custom_rules_text', ""),
+                    placeholder="Trang 15, 18, 20 = 15\nTrang 35, 37, 39 = 20",
+                    key="custom_text_textarea"
+                )
+                st.session_state.custom_rules_text = custom_text
+                
+                if custom_text:
+                    for line in custom_text.split('\n'):
+                        if '=' in line:
+                            parts = line.split('=')
+                            pages_str = parts[0]
+                            rows_str = re.sub(r'[^0-9]', '', parts[1])
+                            if rows_str.isdigit():
+                                row_val = int(rows_str)
+                                for p_part in pages_str.split(','):
+                                    p_part = re.sub(r'[^0-9]', '', p_part)
+                                    if p_part.isdigit():
+                                        custom_rules[int(p_part)] = row_val
+
+            st.markdown("---")
+            
+            # Ô cấu hình chèn trang trống thủ công để dán hình ảnh
+            insert_blank_only_str = st.text_area(
+                "📄 Tự động chèn các trang trống (Dùng để dán hình ảnh/tư liệu thủ công):\n(Cú pháp: Nhập số trang cần để trống, ví dụ: Trang 5, Trang 12 hoặc gõ 5, 12)",
+                value=st.session_state.get('insert_blank_only_str', ""),
+                placeholder="Ví dụ:\n5\n12\n20",
+                key="input_blank_only_pages"
+            )
+            st.session_state.insert_blank_only_str = insert_blank_only_str
+            
+            blank_pages_set = set()
+            if insert_blank_only_str:
+                for line in insert_blank_only_str.split('\n'):
+                    for p_part in line.split(','):
+                        p_num = re.sub(r'[^0-9]', '', p_part)
+                        if p_num.isdigit():
+                            blank_pages_set.add(int(p_num))
+
+            st.markdown("---")
+            insert_blank_pages_str = st.text_area(
+                "🌲 Tự động chèn sơ đồ phả hệ vào trang trống (Cú pháp: Trang [Số]: ID = [Mã], trước = [Số đời], sau = [Số đời]):",
+                value=st.session_state.get('insert_blank_pages_str', "Trang 3: ID = 000.01.0.001, trước = 0, sau = 3"),
+                placeholder="Trang 3: ID = 000.01.0.001, trước = 0, sau = 3",
+                key="input_blank_pages_tree"
+            )
+            st.session_state.insert_blank_pages_str = insert_blank_pages_str
+            
+            # Phân tích cú pháp chèn sơ đồ tự động
+            tree_rules = {} # {so_trang: {"id": target_id, "before": n, "after": m}}
+            if insert_blank_pages_str:
+                for line in insert_blank_pages_str.split('\n'):
+                    if ':' in line and '=' in line:
+                        try:
+                            page_part, rule_part = line.split(':', 1)
+                            p_num = int(re.sub(r'[^0-9]', '', page_part))
+                            
+                            id_match = re.search(r'ID\s*=\s*([0-9\.]+)', rule_part, re.IGNORECASE)
+                            before_match = re.search(r'trước\s*=\s*(\d+)', rule_part, re.IGNORECASE)
+                            after_match = re.search(r'sau\s*=\s*(\d+)', rule_part, re.IGNORECASE)
+                            
+                            if id_match:
+                                t_id = id_match.group(1).strip()
+                                b_val = int(before_match.group(1)) if before_match else 0
+                                a_val = int(after_match.group(1)) if after_match else 3
+                                tree_rules[p_num] = {"id": t_id, "before": b_val, "after": a_val}
+                        except Exception:
+                            pass
+
+            if st.button("🖨️ Mở cửa sổ In ấn / Xuất PDF"):
+                records = df_app.to_dict('records')
+    
+                import base64
+                import os
+                
+                # --- CHUẨN BỊ ẢNH BÌA BASE64 ---
+                cover_image_base64 = ""
+                if uploaded_cover is not None:
+                    try:
+                        bytes_data = uploaded_cover.getvalue()
+                        encoded_string = base64.b64encode(bytes_data).decode("utf-8")
+                        mime_type = uploaded_cover.type
+                        cover_image_base64 = f"data:{mime_type};base64,{encoded_string}"
+                    except Exception as e:
+                        st.error(f"Lỗi đọc ảnh bìa tải lên: {e}")
+                else:
+                    current_dir = os.path.dirname(os.path.abspath(__file__)) if "__file__" in locals() else os.getcwd()
+                    possible_paths = [
+                        os.path.join(current_dir, "images", "bia_giapha"),
+                        os.path.join(current_dir, "images", "bia_giapha.jpg"),
+                        os.path.join(current_dir, "images", "bia_giapha.png"),
+                        os.path.join(current_dir, "images", "bia_giapha.jpeg"),
+                        os.path.join("images", "bia_giapha"),
+                        os.path.join("images", "bia_giapha.jpg"),
+                        os.path.join("images", "bia_giapha.png"),
+                        "bia_giapha.jpg",
+                        "bia_giapha.png"
+                    ]
+                    found_cover_path = None
+                    for path in possible_paths:
+                        if os.path.exists(path):
+                            found_cover_path = path
+                            break
+                        for ext in [".jpg", ".png", ".jpeg", ""]:
+                            if os.path.exists(f"{path}{ext}"):
+                                found_cover_path = f"{path}{ext}" if ext != "" else path
+                                break
+                        if found_cover_path:
+                            break
+                    
+                    if found_cover_path:
+                        try:
+                            with open(found_cover_path, "rb") as img_file:
+                                encoded_string = base64.b64encode(img_file.read()).decode("utf-8")
+                                mime_type = "image/png" if "png" in found_cover_path.lower() else "image/jpeg"
+                                cover_image_base64 = f"data:{mime_type};base64,{encoded_string}"
+                        except Exception:
+                            pass
+
+                # --- CHUẨN BỊ ẢNH SƠ ĐỒ BASE64 ---
+                tree_image_base64 = ""
+                if uploaded_tree_img is not None:
+                    try:
+                        bytes_data = uploaded_tree_img.getvalue()
+                        encoded_string = base64.b64encode(bytes_data).decode("utf-8")
+                        mime_type = uploaded_tree_img.type
+                        tree_image_base64 = f"data:{mime_type};base64,{encoded_string}"
+                    except Exception as e:
+                        st.error(f"Lỗi đọc ảnh sơ đồ tải lên: {e}")
+
+                def get_gen_title(r):
+                    gen = int(r.get('DoiThu', 1))
+                    if gen <= 3:
+                        return "ĐỜI THỨ NHẤT ĐẾN ĐỜI THỨ 3"
+                    else:
+                        roman_map = {4: 'TƯ', 5: 'NĂM', 6: 'SÁU', 7: 'BẢY', 8: 'TÁM', 9: 'CHÍN', 10: 'MƯỜI', 11: 'MƯỜI MỘT', 12: 'MƯỜI HAI'}
+                        gen_label = roman_map.get(gen, str(gen))
+                        return f"ĐỜI THỨ {gen_label}"
+
+                def format_multiline(text):
+                    if not text or str(text).lower() in ["nan", "none", ""]:
+                        return ""
+                    parts = [p.strip() for p in str(text).split(',') if p.strip()]
+                    return '<br>'.join(parts)
+
+                def format_vo_chong(text, gioi_tinh="Nam"):
+                    if not text or str(text).lower() in ["nan", "none", ""]:
+                        return ""
+                    raw_list = [p.strip() for p in str(text).split(',') if p.strip()]
+                    cleaned_parts = []
+                    for item in raw_list:
+                        item_clean = re.sub(r'^(bà chính|bà thứ|bà cả|bà hai|bà ba|bà nhất|bà nhì|bà út|chính|thứ|cả|hai|ba|nhất|nhì|út|chồng|vợ|bà)\s*', '', item, flags=re.IGNORECASE).strip()
+                        
+                        if str(gioi_tinh).strip() == "Nữ":
+                            if not item_clean.lower().startswith("chồng"):
+                                item_clean = f"Chồng: {item_clean}"
+                        else:
+                            item_clean = f"Vợ: {item_clean}"
+                                
+                        cleaned_parts.append(item_clean)
+                    return '<br>'.join(cleaned_parts)
+   
+         
+            
+                # ==========================================
+                # HÀM TẠO SƠ ĐỒ TRỰC HỆ BẰNG HTML/CSS (ĐÃ SỬA: CHẶN HIỂN THỊ NHƯNG VẪN LAN TRUYỀN XUỐNG DƯỚI)
+                # ==========================================
+                def generate_tree_html(target_id, before_gen, after_gen):
+                    # 1. Thu thập tổ tiên ngược lên trước (before_gen đời)
+                    ancestors_list = []
+                    curr_id = str(target_id)
+                    visited_anc = set()
+                    for _ in range(before_gen):
+                        if not curr_id or curr_id == "0" or curr_id in visited_anc:
+                            break
+                        visited_anc.add(curr_id)
+                        row = df_app[df_app["ID"] == curr_id]
+                        if row.empty:
+                            break
+                        ancestors_list.insert(0, row.iloc[0].to_dict())
+                        curr_id = str(row.iloc[0].get("ChaMe_ID", ""))
+
+                    # 2. Lấy thông tin thành viên trung tâm
+                    target_row = df_app[df_app["ID"] == str(target_id)]
+                    target_dict = target_row.iloc[0].to_dict() if not target_row.empty else {"HoTen": target_id, "ID": target_id, "DoiThu": ""}
+
+                    # 3. Thu thập con cháu tỏa xuống dưới
+                    descendants_list = []
+                    queue = [(str(target_id), 0)]
+                    desc_visited = set()
+                    
+                    exclusion_keywords = ["tảo vong", "tảo một", "chết sớm", "mất sớm"]
+                    hero_keywords = ["liệt sỹ", "Liệt sĩ", "tử sỹ", "tử sĩ"]
+
+                    while queue:
+                        c_curr, depth = queue.pop(0)
+                        if c_curr in desc_visited or depth > after_gen:
+                            continue
+                        desc_visited.add(c_curr)
+                        
+                        # Lấy danh sách con trực tiếp của node hiện tại
+                        children = df_app[df_app["ChaMe_ID"] == c_curr]
+                        if "STT" in children.columns:
+                            children = children.sort_values(by="STT")
+                            
+                        for _, ch in children.iterrows():
+                            ch_dict = ch.to_dict()
+                            ch_id = str(ch_dict.get("ID"))
+                            
+                            gioi_tinh = str(ch_dict.get("GioiTinh", "")).strip()
+                            tinh_trang = str(ch_dict.get("TinhTrang", "")).lower()
+                            ghi_chu = str(ch_dict.get("GhiChu", "")).lower()
+                            
+                            is_nam = (gioi_tinh == "Nam")
+                            
+                            # QUY TẮC 1: Nữ loại bỏ hoàn toàn khỏi danh sách hiển thị
+                            if not is_nam:
+                                continue
+                            
+                            # Kiểm tra xem có phải là Liệt sĩ / Tử sĩ không
+                            is_hero = any(kw in tinh_trang or kw in ghi_chu for kw in hero_keywords)
+                            
+                            # Kiểm tra xem có dính từ khóa loại bỏ không
+                            has_exclusion = any(kw in tinh_trang for kw in exclusion_keywords)
+                            
+                            # Nếu dính chết sớm/mất sớm nhưng LÀ Liệt sĩ / TỬ SĨ thì được MIỄN TRỪ
+                            if has_exclusion and is_hero:
+                                has_exclusion = False
+                            
+                            # QUY TẮC HIỂN THỊ: Chỉ đưa vào danh sách nếu không bị loại bỏ và trong phạm vi số đời
+                            if not has_exclusion:
+                                if depth + 1 <= after_gen:
+                                    descendants_list.append((depth + 1, ch_dict))
+                            
+                            # 🟢 QUAN TRỌNG: Dù node đó có bị ẩn (ví dụ chết sớm) hay không, 
+                            # vẫn PHẢI ĐẨY VÀO QUEUE để tiếp tục quét các đời con cháu phía dưới của nhánh đó!
+                            if depth + 1 <= after_gen:
+                                queue.append((ch_id, depth + 1))
+
+                    # Render HTML cấu trúc sơ đồ
+                    html_tree = f"""
+                    <div style="font-family: 'Times New Roman', serif; padding: 5px; width: 100%; box-sizing: border-box; text-align: center; color: #2C2C2C;">
+                    """
+                    
+                    if ancestors_list:
+                        html_tree += f"""
+                        <div style="font-size: 12px; font-weight: bold; color: #8B0000; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">📜 Cội nguồn tổ tiên (Ngược lên {len(ancestors_list)} đời):</div>
+                        """
+                        for anc in ancestors_list:
+                            is_tgt = (str(anc['ID']) == str(target_id))
+                            bg_c = "#FFE082" if is_tgt else "#F4EBD0"
+                            border_c = "#C62828" if is_tgt else "#8B0000"
+                            html_tree += f"""
+                            <div style="display: inline-block; background: {bg_c}; border: 1.5px solid {border_c}; padding: 3px 10px; border-radius: 4px; margin: 1px; font-size: 10.5px;">
+                                <b>{anc.get('HoTen', '')}</b> &nbsp;|&nbsp; <span style="font-family: monospace;">{anc.get('ID', '')}</span> &nbsp;|&nbsp; Đời {anc.get('DoiThu', '')}
+                            </div>
+                            <div style="font-size: 11px; color: #8B0000; line-height: 1; margin: 1px 0;">⬇</div>
+                            """
+
+                    t_name = target_dict.get('HoTen', target_id)
+                    t_doi = target_dict.get('DoiThu', '')
+                    t_chi = target_dict.get('Chi', '')
+                    t_vo = target_dict.get('VoChong', '')
+                    
+                    html_tree += f"""
+                        <div style="background: #FFE082; border: 2px solid #C62828; padding: 5px 12px; border-radius: 6px; margin: 4px auto; max-width: 420px;">
+                            <div style="font-size: 12.5px; font-weight: bold; color: #8B0000; text-transform: uppercase;">⭐ NHÂN VẬT TRUNG TÂM: {t_name}</div>
+                            <div style="font-size: 10.5px; margin-top: 2px;">Mã định danh: <b>{target_id}</b> &nbsp;|&nbsp; Đời thứ {t_doi} &nbsp;|&nbsp; {t_chi}</div>
+                            {f"<div style='font-size: 10px; margin-top: 1px; color: #444;'>Vợ/Chồng: {t_vo}</div>" if t_vo else ""}
+                        </div>
+                    """
+
+                    if descendants_list:
+                        html_tree += f"""<div style="font-size: 12px; font-weight: bold; color: #8B0000; margin-top: 6px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">Hậu duệ Nam thuần huyết tỏa nhánh xuống dưới (Sau {after_gen} đời):</div><div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-height: 165mm; overflow: hidden; padding: 4px;">"""                    
+                        for depth, ch in descendants_list:
+                            doi_khoanh = QuanTriTaiNguyen.get_circled_doi(ch.get('DoiThu', ''), ch.get('TinhTrang', ''))
+                            html_tree += f"""
+                            <div style="background: #FFF; border: 1.2px solid #2E7D32; padding: 5px 8px; border-radius: 4px; font-size: 11px; min-width: 120px;">
+                                <b style="color: #2E7D32;">{ch.get('HoTen', '')} {doi_khoanh}</b>
+                            </div>
+                            """
+                        html_tree += "</div>"
+                    else:
+                        html_tree += f"""<div style="font-size: 10.5px; font-style: italic; color: #666; margin-top: 4px;">(Chưa có ghi nhận hậu duệ Nam trực hệ trong phạm vi đời này)</div>"""
+
+                    html_tree += "</div>"
+                    return html_tree
+
+                # ==========================================
+                # ĐIỀU PHỐI LOGIC CHÍNH
+                # ==========================================
+                effective_default = default_rows_val if print_mode_type == "Tùy chỉnh chi tiết theo từng trang" else 17
+                
+                page_chunks = []
+                current_chunk = []
+                row_count = 0
+                last_rendered_gen = None
+                page_idx = 2 
+                target_rows = custom_rules.get(page_idx, effective_default)
+                
+                def check_and_insert_blank_pages():
+                    nonlocal page_idx, page_chunks
+                    while page_idx in blank_pages_set and page_idx not in tree_rules:
+                        page_chunks.append(("BLANK_PAGE_PLACEHOLDER", {}))
+                        page_idx += 1
+
+                check_and_insert_blank_pages()
+
+                for r in records:
+                    gen = get_gen_title(r)
+                    
+                    if gen == "ĐỜI THỨ TƯ" and last_rendered_gen == "ĐỜI THỨ NHẤT ĐẾN ĐỜI THỨ 3":
+                        if current_chunk:
+                            while row_count < target_rows:
+                                current_chunk.append(None)
+                                row_count += 1
+                            page_chunks.append(current_chunk)
+                            current_chunk = []
+                            row_count = 0
+                            page_idx += 1
+                            check_and_insert_blank_pages()
+                        
+                        if page_idx not in tree_rules:
+                            tree_rules[page_idx] = {"id": "000.01.0.001", "before": 0, "after": 3}
+                            
+                    header_needed = (gen != last_rendered_gen)
+                    slots_needed = (1 if header_needed else 0) + 1
+                    
+                    if row_count + slots_needed > target_rows and current_chunk:
+                        while row_count < target_rows:
+                            current_chunk.append(None)
+                            row_count += 1
+                        page_chunks.append(current_chunk)
+                        current_chunk = []
+                        row_count = 0
+                        page_idx += 1
+                        
+                        check_and_insert_blank_pages()
+                        while page_idx in tree_rules:
+                            page_chunks.append(("TREE_PAGE_PLACEHOLDER", tree_rules[page_idx]))
+                            page_idx += 1
+                            check_and_insert_blank_pages()
+                            
+                        target_rows = custom_rules.get(page_idx, effective_default)
+                        header_needed = (gen != last_rendered_gen)
+                    
+                    current_chunk.append(r)
+                    if header_needed:
+                        row_count += 1
+                        last_rendered_gen = gen
+                    row_count += 1
+                    
+                    if row_count >= target_rows:
+                        while row_count < target_rows:
+                            current_chunk.append(None)
+                            row_count += 1
+                        page_chunks.append(current_chunk)
+                        current_chunk = []
+                        row_count = 0
+                        page_idx += 1
+                        
+                        check_and_insert_blank_pages()
+                        while page_idx in tree_rules:
+                            page_chunks.append(("TREE_PAGE_PLACEHOLDER", tree_rules[page_idx]))
+                            page_idx += 1
+                            check_and_insert_blank_pages()
+                            
+                        target_rows = custom_rules.get(page_idx, effective_default)
+                        
+                if current_chunk:
+                    while row_count < target_rows:
+                        current_chunk.append(None)
+                        row_count += 1
+                    page_chunks.append(current_chunk)
+
+                html_report = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+                    @page {{ size: A4 landscape; margin: 6mm; }} 
+                    body {{ font-family: 'Times New Roman', serif; background-color: #FDFBF7; color: #2C2C2C; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }} 
+                    
+                    .cover-image-container {{
+                        page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid;
+                        width: 100%; height: 194mm; max-height: 194mm; position: relative; 
+                        background-color: #590000; background-image: url("{cover_image_base64}");
+                        background-size: 100% 100%; background-position: center; background-repeat: no-repeat;
+                        box-sizing: border-box; margin-bottom: 15mm; overflow: hidden;
+                    }}
+
+                    .page-container {{ 
+                        page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid;
+                        height: 194mm; max-height: 194mm; position: relative; 
+                        background: linear-gradient(135deg, #fdfbf7 0%, #f4ebd0 100%);
+                        border: 3px double #8B0000; padding: 10px; padding-top: 26px;
+                        box-sizing: border-box; margin-bottom: 15mm; overflow: hidden;
+                    }}
+                    .page-container:last-child {{ page-break-after: avoid; break-after: avoid; margin-bottom: 0; }}
+                    
+                    .page-number-badge {{
+                        position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
+                        width: 26px; height: 26px; border: 2px solid #8B0000; border-radius: 50%;
+                        background-color: #FDFBF7; color: #8B0000; font-family: 'Times New Roman', serif;
+                        font-weight: bold; font-size: 11px; display: flex; align-items: center; justify-content: center; z-index: 100;
+                        box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+                    }}
+
+                    .watermark-draft {{
+                        position: absolute; top: 28px; left: 35px; border: 3.5px solid #C62828; color: #C62828;
+                        font-family: 'Times New Roman', serif; font-weight: bold; font-size: 22px; padding: 6px 18px;
+                        text-transform: uppercase; letter-spacing: 3.5px; border-radius: 6px;
+                        background-color: rgba(255, 235, 238, 0.85); transform: rotate(-10deg); z-index: 99;
+                        box-shadow: 2px 2px 5px rgba(0,0,0,0.15);
+                    }}
+
+                    table {{ width: 100%; border-collapse: collapse; margin-top: 6px; background-color: rgba(255, 255, 255, 0.85); }} 
+                    th {{ border: 1px solid #8B0000; padding: 3px; font-size: 11px; background: #8B0000; color: #FFF8DC; text-align: center; font-weight: bold; }}
+                    td {{ border: 1px solid #c2b292; padding: 3px; font-size: 11.5px; height: 20px; word-break: break-word; vertical-align: middle; color: #1a1a1a; }} 
+                    .main-title {{ text-align: center; font-size: 15px; font-weight: bold; color: #8B0000; margin-top: 2px; margin-bottom: 1px; text-transform: uppercase; letter-spacing: 1.5px; }}
+                    .sub-title {{ text-align: center; font-size: 9.5px; font-style: italic; color: #555; margin-bottom: 3px; }}
+                    .doi-header {{ background: #F4EBD0; color: #8B0000; border: 1.5px solid #8B0000; font-weight: bold; text-align: center; font-size: 12px; letter-spacing: 2px; padding: 3px; text-transform: uppercase; }}
+                    .empty-row td {{ color: transparent; border: 1px solid #c2b292; background-color: rgba(255,255,255,0.2); }}
+                </style></head><body>"""
+                
+                html_report += f"""<div class="cover-image-container">"""
+                if not cover_image_base64:
+                    html_report += f"""<div style="color: #FFD700; font-size: 16px; font-family: 'Times New Roman', serif; padding: 20px; text-align: center; margin: auto;">[Chưa có ảnh bìa. Vui lòng chọn tệp ảnh bìa từ giao diện]</div>"""
+                html_report += f"""</div>"""
+
+                stt_in = 1
+                last_rendered_gen = None
+                actual_page_counter = 2
+                tree_image_rendered = False
+
+                for chunk in page_chunks:
+                    # 🟢 Xử lý Trang Trống (TÍCH HỢP DÁN ẢNH THÔNG MINH)
+                    if isinstance(chunk, tuple) and chunk[0] == "BLANK_PAGE_PLACEHOLDER":
+                        page_str = f"{actual_page_counter:02d}"
+                        
+                        if tree_image_base64 and not tree_image_rendered:
+                            html_report += f"""<div class="page-container" style="display: flex; flex-direction: column; background: #FFFDF9; padding: 10px; padding-top: 35px; padding-bottom: 15px;">
+                                <div class="page-number-badge">{page_str}</div>
+                                <div style="flex: 1; width: 100%; position: relative;">
+                                    <img src="{tree_image_base64}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; margin: 0 auto; transform: scaleY(1.2); transform-origin: center;">
+                                </div>
+                            </div>"""
+                            tree_image_rendered = True
+                        else:
+                            html_report += f"""<div class="page-container" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: #FFFEFA;">
+                                <div class="page-number-badge">{page_str}</div>
+                                <div style="font-size: 15px; font-style: italic; color: #777; border: 2px dashed #b0a080; padding: 40px 60px; border-radius: 8px; background: rgba(255,255,255,0.6);">
+                                    📄 [TRANG TRỐNG DÀNH ĐỂ DÁN HÌNH ẢNH / TƯ LIỆU THỦ CÔNG]
+                                </div>
+                            </div>"""
+                        actual_page_counter += 1
+                        continue
+
+                    # 🟢 Xử lý Trang Sơ Đồ Cấu Hình
+                    if isinstance(chunk, tuple) and chunk[0] == "TREE_PAGE_PLACEHOLDER":
+                        page_str = f"{actual_page_counter:02d}"
+                        
+                        if tree_image_base64 and not tree_image_rendered:
+                            html_report += f"""<div class="page-container" style="display: flex; flex-direction: column; background: #FFFDF9; padding: 10px; padding-top: 35px; padding-bottom: 15px;">
+                                <div class="page-number-badge">{page_str}</div>
+                                <div style="flex: 1; width: 100%; position: relative;">
+                                    <img src="{tree_image_base64}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; margin: 0 auto; transform: scaleY(1.2); transform-origin: center;">
+                                </div>
+                            </div>"""
+                            tree_image_rendered = True
+                        else:
+                            rule_info = chunk[1]
+                            display_content = generate_tree_html(rule_info["id"], rule_info["before"], rule_info["after"])
+                            html_report += f"""<div class="page-container" style="display: flex; flex-direction: column; justify-content: flex-start; align-items: center; text-align: center; background: #FFFDF9;">
+                                <div class="page-number-badge">{page_str}</div>
+                                <div style="width: 100%; min-height: 184mm; height: auto; display: flex; align-items: center; justify-content: center; border: 1.5px dashed #8B0000; border-radius: 5px; box-sizing: border-box; overflow: hidden; background: #FFFEFA; padding: 2px;">
+                                    {display_content}
+                                </div>
+                            </div>"""
+                        actual_page_counter += 1
+                        continue
+
+                    page_idx = actual_page_counter
+                    html_report += f"""<div class="page-container">"""
+                    
+                    page_str = f"{page_idx:02d}"
+                    html_report += f"""<div class="page-number-badge">{page_str}</div>"""
+                    html_report += f"""<div class="watermark-draft">BẢN NHÁP</div>"""
+                    html_report += f"""<h2 class="main-title">DÒNG HỌ TỪ XUÂN LỘC - PHẢ HỆ ĐỊNH DANH</h2>"""
+                    html_report += f"""<div class="sub-title">Lưu giữ huyết mạch dòng tộc — Trân trọng kính dâng tiên tổ</div>"""
+                    
+                    # 🟢 CHÈN CỘT TÌNH TRẠNG SAU CÙNG (WIDTH = 7%) VÀ BẢO LƯU 100% CẤU TRÚC / CHÚ THÍCH GỐC
+                    html_report += f"""<table><thead><tr>
+                        <th style="width: 4%;">STT</th>
+                        <th style="width: 9%;">Mã Định Danh</th>
+                        <th style="width: 11%;">Họ Tên</th>
+                        <th style="width: 7%;">Tên Tự</th>
+                        <th style="width: 12%;">Vợ/Chồng</th>
+                        <th style="width: 5%;">Năm Sinh</th>
+                        <th style="width: 5%;">Năm Mất</th>
+                        <th style="width: 6%;">Ngày Giỗ</th>
+                        <th style="width: 34%;">Ghi Chú</th>
+                        <th style="width: 7%;">Tình Trạng</th>
+                    </tr></thead><tbody>"""
+                    
+                    for r in chunk:
+                        if r is None:
+                            html_report += f"""<tr class="empty-row">
+                                <td style="text-align:center;">&nbsp;</td>
+                                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                            </tr>"""
+                        else:
+                            curr_gen_title = get_gen_title(r)
+                            if curr_gen_title != last_rendered_gen:
+                                html_report += f"""<tr><td colspan="10" class="doi-header">📜 {curr_gen_title}</td></tr>"""
+                                last_rendered_gen = curr_gen_title
+                            
+                            ten_tu_fmt = format_multiline(r.get('TenTu', ''))
+                            vo_chong_fmt = format_vo_chong(r.get('VoChong', ''), r.get('GioiTinh', 'Nam'))
+                            
+                            html_report += f"""<tr>
+                                <td style="text-align:center; font-weight: bold; color: #8B0000;">{stt_in}</td>
+                                <td style="text-align:center; font-family: monospace; font-size: 11px; white-space: nowrap; color: #333;">{r.get('ID', '')}</td>
+                                <td><b style="color: #8B0000; font-size: 12.5px;">{r.get('HoTen', '')}</b></td>
+                                <td>{ten_tu_fmt}</td>
+                                <td>{vo_chong_fmt}</td>
+                                <td style="text-align:center;">{r.get('NamSinh', '')}</td>
+                                <td style="text-align:center;">{r.get('NamMat', '')}</td>
+                                <td style="text-align:center; font-weight: bold; color: #700;">{r.get('NgàyGiỗ') if 'NgàyGiỗ' in r else r.get('NgayGio', '')}</td>
+                                <td>{r.get('GhiChu', '')}</td>
+                                <td style="text-align:center; font-size: 10px;">{r.get('TinhTrang', '')}</td>
+                            </tr>"""
+                            stt_in += 1
+
+                    html_report += "</tbody></table></div>"
+                    actual_page_counter += 1
+
+                html_report += "<script>window.print();</script></body></html>"
+
+                components.html(html_report, height=650, scrolling=True)
+
+
+
+
+        # ==============================================================
+        # 4. KHU VỰC XUẤT FILE ẢNH PHẢ ĐỒ (LỌC THEO ID - BẢN WORD NGANG)
+        # ==============================================================
+        with tab_phado:
+            st.markdown("#### 🖼️ Xuất ảnh Phả đồ (Khổ ngang)")
+            st.caption("Hệ thống sẽ trích xuất đồ họa phả đồ theo trục Cội nguồn (đời trên) và Tỏa nhánh (đời dưới) của nhân vật được chọn, sau đó chèn vào file Word A4 hướng nằm ngang.")
+            
+            c_id1, c_id2 = st.columns([1.5, 1.5])
+            with c_id1:
+                nhap_tim_kiem = st.text_input(
+                    "🎯 Nhập Mã định danh hoặc Họ tên:", 
+                    value="000.01.0.001", 
+                    placeholder="Ví dụ: 000.01.0.001 hoặc Từ Dương Đốc",
+                    key="input_phado_id"
+                )
+            with c_id2:
+                che_do_nhan = st.selectbox(
+                    "Chế độ hiển thị nhãn đồ họa:", 
+                    [
+                        "1. Chỉ Đinh Nam (Gọn: Tên ⑦)", 
+                        "2. Chỉ Đinh Nam (Đủ: Họ Và Tên)", 
+                        "3. Chỉ Đinh Nam (Đủ vợ và chồng)", 
+                        "4. Cả Nam & Nữ (Đủ: Chồng, Vợ, Con)"
+                    ], 
+                    index=2, 
+                    key="sel_phado_chedo"
+                )
+
+            # --- KHU VỰC CẤU HÌNH SỐ ĐỜI VÀ CÔNG TẮC NỀN ---
+            st.markdown("##### ⚙️ Cấu hình số đời & Chế độ nền:")
+            col_tren, col_duoi, col_nen = st.columns([1, 1, 1.5])
+            with col_tren:
+                so_doi_tren = st.selectbox(
+                    "Đời trên (Tổ tiên truy ngược):", 
+                    ["Tất cả"] + list(range(1, 11)), 
+                    index=0, 
+                    key="sel_phado_doi_tren"
+                )
+            with col_duoi:
+                so_doi_duoi = st.selectbox(
+                    "Đời dưới (Hậu duệ tỏa nhánh):", 
+                    ["Tất cả"] + list(range(1, 11)), 
+                    index=0, 
+                    key="sel_phado_doi_duoi"
+                )
+            with col_nen:
+                st.write("Chế độ nền ảnh (Tối ưu cho Canva):")
+                nen_trong_suot = st.toggle("Loại bỏ nền (Nền trong suốt)", value=False, key="toggle_trong_suot")
+
+            # Thuật toán tự động nhận diện thành viên
+            target_id_chon = ""
+            ten_thanh_vien = ""
+            chuoi_nhap = nhap_tim_kiem.strip()
+
+            if chuoi_nhap:
+                nhap_loc_cham = chuoi_nhap.replace(".", "")
+                df_temp = df_app.copy()
+                df_temp['ID_Raw'] = df_temp['ID'].str.replace(".", "", regex=False)
+                khop_id = df_temp[df_temp["ID_Raw"] == nhap_loc_cham]
+                
+                if not khop_id.empty:
+                    target_id_chon = str(khop_id.iloc[0]['ID'])
+                    ten_thanh_vien = khop_id.iloc[0]['HoTen']
+                    st.success(f"📌 Đã chọn: **{ten_thanh_vien}** (Mã: `{target_id_chon}` — Đời thứ {khop_id.iloc[0]['DoiThu']})")
+                else:
+                    def chuan_hoa(txt):
+                        return str(txt).strip().lower().replace("oà", "òa").replace("ùy", "uỳ").replace("úy", "uý")
+
+                    nhap_ten = chuan_hoa(chuoi_nhap)
+                    df_temp['HoTen_Lower'] = df_temp['HoTen'].apply(chuan_hoa)
+                    khop_ten = df_temp[df_temp['HoTen_Lower'] == nhap_ten]
+                    
+                    if len(khop_ten) == 1:
+                        target_id_chon = str(khop_ten.iloc[0]["ID"])
+                        ten_thanh_vien = khop_ten.iloc[0]['HoTen']
+                        st.success(f"📌 Đã chọn: **{ten_thanh_vien}** (Mã: `{target_id_chon}` — Đời thứ {khop_ten.iloc[0]['DoiThu']})")
+                    elif len(khop_ten) > 1:
+                        danh_sach_trung = {f"{r['HoTen']} (Mã: {r['ID']} - Đời {r['DoiThu']})": r['ID'] for _, r in khop_ten.iterrows()}
+                        chon_nguoi = st.selectbox("⚠️ Phát hiện trùng tên, vui lòng chọn cụ thể:", list(danh_sach_trung.keys()), key="dup_phado")
+                        target_id_chon = danh_sach_trung[chon_nguoi]
+                        ten_thanh_vien = khop_ten[khop_ten['ID'] == target_id_chon].iloc[0]['HoTen']
+                    else:
+                        st.warning(f"❌ Không tìm thấy thành viên nào có tên hoặc mã: '{chuoi_nhap}'")
+
+            # --- VINH DANH NHÂN VẬT ĐIỂN HÌNH (HỖ TRỢ NHIỀU TÊN) ---
+            st.markdown("##### 🌟 Vinh danh Nhân vật điển hình (Có thể nhập nhiều tên, cách nhau bởi dấu phẩy):")
+            nhap_dien_hinh = st.text_input("Nhập Mã định danh hoặc Họ tên (Ví dụ: Từ Hữu Dực, Từ Hữu Lạng):", key="input_hl_names")
+            
+            highlight_ids_chon = []
+            if nhap_dien_hinh.strip():
+                # Tách các từ khóa theo dấu phẩy
+                keywords = [k.strip() for k in nhap_dien_hinh.split(',') if k.strip()]
+                for kw in keywords:
+                    kw_clean = kw.replace(".", "")
+                    # Tìm theo ID
+                    khop_id = df_app[df_app['ID'].str.replace(".", "", regex=False) == kw_clean]
+                    if not khop_id.empty:
+                        highlight_ids_chon.extend(khop_id['ID'].tolist())
+                    else:
+                        # Tìm theo Tên
+                        khop_ten = df_app[df_app['HoTen'].str.lower().str.contains(kw.lower(), na=False)]
+                        if not khop_ten.empty:
+                            highlight_ids_chon.extend(khop_ten['ID'].tolist())
+                # Lọc bỏ các ID trùng lặp nếu có
+                highlight_ids_chon = list(set(highlight_ids_chon))
+
+            st.write("")
+
+            # Nút bấm khởi tạo, xem trước và đóng gói file
+            if st.button("🚀 Khởi tạo Phả đồ & Xem trước", type="primary", key="btn_xuat_phado_word"):
+                if not target_id_chon:
+                    st.error("Vui lòng xác định chính xác thành viên trước khi xuất file!")
+                else:
+                    try:
+                        from docx import Document
+                        from docx.enum.section import WD_ORIENT
+                        from docx.shared import Inches, Pt, RGBColor
+                        from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+                        import io
+                        import base64
+                        
+                        # Khởi tạo trang Word khổ A4 nằm ngang
+                        doc_pd = Document()
+                        sec = doc_pd.sections[-1]
+                        w_goc, h_goc = sec.page_height, sec.page_width
+                        sec.orientation = WD_ORIENT.LANDSCAPE
+                        sec.page_width = w_goc
+                        sec.page_height = h_goc
+                        
+                        # Căn lề hẹp để sơ đồ bung rộng tối đa
+                        sec.top_margin = Inches(0.4)
+                        sec.bottom_margin = Inches(0.4)
+                        sec.left_margin = Inches(0.4)
+                        sec.right_margin = Inches(0.4)
+                        
+                        # Tiêu đề trang trọng
+                        p_tieu_de = doc_pd.add_paragraph()
+                        p_tieu_de.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                        p_tieu_de.paragraph_format.space_after = Pt(2)
+                        run_td = p_tieu_de.add_run("PHẢ ĐỒ TRỤC CỘI NGUỒN & TỎA NHÁNH")
+                        run_td.bold = True
+                        run_td.font.size = Pt(16)
+                        run_td.font.color.rgb = RGBColor(139, 0, 0)
+                        run_td.font.name = 'Times New Roman'
+                        
+                        p_phu = doc_pd.add_paragraph()
+                        p_phu.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                        p_phu.paragraph_format.space_after = Pt(8)
+                        run_phu = p_phu.add_run(
+                            f"Nhân vật trung tâm: {ten_thanh_vien} (Mã: {target_id_chon}) | "
+                            f"Số đời trên: {so_doi_tren} | Số đời dưới: {so_doi_duoi}"
+                        )
+                        run_phu.italic = True
+                        run_phu.font.size = Pt(11)
+                        run_phu.font.color.rgb = RGBColor(100, 100, 100)
+                        run_phu.font.name = 'Times New Roman'
+                        
+                        # Vẽ sơ đồ qua Graphviz
+                        with st.spinner("Đang kết xuất đồ họa phả hệ chất lượng cao (300 DPI)..."):
+                            graph_obj = KyThuatBanVeGiaPha.draw_family_tree(
+                                df_app,
+                                target_id=target_id_chon,
+                                che_do_xem=che_do_nhan,
+                                so_doi_tren=so_doi_tren,
+                                so_doi_duoi=so_doi_duoi,
+                                highlight_ids=highlight_ids_chon
+                            )
+                            graph_obj.attr(dpi='300')
+                            
+                            # 🟢 XỬ LÝ LỆNH NỀN TRONG SUỐT
+                            if nen_trong_suot:
+                                graph_obj.attr(bgcolor='transparent')
+                            else:
+                                graph_obj.attr(bgcolor='white')
+                                
+                            png_bytes = graph_obj.pipe(format='png')
+                            img_io = io.BytesIO(png_bytes)
+                        
+                        # --- HIỂN THỊ BẢN XEM TRƯỚC (PRINT PREVIEW) ---
+                        st.markdown("---")
+                        st.markdown("##### 👁️ BẢN XEM TRƯỚC SƠ ĐỒ (PRINT PREVIEW)")
+                        
+                        # Hiệu ứng UI: Nếu chọn nền trong suốt, hiện nền caro xám để dễ nhận diện
+                        if nen_trong_suot:
+                            st.caption("Ảnh đang ở chế độ **Trong suốt**. (Hiển thị nền caro giả lập bên dưới). Rất thích hợp để mang sang Canva ghép cảnh!")
+                            st.markdown(
+                                f'''<div style="background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/ENF5/P//P8OogRwMNPGAuBwQBAA0Yx/1f/2qTAAAAABJRU5ErkJggg=='); border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
+                                    <img src="data:image/png;base64,{base64.b64encode(png_bytes).decode()}" style="width: 100%;">
+                                </div>''', 
+                                unsafe_allow_html=True
+                            )
+                        else:
+                            st.caption("Ảnh đang ở chế độ **Nền trắng tiêu chuẩn**.")
+                            img_io.seek(0) 
+                            st.image(img_io, use_container_width=True)
+                            
+                        st.markdown("---")
+                        
+                        # Chèn ảnh sơ đồ vào Word
+                        img_io.seek(0) 
+                        p_anh = doc_pd.add_paragraph()
+                        p_anh.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                        p_anh.add_run().add_picture(img_io, width=Inches(10.5))
+                        
+                        # Lưu file Word
+                        mem_file = io.BytesIO()
+                        doc_pd.save(mem_file)
+                        word_bytes = mem_file.getvalue()
+                        
+                        st.success(f"✅ Đã xử lý thành công dữ liệu đồ họa cho: {ten_thanh_vien}!")
+                        
+                        # 🟢 CUNG CẤP 2 NÚT TẢI: VỪA TẢI WORD VỪA TẢI ẢNH GỐC ĐỂ DÙNG TRÊN CANVA
+                        st.markdown("👇 **Vui lòng chọn định dạng file muốn tải về:**")
+                        col_dl1, col_dl2 = st.columns(2)
+                        with col_dl1:
+                            st.download_button(
+                                label=f"📄 TẢI BẢN IN WORD (.docx)",
+                                data=word_bytes,
+                                file_name=f"Pha_Do_{target_id_chon.replace('.', '_')}_{ten_thanh_vien}.docx",
+                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                use_container_width=True
+                            )
+                        with col_dl2:
+                            st.download_button(
+                                label=f"🖼️ TẢI ẢNH GỐC (.png)",
+                                data=png_bytes,
+                                file_name=f"Pha_Do_{target_id_chon.replace('.', '_')}_{ten_thanh_vien}.png",
+                                mime="image/png",
+                                use_container_width=True
+                            )
+                    except Exception as err:
+                        st.error(f"Đã xảy ra lỗi khi tạo file: {err}")
+
+
+    #=====================================================================
+    # [PHÂN LÔ E9]: Hàm con render màn hình Mở Rộng Tiện Ích
+    #=====================================================================
+    @staticmethod
+    def render_morong():
+        st.markdown('<h2 class="desktop-view" style="font-size: 1.3rem; font-weight: bold;">🌟 Phần mở rộng tiện ích dòng họ</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="mobile-view" style="font-size: 1.2rem; font-weight: bold;">🌟 Tiện ích mở rộng</h2>', unsafe_allow_html=True)
+        
+        menu_mo_rong = st.selectbox(
+            "👉 Kính mời bà con chọn tiện ích:",
+            [
+                "1. 📰 Trang tin & Hoạt động Dòng họ",
+                "2. 📊 Bảng vàng Công đức & Khuyến học",
+                "3. 📜 Thư viện Di sản (Bài cúng, Gia phả gốc)",
+                "4. 💬 Sổ vàng (Ý kiến & Lời tri ân)",
+                "5. 🗺️ Bản đồ Không gian Tâm linh & Lăng mộ (VR 360°)",
+            ]
+        )
+        
+        st.markdown("---")
+        
+        # ---------------------------------------------------------
+        # MỤC 1: TRANG TIN & HOẠT ĐỘNG DÒNG HỌ
+        # ---------------------------------------------------------
+        if "1." in menu_mo_rong:
+            # Tiêu đề tương thích đa nền tảng
+            st.markdown('<h3 class="desktop-view" style="color: #0056b3; font-weight: bold;">📰 Trang Tin & Hoạt Động Dòng Họ Từ Xuân Lộc</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 class="mobile-view" style="color: #0056b3; font-size: 1.15rem; font-weight: bold;">📰 Trang Tin & Hoạt Động</h3>', unsafe_allow_html=True)
+            st.write("Nơi cập nhật các thông báo quan trọng, lịch giỗ chạp và vinh danh các hoạt động đóng góp, khuyến học của dòng tộc.")
+            
+            tin_tuc_dong_ho = [
+                {
+                    "Loai": "Sự kiện sắp tới",
+                    "Ngay": "10/03 Âm lịch (Sắp tới)",
+                    "TieuDe": "📢 Thông báo Lễ Tế Tổ và họp mặt toàn dòng họ",
+                    "NoiDung": "Kính báo toàn thể bà con nội ngoại. Năm nay lễ Tế Tổ sẽ được tổ chức trọng thể tại Nhà thờ họ ở Xóm Văn Xuân, xã Xuân Lộc. Kính mời bà con sắp xếp thời gian về dự để thắt chặt tình đoàn kết dòng tộc.",
+                    "HinhAnh": "" 
+                },
+                {
+                    "Loai": "Tin tức",
+                    "Ngay": "Tháng 08/2026",
+                    "TieuDe": "🎓 Trao phần thưởng Khuyến học cho các cháu đỗ Đại học",
+                    "NoiDung": "Hội đồng gia tộc đã tổ chức tuyên dương và trích Quỹ Khuyến học trao thưởng cho các cháu đỗ Đại học điểm cao năm nay. Mong các cháu tiếp tục phát huy truyền thống hiếu học khoa bảng vẻ vang của dòng Họ Từ.",
+                    "HinhAnh": ""
+                },
+                {
+                    "Loai": "Tin tức",
+                    "Ngay": "Tháng 02/2026",
+                    "TieuDe": "🛠️ Hoàn thành tu bổ khuôn viên Khu lăng mộ",
+                    "NoiDung": "Nhờ sự chung tay đóng góp tịnh tài, tịnh vật của bà con con cháu thập phương, khuôn viên lăng mộ các bậc Tiên tổ đã được lát gạch và xây bờ bao khang trang, sạch đẹp. Xin ghi nhận công đức của toàn thể bà con.",
+                    "HinhAnh": ""
+                }
+            ]
+
+            tab_sukien, tab_tintuc = st.tabs(["🗓️ Sự kiện sắp diễn ra", "📌 Tin tức hoạt động"])
+            
+            with tab_sukien:
+                su_kien_sap_toi = [tin for tin in tin_tuc_dong_ho if tin["Loai"] == "Sự kiện sắp tới"]
+                if su_kien_sap_toi:
+                    for sk in su_kien_sap_toi:
+                        st.error(f"### {sk['TieuDe']}")
+                        st.write(f"🕒 **Thời gian:** {sk['Ngay']}")
+                        st.write(f"📝 **Nội dung:** {sk['NoiDung']}")
+                        if sk['HinhAnh']:
+                            try: st.image(sk['HinhAnh'], use_container_width=True)
+                            except: pass
+                        st.button("🔔 Đăng ký tham gia / Nhắc lịch", key=f"btn_sk_{sk['TieuDe']}")
+                        st.markdown("---")
+                else:
+                    st.success("Hiện tại chưa có sự kiện nào sắp diễn ra.")
+
+            with tab_tintuc:
+                tin_tuc_cu = [tin for tin in tin_tuc_dong_ho if tin["Loai"] == "Tin tức"]
+                if tin_tuc_cu:
+                    for tin in tin_tuc_cu:
+                        with st.expander(f"[{tin['Ngay']}] {tin['TieuDe']}", expanded=True):
+                            st.write(tin['NoiDung'])
+                            if tin['HinhAnh']:
+                                try: st.image(tin['HinhAnh'], use_container_width=True)
+                                except: pass
+                else:
+                    st.write("Chưa có bản tin nào được cập nhật.")
+
+        # ---------------------------------------------------------
+        # MỤC 2: BẢNG VÀNG CÔNG ĐỨC & KHUYẾN HỌC
+        # ---------------------------------------------------------
+        elif "2." in menu_mo_rong:
+            st.markdown('<h3 class="desktop-view" style="color: #8B0000; font-weight: bold;">📊 Bảng Vàng Công Đức & Khuyến Học</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 class="mobile-view" style="color: #8B0000; font-size: 1.15rem; font-weight: bold;">📊 Công Đức & Khuyến Học</h3>', unsafe_allow_html=True)
+            st.write("Nơi lưu danh và tri ân những tấm lòng vàng đóng góp xây dựng dòng họ, cùng các tấm gương hiếu học xuất sắc.")
+
+            du_lieu_bang_vang = {
+                "cong_duc": [
+                    {"Nam": "2026", "NguoiGop": "Gia đình ông Từ ............", "SoTien_HienVat": "50.000.000 VNĐ", "GhiChu": "Trùng tu khuôn viên lăng mộ"},
+                    {"Nam": "2026", "NguoiGop": "Ông Từ Hữu ...........", "SoTien_HienVat": "Cặp lục bình đá nguyên khối", "GhiChu": "Cung tiến Nhà thờ Tổ"},
+                    {"Nam": "2025", "NguoiGop": "Tập thể con cháu Chi ........", "SoTien_HienVat": "120.000.000 VNĐ", "GhiChu": "Đóng góp Quỹ Khuyến học họ Từ"}
+                ],
+                "khuyen_hoc": [
+                    {"Nam": "2026", "NguoiNhan": "Cháu Từ Hữu ...........", "ThanhTich": "Đậu Đại học Bách Khoa Hà Nội", "PhanThuong": "Giấy khen & 5.000.000 VNĐ"},
+                    {"Nam": "2026", "NguoiNhan": "Cháu Từ Hữu ...........", "ThanhTich": "Giải Nhất học sinh giỏi cấp Tỉnh", "PhanThuong": "Giấy khen & 2.000.000 VNĐ"},
+                    {"Nam": "2025", "NguoiNhan": "Cháu Từ Hữu ...........", "ThanhTich": "Đạt danh hiệu Học sinh giỏi Xuất sắc", "PhanThuong": "Sách vở & 500.000 VNĐ"}
+                ]
+            }
+
+            tab_cd, tab_kh = st.tabs(["💰 Ghi nhận Công đức", "🎓 Tuyên dương Khuyến học"])
+
+            with tab_cd:
+                for item in du_lieu_bang_vang["cong_duc"]:
+                    html_card = f"""
+                    <div class="desktop-view" style="background: linear-gradient(to right, #FFF8DC, #FFFFFF); border-left: 6px solid #DAA520; padding: 15px 20px; margin-bottom: 12px; border-radius: 6px; box-shadow: 1px 2px 5px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 2;">
+                            <span style="font-size: 1.15rem; font-weight: bold; color: #8B0000;">{item['NguoiGop']}</span><br>
+                            <span style="color: #444; font-size: 1rem;">📍 Mục đích: {item['GhiChu']} (Ghi nhận năm: {item['Nam']})</span>
+                        </div>
+                        <div style="flex: 1; text-align: right;">
+                            <span style="font-size: 1.25rem; font-weight: bold; color: #B8860B; background: #FFF; padding: 5px 15px; border-radius: 20px; border: 1px solid #EEE;">🎁 {item['SoTien_HienVat']}</span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-view" style="background: #FFFDF0; border-top: 4px solid #DAA520; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                        <div style="font-weight: bold; color: #8B0000; font-size: 1.1rem; margin-bottom: 8px;">👤 {item['NguoiGop']}</div>
+                        <div style="color: #B8860B; font-weight: bold; font-size: 1.15rem; margin-bottom: 8px;">🎁 {item['SoTien_HienVat']}</div>
+                        <div style="color: #555; font-size: 0.95rem; margin-bottom: 4px;">📍 {item['GhiChu']}</div>
+                        <div style="color: #888; font-size: 0.85rem; font-style: italic;">⏳ Năm: {item['Nam']}</div>
+                    </div>
+                    """
+                    st.markdown(html_card, unsafe_allow_html=True)
+                st.button("✍️ Đăng ký cung tiến / Đóng góp", key="btn_cungtien", use_container_width=True)
+
+            with tab_kh:
+                for item in du_lieu_bang_vang["khuyen_hoc"]:
+                    html_card = f"""
+                    <div class="desktop-view" style="background: linear-gradient(to right, #F0F8FF, #FFFFFF); border-left: 6px solid #4682B4; padding: 15px 20px; margin-bottom: 12px; border-radius: 6px; box-shadow: 1px 2px 5px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 2;">
+                            <span style="font-size: 1.15rem; font-weight: bold; color: #000080;">🎓 {item['NguoiNhan']}</span><br>
+                            <span style="color: #444; font-size: 1rem;">🏆 Thành tích: {item['ThanhTich']} (Năm: {item['Nam']})</span>
+                        </div>
+                        <div style="flex: 1; text-align: right;">
+                            <span style="font-size: 1.1rem; font-weight: bold; color: #D2691E; background: #FFF; padding: 5px 15px; border-radius: 20px; border: 1px solid #EEE;">🏅 {item['PhanThuong']}</span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-view" style="background: #F8FBFF; border-top: 4px solid #4682B4; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                        <div style="font-weight: bold; color: #000080; font-size: 1.1rem; margin-bottom: 8px;">🎓 {item['NguoiNhan']}</div>
+                        <div style="color: #444; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px;">🏆 {item['ThanhTich']}</div>
+                        <div style="color: #D2691E; font-size: 1rem; font-weight: bold; margin-bottom: 4px;">🏅 Thưởng: {item['PhanThuong']}</div>
+                        <div style="color: #888; font-size: 0.85rem; font-style: italic;">⏳ Năm: {item['Nam']}</div>
+                    </div>
+                    """
+                    st.markdown(html_card, unsafe_allow_html=True)
+                st.button("📝 Cập nhật bảng điểm / Thành tích", key="btn_khuyenhoc", use_container_width=True)
+
+
+        # ---------------------------------------------------------
+        # MỤC 3: THƯ VIỆN DI SẢN (BÀI CÚNG, GIA PHẢ GỐC, TÀI LIỆU THAM KHẢO)
+        # ---------------------------------------------------------
+        elif "3." in menu_mo_rong:
+            st.markdown('<h3 class="desktop-view" style="color: #8B4513; font-weight: bold;">📜 Thư Viện Di Sản & Văn Tế Truyền Thống</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 class="mobile-view" style="color: #8B4513; font-size: 1.15rem; font-weight: bold;">📜 Thư Viện Di Sản</h3>', unsafe_allow_html=True)
+            st.write("Nơi lưu trữ, bảo tồn và truyền tụng các tài liệu quý giá, sắc phong, phổ ký, các bài cúng giỗ chuẩn mực và tài liệu tham khảo chéo của dòng họ.")
+
+            # ==========================================
+            # 🔌 Ổ CẮM DỮ LIỆU THƯ VIỆN DI SẢN (Hỗ trợ cả xem text và đính kèm file PDF)
+            # ==========================================
+            thu_vien_di_san = {
+                "bai_cung": [
+                    {
+                        "TieuDe": "Bài văn khấn Lễ Tế Tổ Dòng Họ",
+                        "DoiTuong": "Đọc tại Nhà thờ họ vào ngày giỗ Tổ",
+                        "NoiDung": "Duy Việt Nam quốc, Hà Tĩnh tỉnh, Can Lộc huyện, Xuân Lộc xã...\n\nHôm nay là ngày... tháng... năm...\nToàn thể con cháu nội ngoại dòng Họ Từ Xuân Lộc tề tựu chắp tay kính bái...\n\n(Nội dung hiển thị trực tiếp trên web)",
+                        "LinkOnline": "", 
+                        "FilePDF": "tailieu/bai_cung_te_to.pdf" # 👈 Tùy chọn: Bỏ file PDF vào thư mục tailieu
+                    },
+                    {
+                        "TieuDe": "Bài khấn Cúng Gia Tiên ngày Lễ Tết",
+                        "DoiTuong": "Dùng chung cho các gia đình con cháu",
+                        "NoiDung": "Hôm nay là ngày Mùng 1 tháng Giêng năm...\nTín chủ con là: [Tên gia chủ]\nNgụ tại: [Địa chỉ]\n\nKính cẩn thưa trình tiên tổ...",
+                        "LinkOnline": "",
+                        "FilePDF": "" 
+                    }
+                ],
+                "tai_lieu": [
+                    {
+                        "TieuDe": "Bản dịch Phổ ký Đại tôn họ Từ",
+                        "Loai": "Phổ ký - Gia phả (File PDF)",
+                        "TomTat": "Bản dịch sang chữ Quốc ngữ từ cuốn gia phả chữ Hán cổ do các bậc tiền bối để lại, ghi chép lại nguồn gốc cội nguồn dòng họ từ đời Khởi tổ.",
+                        "LinkOnline": "", 
+                        "FilePDF": "tailieu/ban_dich_gia_pha.pdf" 
+                    },
+                    {
+                        "TieuDe": "Sắc phong thời vua Thành Thái",
+                        "Loai": "Sắc phong (Bản chụp PDF/JPG)",
+                        "TomTat": "Hình ảnh bản sắc phong vua ban truy tặng cho các cụ Tổ có công lao hiển hách với triều đình và đất nước.",
+                        "LinkOnline": "https://drive.google.com/file/d/vi-du-link-nao-do/view",
+                        "FilePDF": "" 
+                    }
+                ],
+                "tai_lieu_tham_khao": [
+                    {
+                        "TieuDe": "Gia phả Chi 1 / Cửa Giáp",
+                        "Loai": "Tài liệu đối chiếu (File PDF)",
+                        "TomTat": "Tài liệu gia phả của nhánh Chi 1 thuộc Cửa Giáp dùng để con cháu tham khảo, đối chiếu thế thứ họ hàng.",
+                        "LinkOnline": "",
+                        "FilePDF": "tailieu/gia_pha_chi1_giap.pdf"
+                    },
+                    {
+                        "TieuDe": "Gia phả Đại tôn Cổ Kênh",
+                        "Loai": "Tài liệu tham khảo (Bản PDF)",
+                        "TomTat": "Tài liệu gốc lưu trữ tại quê tổ Cổ Kênh, Thạch Hà để tham chiếu nguồn gốc phát tích của dòng họ.",
+                        "LinkOnline": "",
+                        "FilePDF": ""
+                    }
+                ]
+            }
+
+            # 🟢 CHIA 3 TAB GỌN GÀNG
+            tab_baicung, tab_tailieu, tab_thamkhao = st.tabs(["🙏 Văn khấn & Bài cúng", "📚 Phổ ký & Sắc phong", "📑 Tài liệu tham khảo"])
+
+            with tab_baicung:
+                st.info("💡 Bấm vào tên bài khấn để mở rộng xem nội dung chi tiết. Có thể sao chép để in ra, đọc trên điện thoại hoặc tải file PDF gốc về.")
+                for idx_bc, item_bc in enumerate(thu_vien_di_san["bai_cung"]):
+                    with st.expander(f"📖 {item_bc['TieuDe']} ({item_bc['DoiTuong']})"):
+                        st.markdown(f"**Mục đích sử dụng:** *{item_bc['DoiTuong']}*")
+                        st.markdown("---")
+                        st.text(item_bc['NoiDung'])
+                        st.markdown("---")
+                        
+                        # Thêm hàng nút tải PDF cho Bài cúng
+                        col_bc1, col_bc2 = st.columns(2)
+                        with col_bc1:
+                            if item_bc.get("LinkOnline") and str(item_bc["LinkOnline"]).strip() != "":
+                                st.link_button("🌐 Xem trực tuyến (Drive/Web)", item_bc["LinkOnline"], key=f"btn_web_bc_{idx_bc}", use_container_width=True)
+                            else:
+                                st.button("🌐 Xem trực tuyến", disabled=True, key=f"btn_web_dis_bc_{idx_bc}", use_container_width=True)
+                                
+                        with col_bc2:
+                            file_path_bc = item_bc.get("FilePDF", "")
+                            if file_path_bc and os.path.exists(file_path_bc):
+                                with open(file_path_bc, "rb") as pdf_file_bc:
+                                    st.download_button(
+                                        label="📥 Tải File PDF Bài Cúng về máy",
+                                        data=pdf_file_bc,
+                                        file_name=os.path.basename(file_path_bc),
+                                        mime="application/pdf",
+                                        key=f"dl_pdf_bc_{idx_bc}",
+                                        use_container_width=True
+                                    )
+                            else:
+                                st.button("📥 Tải File PDF (Chưa có file)", disabled=True, key=f"btn_pdf_dis_bc_{idx_bc}", use_container_width=True)
+                        
+            with tab_tailieu:
+                for idx, item in enumerate(thu_vien_di_san["tai_lieu"]):
+                    html_card = f"""
+                    <div class="desktop-view" style="background: #FDF5E6; border-left: 5px solid #D2691E; padding: 15px; margin-bottom: 8px; border-radius: 6px;">
+                        <h4 style="margin:0; color: #8B4513;">{item['TieuDe']}</h4>
+                        <span style="font-size: 0.9em; color: #666;">🏷️ Phân loại: {item['Loai']}</span>
+                        <p style="margin: 8px 0; color: #333;">{item['TomTat']}</p>
+                    </div>
+                    
+                    <div class="mobile-view" style="background: #FDF5E6; border-top: 4px solid #D2691E; padding: 12px; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div style="font-weight: bold; color: #8B4513; font-size: 1.1rem; margin-bottom: 4px;">{item['TieuDe']}</div>
+                        <div style="font-size: 0.85em; color: #666; margin-bottom: 8px;">🏷️ {item['Loai']}</div>
+                        <div style="color: #333; font-size: 0.95em; margin-bottom: 8px;">{item['TomTat']}</div>
+                    </div>
+                    """
+                    st.markdown(html_card, unsafe_allow_html=True)
+                    
+                    col_btn1, col_btn2 = st.columns(2)
+                    with col_btn1:
+                        if item.get("LinkOnline") and str(item["LinkOnline"]).strip() != "":
+                            st.link_button("🌐 Xem trực tuyến (Drive/Web)", item["LinkOnline"], use_container_width=True)
+                        else:
+                            st.button("🌐 Xem trực tuyến", disabled=True, key=f"btn_web_dis_{idx}", use_container_width=True)
+                            
+                    with col_btn2:
+                        file_path = item.get("FilePDF", "")
+                        if file_path and os.path.exists(file_path):
+                            with open(file_path, "rb") as pdf_file:
+                                st.download_button(
+                                    label="📥 Tải File PDF về máy",
+                                    data=pdf_file,
+                                    file_name=os.path.basename(file_path),
+                                    mime="application/pdf",
+                                    key=f"dl_pdf_{idx}",
+                                    use_container_width=True
+                                )
+                        else:
+                            st.button("📥 Tải File PDF (Chưa có file)", disabled=True, key=f"btn_pdf_dis_{idx}", use_container_width=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+            with tab_thamkhao:
+                st.info("💡 Không gian lưu trữ các tài liệu, gia phả của các Chi/Phái khác hoặc dòng họ liên quan để đối chiếu, nghiên cứu.")
+                for idx_tk, item_tk in enumerate(thu_vien_di_san["tai_lieu_tham_khao"]):
+                    html_card_tk = f"""
+                    <div class="desktop-view" style="background: #F0F8FF; border-left: 5px solid #4682B4; padding: 15px; margin-bottom: 8px; border-radius: 6px;">
+                        <h4 style="margin:0; color: #000080;">{item_tk['TieuDe']}</h4>
+                        <span style="font-size: 0.9em; color: #666;">🏷️ Phân loại: {item_tk['Loai']}</span>
+                        <p style="margin: 8px 0; color: #333;">{item_tk['TomTat']}</p>
+                    </div>
+                    
+                    <div class="mobile-view" style="background: #F0F8FF; border-top: 4px solid #4682B4; padding: 12px; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div style="font-weight: bold; color: #000080; font-size: 1.1rem; margin-bottom: 4px;">{item_tk['TieuDe']}</div>
+                        <div style="font-size: 0.85em; color: #666; margin-bottom: 8px;">🏷️ {item_tk['Loai']}</div>
+                        <div style="color: #333; font-size: 0.95em; margin-bottom: 8px;">{item_tk['TomTat']}</div>
+                    </div>
+                    """
+                    st.markdown(html_card_tk, unsafe_allow_html=True)
+                    
+                    col_btn1_tk, col_btn2_tk = st.columns(2)
+                    with col_btn1_tk:
+                        if item_tk.get("LinkOnline") and str(item_tk["LinkOnline"]).strip() != "":
+                            st.link_button("🌐 Xem trực tuyến", item_tk["LinkOnline"], key=f"btn_web_tk_{idx_tk}", use_container_width=True)
+                        else:
+                            st.button("🌐 Xem trực tuyến", disabled=True, key=f"btn_web_dis_tk_{idx_tk}", use_container_width=True)
+                            
+                    with col_btn2_tk:
+                        file_path_tk = item_tk.get("FilePDF", "")
+                        if file_path_tk and os.path.exists(file_path_tk):
+                            with open(file_path_tk, "rb") as pdf_file_tk:
+                                st.download_button(
+                                    label="📥 Tải File PDF về máy",
+                                    data=pdf_file_tk,
+                                    file_name=os.path.basename(file_path_tk),
+                                    mime="application/pdf",
+                                    key=f"dl_pdf_tk_{idx_tk}",
+                                    use_container_width=True
+                                )
+                        else:
+                            st.button("📥 Tải File PDF (Chưa có file)", disabled=True, key=f"btn_pdf_dis_tk_{idx_tk}", use_container_width=True)
+                    st.markdown("<br>", unsafe_allow_html=True)     
+ 
+        # ---------------------------------------------------------
+        # MỤC 4: SỔ VÀNG (Ý KIẾN & LỜI TRI ÂN)
+        # ---------------------------------------------------------
+
+        elif "4." in menu_mo_rong:
+            st.markdown('<h3 class="desktop-view" style="color: #2E8B57; font-weight: bold;">💬 Sổ Vàng Gia Tộc (Ý Kiến & Lời Tri Ân)</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 class="mobile-view" style="color: #2E8B57; font-size: 1.15rem; font-weight: bold;">💬 Sổ Vàng Gia Tộc</h3>', unsafe_allow_html=True)
+            st.write("Không gian lưu giữ những dòng tâm tư, tình cảm, lời tri ân tiên tổ và các ý kiến đóng góp xây dựng dòng họ của con cháu khắp mọi miền.")
+
+            tab_doc, tab_viet = st.tabs(["📖 Xem Sổ Vàng", "✍️ Viết Lời Lưu Bút"])
+
+            with tab_doc:
+                if "danh_sach_so_vang" not in st.session_state:
+                    st.session_state.danh_sach_so_vang = [
+                        {"id": 101, "NguoiGui": "Kho_Chung_Cu_Nha_2", "Chi": "Chi 2/Ất (Xuân Lộc)", "Ngay": "12/10/2026", "NoiDung": "Cảm ơn Ban Quản trị đã tâm huyết xây dựng ứng dụng gia phả số hóa tuyệt vời này."},
+                        {"id": 102, "NguoiGui": "Cháu Từ ......", "Chi": "Hà Nội", "Ngay": "05/09/2026", "NoiDung": "Thế hệ trẻ chúng cháu rất tự hào về truyền thống dòng họ."},
+                        {"id": 103, "NguoiGui": "Bà Từ Thị ......", "Chi": "Đà Nẵng", "Ngay": "01/08/2026", "NoiDung": "Kính chúc dòng Họ Từ ngày càng hưng vượng, con cháu thành đạt."}
+                    ]
+                
+                so_vang_da_duyet = st.session_state.danh_sach_so_vang
+
+                if not so_vang_da_duyet:
+                    st.info("Cuốn Sổ vàng hiện đang chờ những lời tri ân đầu tiên từ bà con...")
+                else:
+                    is_config_admin = True  
+
+                    for item in so_vang_da_duyet:
+                        bai_id = item.get('id')
+                        nguoi_gui_val = item.get('NguoiGui')
+                        ngay_val = item.get('Ngay')
+                        chi_val = item.get('Chi')
+                        noi_dung_val = item.get('NoiDung')
+                        
+                        # Sử dụng f-string an toàn từng dòng, không bao bọc HTML cồng kềnh
+                        st.markdown(f"""
+                        <div class="desktop-view" style="background: #F5FFFA; border-left: 5px solid #2E8B57; padding: 15px; margin-bottom: 8px; border-radius: 6px; box-shadow: 1px 2px 4px rgba(0,0,0,0.05);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: bold; color: #2E8B57; font-size: 1.1rem;">👤 {nguoi_gui_val}</span>
+                                <span style="color: #888; font-size: 0.9rem;">🕒 {ngay_val}</span>
+                            </div>
+                            <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;">📍 Nơi ở / Chi phái: {chi_val}</div>
+                            <div style="color: #333; font-size: 1.05rem; font-style: italic; border-left: 3px solid #ddd; padding-left: 10px;">"{noi_dung_val}"</div>
+                        </div>
+                        
+                        <div class="mobile-view" style="background: #F5FFFA; border-top: 4px solid #2E8B57; padding: 12px; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <div style="font-weight: bold; color: #2E8B57; font-size: 1.05rem; margin-bottom: 4px;">👤 {nguoi_gui_val}</div>
+                            <div style="font-size: 0.85em; color: #888; margin-bottom: 4px;">🕒 {ngay_val} | 📍 {chi_val}</div>
+                            <div style="color: #333; font-size: 0.95em; margin-top: 8px; font-style: italic; border-left: 2px solid #ddd; padding-left: 8px;">"{noi_dung_val}"</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        if is_config_admin:
+                            if st.button(f"🗑️ Thu hồi bài này (ID: {bai_id})", key=f"del_sovang_{bai_id}"):
+                                st.session_state.danh_sach_so_vang = [b for b in st.session_state.danh_sach_so_vang if b['id'] != bai_id]
+                                st.rerun() 
+                        
+                        st.markdown("<br>", unsafe_allow_html=True)
+
+            with tab_viet:
+                st.info("📝 Nội dung sẽ được gửi thẳng về Ban Quản trị phê duyệt và tự động xóa khỏi biểu mẫu sau khi gửi thành công.")
+                
+                with st.form("form_so_vang", clear_on_submit=True):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        nguoi_gui = st.text_input("Họ và tên người gửi (*):", placeholder="Ví dụ: Từ Quang...")
+                    with col2:
+                        chi_phai = st.text_input("Chi phái / Nơi ở hiện tại:", placeholder="Ví dụ: Chi 2/Ất hoặc TP.HCM")
+                    
+                    noi_dung = st.text_area("Nội dung lưu bút (*):", placeholder="Nhập tâm tư, nguyện vọng hoặc ý kiến đóng góp của bà con...", height=120)
+                    
+                    submit_btn = st.form_submit_button("📤 Gửi Sổ Vàng", use_container_width=True)
+                    
+                    if submit_btn:
+                        if nguoi_gui.strip() == "" or noi_dung.strip() == "":
+                            st.warning("⚠️ Bà con vui lòng điền đầy đủ Họ tên và Nội dung!")
+                        else:
+                            import datetime
+                            ngay_hien_tai = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+                            
+                            try:
+                                token, chat_id = TelegramBotManager.get_bot_token_and_chat_id()
+                                if token and chat_id:
+                                    import requests
+                                    tin_nhan_bot = f"🔔 [SỔ VÀNG] LỜI NHẮN MỚI CHỜ DUYỆT!\n👤 Người gửi: {nguoi_gui}\n📍 Chi phái: {chi_phai}\n⏳ Thời gian: {ngay_hien_tai}\n💬 Nội dung: {noi_dung}"
+                                    url_tele = f"https://api.telegram.org/bot{token}/sendMessage"
+                                    payload = {"chat_id": chat_id, "text": tin_nhan_bot}
+                                    requests.post(url_tele, json=payload, timeout=5)
+                            except Exception:
+                                pass 
+                            
+                            st.success(f"✅ Đã gửi thành công! Xin cảm ơn {nguoi_gui}. Lời tri ân đang chờ Ban quản trị phê duyệt.")
+        # ---------------------------------------------------------
+        # MỤC 5: BẢN ĐỒ TÂM LINH & LĂNG MỘ
+        # ---------------------------------------------------------
+        elif "5." in menu_mo_rong:
+            # Lớp BanDoGiaToc đã tự động xử lý responsive tiêu đề bên trong hàm render_bando()
+            try:
+                BanDoGiaToc.render_bando()
+            except NameError:
+                st.error("⚠️ Lớp BanDoGiaToc chưa được định nghĩa hoặc chưa được nạp. Hãy đảm bảo ông chủ đã chèn Khối [PHÂN LÔ F] vào mã nguồn.")
+            
+
+
+
+
+    #=====================================================================
+    # [PHÂN LÔ E10]: Hướng dẫn sử dụng và Trợ lý ảo AI
+    #=====================================================================
+
+    @staticmethod
+    def render_huong_dan_va_ai(df):
+        st.markdown('<h3 class="desktop-view" style="color: #8B0000; font-weight: bold;">🤖 Trợ Lý AI & Cẩm Nang Dòng Họ</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="mobile-view" style="color: #8B0000; font-size: 1.15rem; font-weight: bold;">🤖 Trợ Lý AI & Cẩm Nang</h3>', unsafe_allow_html=True)
+        st.write("Trung tâm tra cứu cẩm nang vận hành và giao lưu cùng Trợ lý ảo thông thái dòng họ Từ Xuân Lộc.")
+
+        tab_hd, tab_ai = st.tabs(["📖 Cẩm nang sử dụng", "🤖 Trợ lý ảo AI (Đa nhiệm & Giọng đọc)"])
+
+        # ==========================================
+        # TAB 1: HƯỚNG DẪN SỬ DỤNG (CHIA NHỎ & TRANG TRỌNG)
+        # ==========================================
+        with tab_hd:
+            st.markdown("""
+                <div style="background: #FFF8E1; border-left: 5px solid #8B0000; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <h4 style="color: #8B0000; margin: 0 0 5px 0; font-family: 'Times New Roman', Times, serif; font-weight: bold;">
+                        📖 CẨM NANG VẬN HÀNH GIA PHẢ ĐIỆN TỬ
+                    </h4>
+                    <p style="margin: 0; color: #4E342E; font-size: 0.95rem; font-family: 'Times New Roman', Times, serif; line-height: 1.5;">
+                        <em>Kính cẩn chào mừng toàn thể con cháu nội ngoại hướng về cội nguồn.</em> Dưới đây là các chỉ dẫn chi tiết, được chia nhỏ từng bước để các bậc cao niên và con cháu dễ dàng tra cứu huyết mạch tộc họ.
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            with st.expander("🌐 1. Truy Cập & Thao Tác Cơ Bản Trên Điện Thoại"):
+                st.markdown("""
+                * **Mở/Đóng Menu điều hướng:** Chạm vào biểu tượng mũi tên (`>` hoặc `<`) ở góc trái phía trên màn hình để mở bảng chọn các chức năng.
+                * **Thao tác phóng to / thu nhỏ sơ đồ:** Người dùng dùng hai ngón tay chụm lại để thu nhỏ toàn cảnh hoặc kéo giãn ra để xem chi tiết tên cụ, năm sinh, đời thứ. Có thể dùng các nút bấm `(+)`, `(-)` tích hợp sẵn ở góc sơ đồ.
+                """)
+                
+            with st.expander("🗺️ 2. Hướng Dẫn Xem Trực Hệ & Toàn Cảnh"):
+                st.markdown("""
+                * **Chức năng Trực Hệ:** Giúp xem ngược dòng cội nguồn từ con cháu lên Cụ Thủy Tổ. Bà con có thể bấm bật "Mở rộng nhánh dưới" để xem các đời con cháu tiếp theo.
+                * **Chức năng Toàn Cảnh:** Sơ đồ phả hệ tổng thể từ gốc đến ngọn. Hỗ trợ các bộ lọc hiển thị (chỉ đinh nam, chi tiết, hoặc cả nam & nữ) và lọc theo từng Cửa, Chi nhánh để không bị rối mắt.
+                """)
+
+            with st.expander("🔍 3. Tra Cứu & Giải Mã Định Danh 9 Chữ Số"):
+                st.markdown("""
+                * **Tra cứu nhanh (Danh bộ):** Gõ tên hoặc tên tự vào ô tìm kiếm để lọc nhanh danh sách gia tộc.
+                * **Ý nghĩa Mã định danh (Ví dụ: `124.07.0.049`):** 
+                  - **3 số đầu (124):** Xác định Cửa, Chi hoặc Phái gốc.
+                  - **2 số tiếp (07):** Định danh chính xác đời thứ mấy.
+                  - **Số thứ 6 (0):** Biểu thị giới tính (`0` là Nam, `1` là Nữ).
+                  - **3 số cuối (049):** Số thứ tự cá nhân sinh trưởng trong nhánh.
+                """)
+
+            with st.expander("✍️ 4. Thêm Thành Viên & Sổ Vàng Tri Ân"):
+                st.markdown("""
+                * **Thêm Thành Viên:** Con cháu vào mục "Thêm Thành Viên", điền thông tin nhân khẩu mới. Dữ liệu sẽ được gửi về Telegram để Ban quản lý kiểm duyệt trước khi đưa vào hệ thống.
+                * **Sổ Vàng:** Nơi bà con viết lời tri ân tiên tổ, ghi nhận công đức hoặc đóng góp ý kiến xây dựng dòng họ, giữ gìn đạo lý "Uống nước nhớ nguồn".
+                """)
+
+        # ==========================================
+        # TAB 2: TRỢ LÝ ẢO AI (2 LUỒNG TRÍ TUỆ & LOA gTTS)
+        # ==========================================
+        with tab_ai:
+            st.info("🤖 Trợ lý AI đã được nâng cấp toàn diện: Vừa hướng dẫn cách dùng ứng dụng, vừa tra cứu chính xác tuyệt đối tên thành viên (Phân biệt rạch ròi Hòa và Hoa).")
+            
+            user_question = st.text_input("💬 Nhập câu hỏi của bạn cho Trợ lý ảo:", placeholder="Ví dụ: Làm sao để thêm thành viên? hoặc Từ Quang Thùy là ai?")
+            
+            if st.button("🚀 Gửi câu hỏi cho AI", use_container_width=True):
+                if not user_question.strip():
+                    st.warning("⚠️ Vui lòng nhập nội dung câu hỏi!")
+                else:
+                    import unicodedata, re
+                    
+                    q_raw = user_question.strip()
+                    # Chuẩn hóa NFD để xử lý tách từ tiếng Việt chuẩn xác
+                    q_lower = unicodedata.normalize('NFC', q_raw.lower())
+                    
+                    phan_hoi_html = ""
+                    thong_tin_doc = ""
+                    
+                    # ---------------------------------------------------------
+                    # LUỒNG 1: HƯỚNG DẪN CÁCH SỬ DỤNG ỨNG DỤNG (APP USAGE)
+                    # ---------------------------------------------------------
+                    if any(kw in q_lower for kw in ["thêm thành viên", "bổ sung", "nhập thêm", "đăng ký mới"]):
+                        thong_tin_doc = "Để thêm thành viên mới, bà con vui lòng mở Menu, chọn mục 'Thêm Thành Viên'. Sau đó điền đầy đủ thông tin nhân khẩu và chọn Cha trực hệ. Hệ thống sẽ gửi đề xuất về cho Ban quản lý phê duyệt."
+                        phan_hoi_html = f"💡 <b>Trợ lý AI hướng dẫn:</b><br><br>{thong_tin_doc}"
+                    
+                    elif any(kw in q_lower for kw in ["sơ đồ", "trực hệ", "toàn cảnh", "cách xem", "phả hệ"]):
+                        thong_tin_doc = "Để xem sơ đồ, bà con mở Menu góc trái, chọn 'Trực Hệ' để xem ngược dòng từ con cháu lên Thủy tổ, hoặc chọn 'Toàn Cảnh' để nhìn bức tranh tổng thể toàn dòng họ. Dùng 2 ngón tay để phóng to, thu nhỏ."
+                        phan_hoi_html = f"💡 <b>Trợ lý AI hướng dẫn:</b><br><br>{thong_tin_doc}"
+                        
+                    elif any(kw in q_lower for kw in ["mã định danh", "cấu trúc", "9 chữ số", "ý nghĩa mã"]):
+                        thong_tin_doc = "Mã định danh gồm 9 chữ số. 3 số đầu chỉ Cửa và Chi. 2 số tiếp theo chỉ đời thứ mấy. Chữ số thứ 6 là giới tính. Và 3 số cuối là thứ tự sinh trưởng trong nhánh."
+                        phan_hoi_html = f"💡 <b>Trợ lý AI hướng dẫn:</b><br><br>{thong_tin_doc}"
+                        
+                    elif any(kw in q_lower for kw in ["sổ vàng", "tri ân", "góp ý"]):
+                        thong_tin_doc = "Bà con hãy vào mục 'Sổ Vàng' trên Menu để viết lời tri ân tiên tổ, đóng góp ý kiến hoặc ghi nhận công đức. Lời nhắn sẽ được hiển thị công khai sau khi duyệt."
+                        phan_hoi_html = f"💡 <b>Trợ lý AI hướng dẫn:</b><br><br>{thong_tin_doc}"
+                    
+                    # ---------------------------------------------------------
+                    # LUỒNG 2: TRA CỨU DỮ LIỆU NHÂN KHẨU (DATA QUERY)
+                    # ---------------------------------------------------------
+                    elif any(kw in q_lower for kw in ["thủy tổ", "nguồn gốc", "cội nguồn", "khởi tổ", "ông tổ", "cụ tổ"]):
+                        thong_tin_doc = "Thủy tổ dòng họ ta là cụ Từ Dương Đốc, huyết danh Huy Cán, vốn là một bậc thầy thuốc y dược tế sinh đầy đức độ. Cụ đã đặt nền móng vững chắc cho huyết mạch dòng họ Từ Xuân Lộc muôn đời sau."
+                        phan_hoi_html = f"📜 <b>Trợ lý AI đáp:</b><br><br>{thong_tin_doc}"
+                    
+                    else:
+                        df_app = df[df["TrangThai"] == "Đã duyệt"].copy()
+                        
+                        # Đã sửa lại từ khóa đếm: Dùng "có mấy" thay vì "mấy" để không nhầm với "đời thứ mấy"
+                        is_counting = any(kw in q_lower for kw in ["có mấy", "bao nhiêu người", "tổng số", "có bao nhiêu", "đếm số", "danh sách"])
+                        
+                        # Loại bỏ các từ phụ trợ để lấy lõi tên cần tìm
+                        stop_words = {"có", "mấy", "người", "tên", "là", "thế", "nào", "đời", "thứ", "trong", "họ", "và", "các", "những", "thì", "vị", "này", "được", "gọi", "con", "của", "ai", "cho", "hỏi", "về"}
+                        q_words = [w for w in re.findall(r'[a-zà-ỹ]+', q_lower) if w not in stop_words]
+                        
+                        matched_indices = []
+                        if q_words:
+                            # Đồng nhất Hòa và Hoà trong từ khóa tìm kiếm
+                            q_words_norm = [w.replace("òa", "oà") for w in q_words]
+                            
+                            for idx, row in df_app.iterrows():
+                                ho_ten = str(row.get("HoTen", "")).strip()
+                                if not ho_ten or ho_ten in ["Từ Thị ?", "Từ Húy Đỏ", "Từ Thị"]:
+                                    continue
+                                
+                                ho_ten_lower = unicodedata.normalize('NFC', ho_ten.lower())
+                                ten_words = re.findall(r'[a-zà-ỹ]+', ho_ten_lower)
+                                ten_words_norm = [w.replace("òa", "oà") for w in ten_words]
+                                
+                                # KHỚP CHÍNH XÁC TUYỆT ĐỐI THEO TỪNG TỪ
+                                if all(qw in ten_words_norm for qw in q_words_norm):
+                                    matched_indices.append(idx)
+
+                        matched_rows = df_app.loc[matched_indices] if matched_indices else pd.DataFrame()
+                        so_luong = len(matched_rows)
+                        
+                        if so_luong > 0:
+                            # TRƯỜNG HỢP: TÌM ĐÍCH DANH 1 NGƯỜI
+                            if not is_counting and so_luong == 1:
+                                m = matched_rows.iloc[0]
+                                m_ten = m.get('HoTen')
+                                m_doi = m.get('DoiThu')
+                                m_cua = m.get('Cua')
+                                m_chi = m.get('Chi')
+                                m_phai = m.get('Phai')
+                                m_id = m.get('ID')
+                                m_vc = m.get('VoChong', '')
+                                m_ns = m.get('NamSinh', '')
+                                m_nm = m.get('NamMat', '')
+                                m_ghichu = m.get('GhiChu', '')
+                                
+                                if "đời" in q_lower or "thế hệ" in q_lower:
+                                    thong_tin_doc = f"Thành viên {m_ten} thuộc đời thứ {m_doi}, thuộc {m_cua}, {m_chi}."
+                                    phan_hoi_html = f"🎯 <b>Trợ lý AI trả lời:</b> Thành viên <b>{m_ten}</b> (Mã ĐD: <code>{m_id}</code>) thuộc đời thứ <b>{m_doi}</b> ({m_cua} — {m_chi})."
+                                else:
+                                    thong_tin_doc = f"Thông tin về thành viên {m_ten}, thuộc đời thứ {m_doi}, {m_cua}, {m_chi}. Vợ hoặc chồng là {m_vc if m_vc else 'Chưa cập nhật'}. Sinh năm {m_ns}, mất năm {m_nm}. Tiểu sử: {m_ghichu if m_ghichu else 'Đang cập nhật'}."
+                                    phan_hoi_html = (
+                                        f"🎯 <b>Trợ lý AI tìm thấy 1 kết quả chính xác:</b><br><br>"
+                                        f"👤 <b>Họ tên:</b> {m_ten} (Mã ĐD: <code>{m_id}</code>)<br>"
+                                        f"• <b>Thế hệ:</b> Đời thứ <b>{m_doi}</b> | {m_cua} — {m_chi} {('— ' + m_phai) if m_phai else ''}<br>"
+                                        f"• <b>Vợ/Chồng:</b> {m_vc if m_vc else 'Chưa cập nhật'}<br>"
+                                        f"• <b>Năm sinh/mất:</b> {m_ns} - {m_nm}<br>"
+                                        f"• <b>Tiểu sử/Ghi chú:</b> {m_ghichu if m_ghichu else 'Đang cập nhật'}"
+                                    )
+                            
+                            # TRƯỜNG HỢP: HỎI SỐ LƯỢNG HOẶC NHIỀU NGƯỜI
+                            else:
+                                chi_tiet_lst = []
+                                doc_lst = [f"Tìm thấy tổng cộng {so_luong} thành viên khớp yêu cầu."]
+                                for _, m in matched_rows.iterrows():
+                                    m_ten = m.get('HoTen')
+                                    m_doi = m.get('DoiThu')
+                                    m_cua = m.get('Cua')
+                                    m_chi = m.get('Chi')
+                                    m_id = m.get('ID')
+                                    
+                                    chi_tiet_lst.append(f"👤 <b>{m_ten}</b> (Mã ĐD: <code>{m_id}</code>) - Đời thứ {m_doi} ({m_cua} — {m_chi})")
+                                    doc_lst.append(f"Thành viên {m_ten}, đời thứ {m_doi}.")
+                                    
+                                thong_tin_doc = " ".join(doc_lst)
+                                phan_hoi_html = f"📊 <b>Trợ lý AI thống kê:</b> Tìm thấy tổng cộng <b>{so_luong} thành viên</b>:<br><br>" + "<br><br>".join(chi_tiet_lst)
+                        else:
+                            thong_tin_doc = "Xin lỗi, tôi không tìm thấy thông tin nào khớp với câu hỏi của bạn."
+                            phan_hoi_html = f"🤖 <b>Trợ lý AI đáp:</b> Không tìm thấy thông tin nào khớp với câu hỏi: <i>'{q_raw}'</i>."
+
+                    # HIỂN THỊ VĂN BẢN KẾT QUẢ
+                    st.markdown(f"""
+                        <div style="background: #FDFEFE; border: 1.5px solid #8B0000; padding: 18px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); font-family: 'Times New Roman', Times, serif; font-size: 1.05rem; color: #2C3E50; margin-bottom: 15px;">
+                            {phan_hoi_html}
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    # ---------------------------------------------------------
+                    # SỬ DỤNG GOOGLE TTS API (CLIENT=GTX) - ỔN ĐỊNH 100%
+                    # Loại bỏ hoàn toàn lỗi gTTS và tương thích trên mọi điện thoại
+                    # ---------------------------------------------------------
+                    import urllib.parse
+                    clean_speech_text = re.sub(r'<[^>]*>', '', thong_tin_doc)
+                    safe_text = clean_speech_text.replace('\n', ' ').strip()
+                    encoded_text = urllib.parse.quote(safe_text)
+                    
+                    # API phát âm thanh nội bộ ổn định nhất của Google
+                    google_tts_url = f"https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=vi&q={encoded_text}"
+                    
+                    audio_html_code = f"""
+                        <div style="display: flex; align-items: center; gap: 10px; background: #FFF8E1; padding: 10px 15px; border-radius: 6px; border: 1px solid #FFE082; font-family: Arial, sans-serif; margin-top: 15px;">
+                            <audio controls style="height: 40px; width: 100%;">
+                                <source src="{google_tts_url}" type="audio/mpeg">
+                                Trình duyệt của thiết bị không hỗ trợ phát âm thanh.
+                            </audio>
+                        </div>
+                        <div style="font-size: 0.85rem; color: #795548; font-style: italic; margin-top: 5px;">
+                            🔊 Bấm nút Play (▶) để nghe Trợ lý ảo đọc bằng tiếng Việt chuẩn.
+                        </div>
+                    """
+                    st.components.v1.html(audio_html_code, height=85)                    
+    #=====================================================================
+    # [PHÂN LÔ E11]: TRUNG TÂM QUẢN TRỊ & VẬN HÀNH HỆ THỐNG (XÓA SẠCH ẢNH + CSDL)
+    #=====================================================================
+    @staticmethod
+    def render_quantri(df):
+        st.subheader("🛠️ Trung Tâm Quản Trị & Vận Hành Hệ Thống")
+        mat_khau = st.sidebar.text_input("Mật khẩu Quản trị:", type="password")
+        
+        if mat_khau != "admin12345":
+            if mat_khau: st.sidebar.error("❌ Mật khẩu không chính xác!")
+            st.warning("🔒 Vui lòng nhập mật khẩu quản trị vào khung bên trái để truy cập.")
+            return
+            
+        st.success("✅ Xác thực Quản trị viên thành công!")
+        
+        tab_kiemduyet, tab_dulieu, tab_cauhinh, tab_telegram = st.tabs([
+            "⏳ Kiểm Duyệt Mới", 
+            "🗃️ Dữ Liệu & Ảnh", 
+            "⚙️ Cấu Hình Chung", 
+            "🤖 Telegram Bot"
+        ])
+
+
+        # ==========================================
+        # TAB 1: KIỂM DUYỆT THÀNH VIÊN MỚI (CÓ HIỂN THỊ ẢNH KIỂM TRA TRỰC QUAN)
+        # ==========================================
+        with tab_kiemduyet:
+            st.markdown("### 📋 Danh sách thành viên đang Chờ duyệt")
+            df_pending = df[df["TinhTrang"].str.contains("Chờ", case=False, na=False)].copy()
+            
+            if df_pending.empty:
+                st.success("🎉 Hiện không có hồ sơ nào cần phê duyệt. Tất cả đều an toàn!")
+            else:
+                for _, row in df_pending.iterrows():
+                    cha_id = row.get('ChaMe_ID', '')
+                    cha_row = df[df['ID'] == cha_id]
+                    cha_ten = cha_row.iloc[0]['HoTen'] if not cha_row.empty else "Không rõ"
+                    
+                    # 🟢 TÌM VÀ KIỂM TRA ẢNH CHÂN DUNG CỦA THÀNH VIÊN NÀY
+                    member_id = row['ID']
+                    member_name = row['HoTen']
+                    img_relative_path = QuanTriHinhAnh.lay_anh_chuan_xac(member_id, member_name)
+                    
+                    with st.expander(f"👤 {member_name} (ID: {member_id}) - {row['TinhTrang']}", expanded=True):
+                        # Chia bố cục: Cột trái chứa thông tin, Cột giữa chứa Ảnh chân dung (nếu có), Cột phải chứa nút bấm
+                        col_info, col_img, col_action = st.columns([2, 1, 1])
+                        
+                        with col_info:
+                            st.write(f"- **Cha trực hệ:** **{cha_ten}** (`{cha_id}`)")
+                            st.write(f"- **Tình trạng:** `{row['TinhTrang']}`")
+                            st.write(f"- **Ghi chú/Nguyện vọng:** {row.get('GhiChu', '')}")
+                        
+                        with col_img:
+                            if img_relative_path:
+                                full_img_path = Path(__file__).resolve().parent / img_relative_path
+                                if full_img_path.exists():
+                                    st.image(str(full_img_path), width=120, caption="Ảnh gửi lên")
+                                else:
+                                    st.info("🖼️ Không tìm thấy file ảnh vật lý.")
+                            else:
+                                st.info("📭 Thành viên này chưa tải ảnh.")
+                        
+                        with col_action:
+                            st.markdown("<br>", unsafe_allow_html=True) # Căn chỉnh lề ngang nút bấm
+                            if st.button("✅ Phê duyệt", key=f"btn_duyet_{member_id}", use_container_width=True):
+                                import re
+                                new_tinh_trang = str(row['TinhTrang']).replace("Chờ duyệt,", "").replace("Chờ duyệt", "").replace("Chờ xử lý,", "").replace("Chờ xử lý", "").strip()
+                                new_ghi_chu = re.sub(r'\[Xin xếp vào vị trí thứ \d+\]', '', str(row['GhiChu'])).strip()
+                                if KhoDuLieuSQL.duyet_thanh_vien(member_id, new_tinh_trang, new_ghi_chu):
+                                    st.success(f"Đã duyệt {member_name} thành công!")
+                                    st.rerun()
+
+                            if st.button("❌ Xóa bỏ", key=f"btn_xoa_{member_id}", type="primary", use_container_width=True):
+                                # 1. Xóa file ảnh vật lý trước khi xóa CSDL
+                                try:
+                                    if img_relative_path:
+                                        p_img = Path(__file__).resolve().parent / img_relative_path
+                                        if p_img.exists():
+                                            p_img.unlink()
+                                except Exception:
+                                    pass
+                                    
+                                # 2. Xóa bản ghi
+                                if KhoDuLieuSQL.delete_member(member_id): 
+                                    st.warning(f"Đã xóa vĩnh viễn hồ sơ và ảnh của {member_name}!")
+                                    KhoDuLieuSQL.load_data.clear()
+                                    st.rerun()
+
+
+        # ==========================================
+        # TAB 2: XÓA THÀNH VIÊN & XÓA ẢNH (DỮ LIỆU GỐC)
+        # ==========================================
+        with tab_dulieu:
+            col_xoa_nguoi, col_xoa_anh = st.columns(2)
+            
+            with col_xoa_nguoi:
+                st.markdown("### ❌ Xóa thành viên khỏi CSDL")
+                chon_id = st.selectbox("Chọn Mã định danh cần xóa:", [""] + df["ID"].tolist())
+                if st.button("❌ Xóa vĩnh viễn khỏi CSDL", type="primary", use_container_width=True):
+                    if chon_id:
+                        row_chon = df[df["ID"] == chon_id]
+                        if not row_chon.empty:
+                            t_name = row_chon.iloc[0]["HoTen"]
+                            
+                            # 1. Xóa file ảnh vật lý tương ứng
+                            try:
+                                d_anh = QuanTriHinhAnh.lay_anh_chuan_xac(chon_id, t_name)
+                                if d_anh:
+                                    f_path = Path(__file__).resolve().parent / d_anh
+                                    if f_path.exists():
+                                        f_path.unlink()
+                            except Exception:
+                                pass
+                                
+                        # 2. Xóa CSDL
+                        KhoDuLieuSQL.delete_member(chon_id)
+                        st.success(f"Đã xóa thành viên mã {chon_id} và file ảnh liên quan!")
+                        KhoDuLieuSQL.load_data.clear()
+                        st.rerun()
+                    else:
+                        st.error("Vui lòng chọn một mã định danh.")
+
+            with col_xoa_anh:
+                st.markdown("### 🖼️ Xóa ảnh chân dung bị lỗi")
+                chon_id_anh = st.selectbox("Chọn ID thành viên cần xóa ảnh:", [""] + df["ID"].tolist(), key="xoa_anh_sel")
+                if st.button("🗑️ Xóa file ảnh", use_container_width=True):
+                    if chon_id_anh:
+                        row_anh = df[df["ID"] == chon_id_anh]
+                        if not row_anh.empty:
+                            ten_anh = row_anh.iloc[0]["HoTen"]
+                            duong_dan = QuanTriHinhAnh.lay_anh_chuan_xac(chon_id_anh, ten_anh)
+                            if duong_dan:
+                                file_path = Path(__file__).resolve().parent / duong_dan
+                                if file_path.exists():
+                                    file_path.unlink()
+                                    st.success(f"✅ Đã xóa sạch ảnh của {ten_anh}!")
+                                    st.rerun()
+                            else:
+                                st.warning("⚠️ Thành viên này hiện chưa có ảnh trên máy chủ.")
+                    else:
+                        st.error("Vui lòng chọn một mã định danh.")
+
+        # ==========================================
+        # TAB 3: CẤU HÌNH & SAO LƯU
+        # ==========================================
+        with tab_cauhinh:
+            st.markdown("### 🔓 Cấu hình quyền tải ảnh")
+            with sqlite3.connect(KhoDuLieuSQL.DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT GiaTri FROM CauHinhHeThong WHERE Khoa = 'cho_phep_tai_anh'")
+                res = cursor.fetchone()
+                current_val = (res[0] == 'True') if res else False
+
+            cho_phep_moi = st.toggle("Mở chế độ cho phép con cháu tự tải ảnh", value=current_val)
+            if cho_phep_moi != current_val:
+                with sqlite3.connect(KhoDuLieuSQL.DB_FILE) as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE CauHinhHeThong SET GiaTri = ? WHERE Khoa = 'cho_phep_tai_anh'", (str(cho_phep_moi),))
+                    conn.commit()
+                st.rerun()
+            
+            if cho_phep_moi:
+                st.warning("⚠️ Đang MỞ: Tất cả mọi người có thể tự tải ảnh chân dung lên hệ thống.")
+            else:
+                st.info("🔒 Đang KHÓA: Tính năng tự tải ảnh đang tạm vô hiệu hóa.")
+            
+            st.markdown("---")
+            st.markdown("### 📦 Sao lưu toàn bộ ảnh trên máy chủ")
+            if st.button("📥 Bắt đầu nén toàn bộ ảnh (.zip)"):
+                import zipfile
+                import io
+                image_dir = Path(__file__).resolve().parent / "images"
+                if image_dir.exists():
+                    zip_buffer = io.BytesIO()
+                    count_img = 0
+                    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                        for file_path in image_dir.iterdir():
+                            if file_path.is_file() and file_path.suffix.lower() in [".jpg", ".jpeg", ".png", ".heic", ".heif"]:
+                                zip_file.write(file_path, arcname=file_path.name)
+                                count_img += 1
+                    zip_buffer.seek(0)
+                    
+                    if count_img > 0:
+                        st.success(f"✅ Đã đóng gói thành công {count_img} bức ảnh!")
+                        st.download_button(
+                            label="⬇️ Tải tệp nén (.zip) về máy",
+                            data=zip_buffer,
+                            file_name="backup_anh_giapha.zip",
+                            mime="application/zip"
+                        )
+                    else:
+                        st.warning("⚠️ Thư mục ảnh hiện đang trống.")
+                else:
+                    st.warning("⚠️ Không tìm thấy thư mục images trên máy chủ.")
+
+        # ==========================================
+        # TAB 4: TELEGRAM BOT
+        # ==========================================
+        with tab_telegram:
+            st.markdown("### 🤖 Cổng kết nối Bot Telegram Quản Trị")
+            st.info("Khu vực cấu hình sẵn sàng để tích hợp bot nhận thông báo và phê duyệt trực tiếp trên ứng dụng Telegram.")
+            
+            enable_tele = st.toggle("Kích hoạt thông báo tự động qua Telegram", value=True)
+            if enable_tele:
+                st.text_input("Telegram Bot Token:", placeholder="Ví dụ: 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ")
+                st.text_input("Admin Chat ID:", placeholder="Ví dụ: 987654321")
+                if st.button("💾 Lưu cấu hình Telegram"):
+                    st.success("Đã lưu thiết lập kết nối Bot thành công!")
+            else:
+                st.write("📌 Bật công tắc trên khi ông chủ muốn hệ thống tự động bắn tin nhắn chờ duyệt về điện thoại cá nhân.")
+
+
+            
+    #=====================================================================
+    # [PHÂN LÔ E12]: Hàm con điều phối đầu não giao diện với menu chuẩn xác mới (Tối ưu Mobile Title)
+    #=====================================================================
+
+    @classmethod
+    def render_app(cls):
+        cls.thiet_lap_giao_dien()
+        
+        # 🟢 ĐÓN NHẬN LỆNH CHUYỂN TRANG TỪ TRANG KHÁC (PHẢI ĐẶT TRƯỚC KHI VẼ RADIO)
+        if "pending_menu" in st.session_state:
+            st.session_state["CHỌN CHỨC NĂNG"] = st.session_state.pending_menu
+            del st.session_state.pending_menu
+
+        df = KhoDuLieuSQL.load_data()
+ 
+        # 🟢 CHÈN LOGO VÀO THANH ĐIỀU HƯỚNG BÊN TRÁI (SIDEBAR)
+        logo_path = Path(__file__).resolve().parent / "logo_hotu.png"
+        if logo_path.exists():
+            st.sidebar.image(str(logo_path), use_container_width=True)
+
+        st.markdown('<h1 class="desktop-view" style="font-weight: bold; margin-bottom: 0px;">📜 Gia phả điện tử dòng Họ Từ Xuân Lộc</h1>', unsafe_allow_html=True)
+        st.markdown('<h1 class="mobile-view" style="font-size: 1.15rem; font-weight: bold; white-space: nowrap; margin-bottom: 0px;">📜 Gia phả Họ Từ Xuân Lộc</h1>', unsafe_allow_html=True)
+        
+        st.markdown("""
+            <div class="hide-on-mobile">
+                <p style="color: #546E7A; margin-top: 5px; margin-bottom: 15px;">Hệ thống quản lý phả hệ chuẩn mực - Cơ sở dữ liệu SQLite tối ưu đa thiết bị</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        if "focus_id" not in st.session_state:
+            st.session_state.focus_id = "000.01.0.001"
+
+        # 🌟 Đưa khối điều hướng lên sát hết cỡ phía trên (Sát nút << mặc định)
+        st.sidebar.markdown("""
+            <style>
+                @keyframes runSameWayFar {
+                    0% { transform: translateX(-8px); opacity: 0.2; }
+                    50% { transform: translateX(8px); opacity: 1; }
+                    100% { transform: translateX(-8px); opacity: 0.2; }
+                }
+                .run-arrow-far {
+                    display: inline-block;
+                    color: #D32F2F;
+                    font-weight: 900;
+                    animation: runSameWayFar 1.0s infinite ease-in-out;
+                }
+                /* Dịch toàn bộ vùng chứa sidebar lên sát phía trên cùng */
+                [data-testid="stSidebarUserContent"] {
+                    padding-top: 0rem !important;
+                }
+            </style>
+            <div style="text-align: center; font-weight: bold; color: #C62828; margin-top: -32px; margin-bottom: 8px; padding: 6px; background: #FFEBEE; border-radius: 6px; border: 1px dashed #EF9A9A;">
+                <span class="run-arrow-far">&gt;&gt;</span> &nbsp;&nbsp;&nbsp; ĐIỀU HƯỚNG &nbsp;&nbsp;&nbsp; <span class="run-arrow-far">&gt;&gt;</span>
+            </div>
+        """, unsafe_allow_html=True)
+
+
+        menu_options = [
+            "📖 Lời Giới thiệu",
+            "🎯 Trực Hệ", 
+            "🌳 Toàn Cảnh", 
+            "🆔 Lọc theo ID", 
+            "🔍 Tra Cứu",
+            "👤 Cá nhân hóa",
+            "✍ Thêm Thành Viên", 
+            "🖨 Xuất Báo Cáo",
+            "🌟 Mở Rộng",          # 🟢 CHÈN THÊM Ở ĐÂY (NGAY SAU XUẤT BÁO CÁO)
+            "🤖 Hướng dẫn & Trợ lý AI",
+            "🛡 Quản Trị Hệ Thống",
+            "🚪 EXIT"
+        ]
+
+        # Kiểm tra nếu có lệnh quay lại trang chủ
+        if st.session_state.get("reset_to_intro", False):
+            st.session_state["CHỌN CHỨC NĂNG"] = "📖 Lời Giới thiệu"
+            st.session_state["reset_to_intro"] = False
+
+        # 🎯 Menu chính
+
+        # 🟢 Kiểm tra xem có lệnh ghi đè menu từ trang khác chuyển sang không
+        default_menu_index = 0
+        if "app_menu_override" in st.session_state:
+            override_val = st.session_state.app_menu_override
+            if override_val in menu_options:
+                default_menu_index = menu_options.index(override_val)
+            del st.session_state.app_menu_override  # Xóa sau khi đã nhận lệnh
+
+        # 🎯 Menu chính tích hợp chỉ mục mặc định
+        menu = st.sidebar.radio("CHỌN CHỨC NĂNG:", menu_options, index=default_menu_index, key="CHỌN CHỨC NĂNG")
+
+        # Điều phối giao diện (Đưa "🚪 EXIT" lên đầu để phản hồi ngay lập tức khi người dùng bấm vào)
+        if menu == "🚪 EXIT":
+            st.markdown("""
+                <div style="text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #fdfbf7 0%, #f4ebd0 100%); border-radius: 12px; border: 1px solid #d4c5a9; margin-top: 30px; font-family: 'Times New Roman', Times, serif;">
+                    <h2 style="color: #8B0000; text-transform: uppercase; margin-bottom: 15px;">📜 KẾT THÚC PHIÊN TRA CỨU</h2>
+                    <p style="font-size: 1.15rem; color: #2C3E50; font-style: italic; margin-bottom: 15px;">
+                        "Cây có gốc mới nở cành xanh ngọn, nước có nguồn mới chảy khắp sông sâu."
+                    </p>
+                    <p style="font-size: 1.05rem; color: #555; line-height: 1.6; margin-bottom: 20px;">
+                        Cảm ơn quý vị đã sử dụng ứng dụng Gia phả điện tử của dòng Họ.<br>
+                        Chúc quý vị luôn mạnh khỏe, hạnh phúc và an khang thịnh vượng!
+                    </p>
+                    <p style="font-size: 0.95rem; color: #666;">
+                        Quý vị có thể đóng tab trình duyệt hoặc bấm nút bên dưới để tiếp tục quay lại trang chủ.
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_bt1, col_bt2, col_bt3 = st.columns([1, 2, 1])
+            with col_bt2:
+                if st.button("🔄 Quay lại trang chủ hệ thống", use_container_width=True):
+                    st.session_state["reset_to_intro"] = True
+                    st.rerun()
+
+        elif menu == "📖 Lời Giới thiệu":
+            cls.render_gioithieu_1trang()
+        elif menu == "🎯 Trực Hệ": 
+            cls.render_tructhe(df)
+        elif menu == "🌳 Toàn Cảnh": 
+            cls.render_toancanh(df)
+        elif menu == "🆔 Lọc theo ID": 
+            cls.render_loc_theo_id(df)
+        elif menu == "🔍 Tra Cứu": 
+            cls.render_tracuu(df)
+        elif menu == "👤 Cá nhân hóa": 
+            cn_hoa = QuanLyCaNhanHoa()
+            cn_hoa.hien_thi_menu_ca_nhan_hoa()
+        elif menu == "✍ Thêm Thành Viên": 
+            cls.render_themthanhvien(df)
+        elif menu == "🖨 Xuất Báo Cáo": 
+            cls.render_xuatbaocao(df)
+        elif menu == "🌟 Mở Rộng":
+            cls.render_morong()  # 🟢 Đồng bộ chuẩn gọi hàm bằng cls. giống các mục khác
+
+        elif menu == "🤖 Hướng dẫn & Trợ lý AI":
+            cls.render_huong_dan_va_ai(df)  # Hoặc gọi trực tiếp khối giao diện nội dung
+        elif menu == "🛡 Quản Trị Hệ Thống":
+            cls.render_quantri(df)
+
+
+
+# ==============================================================================
+# ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+# [PHÂN LÔ F] - KHU VỰC BẢN ĐỒ KHÔNG GIAN TÂM LINH & THỰC TẾ ẢO (VR 360)
+# (PHIÊN BẢN QUY MÔ ĐẠI TÔN - ĐA PHÂN LỚP)
+# ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+
+class BanDoGiaToc:
+    # --------------------------------------------------------------------------
+    # KHỐI 1: DỮ LIỆU ĐẠI TÔN VÀ CÁC CHI TRỰC THUỘC
+    # Cập nhật tọa độ thật (ViDo, KinhDo) và Link360 vào các ô bên dưới
+    # --------------------------------------------------------------------------
+    DANH_SACH_DI_TICH = [
+        # === HỆ THỐNG ĐẠI TÔN ===
+        {
+            "Nhom": "Đại tôn", "Loai": "Nhà thờ", "Ten": "Nhà thờ Đại tôn", 
+            "ViDo": 18.425321, "KinhDo": 105.812144, "Link360": "",
+            "MoTa": "Trung tâm tín ngưỡng của toàn dòng họ, nơi thờ Thủy Tổ Đại tôn (Chi Lưu)."
+        },
+        {
+            "Nhom": "Đại tôn", "Loai": "Lăng mộ", "Ten": "Lăng mộ Khởi Tổ Đại tôn", 
+            "ViDo": None, "KinhDo": None, "Link360": "",
+            "MoTa": "Khu lăng mộ Khởi Tổ Đại tôn."
+        },
+
+        # === HỆ THỐNG CỬA GIÁP ===
+        {
+            "Nhom": "Giáp", "Loai": "Nhà thờ", "Ten": "Nhà thờ Chi 1 / Cửa Giáp", 
+            "ViDo": 18.425321, "KinhDo": 105.812144, "Link360": "", "MoTa": "Nơi thờ tự tiên tổ Chi 1 thuộc Cửa Giáp."
+        },
+        {
+            "Nhom": "Giáp", "Loai": "Lăng mộ", "Ten": "Khu mộ Tổ Chi 1 / Cửa Giáp", 
+            "ViDo": None, "KinhDo": None, "Link360": "", "MoTa": "Lăng mộ các cụ Chi 1 Cửa Giáp."
+        },
+        {
+            "Nhom": "Giáp", "Loai": "Nhà thờ", "Ten": "Nhà thờ Chi 2 / Cửa Giáp", 
+            "ViDo": 18.420450, "KinhDo": 105.901809, "Link360": "", "MoTa": "Nơi thờ tự tiên tổ Chi 2 thuộc Cửa Giáp (Thạch Bắc)."
+        },
+        {
+            "Nhom": "Giáp", "Loai": "Lăng mộ", "Ten": "Khu mộ Tổ Chi 2 / Cửa Giáp", 
+            "ViDo": None, "KinhDo": None, "Link360": "", "MoTa": "Lăng mộ các cụ Chi 2 Cửa Giáp."
+        },
+
+        # === HỆ THỐNG CỬA ẤT ===
+        {
+            "Nhom": "Ất", "Loai": "Nhà thờ", "Ten": "Nhà thờ Chi 1 / Cửa Ất", 
+            "ViDo": 18.421275, "KinhDo": 105.827571, "Link360": "", "MoTa": "Nơi thờ tự tiên tổ Chi 1 thuộc Cửa Ất (Thượng Nguyên)."
+        },
+        {
+            "Nhom": "Ất", "Loai": "Lăng mộ", "Ten": "Khu mộ Tổ Chi 1 / Cửa Ất", 
+            "ViDo": None, "KinhDo": None, "Link360": "", "MoTa": "Lăng mộ các cụ Chi 1 Cửa Ất."
+        },
+        
+        # 🟢 ĐIỂM NHẤN TRUNG TÂM: CHI 2 ẤT (TIỂU TÔN XUÂN LỘC)
+        {
+            "Nhom": "Xuân Lộc", "Loai": "Nhà thờ", "Ten": "Nhà thờ Tiểu tôn Chi 2 / Cửa Ất (Từ Xuân Lộc)", 
+            "ViDo": 18.421106, "KinhDo": 105.765740, "Link360": "", 
+            "MoTa": "TRUNG TÂM TIỂU TÔN TỪ XUÂN LỘC. Nơi thờ cúng cụ Từ Hữu Mưu và các bậc tiên linh Chi 2 Cửa Ất."
+        },
+        {
+            "Nhom": "Xuân Lộc", "Loai": "Lăng mộ", "Ten": "Khu Lăng mộ Tiểu tôn Chi 2 / Cửa Ất (Từ Xuân Lộc)", 
+            "ViDo": 18.421752, "KinhDo": 105.759765, "Link360": "", 
+            "MoTa": "Lăng mộ cụ đứng đầu Chi 2 Cửa Ất và các vị tổ Tiểu tôn Xuân Lộc."
+        },
+
+        {
+            "Nhom": "Ất", "Loai": "Nhà thờ", "Ten": "Nhà thờ Chi 3 / Cửa Ất", 
+            "ViDo": 18.435605, "KinhDo": 105.831180, "Link360": "", "MoTa": "Nơi thờ tự tiên tổ Chi 3 thuộc Cửa Ất."
+        },
+        {
+            "Nhom": "Ất", "Loai": "Lăng mộ", "Ten": "Khu mộ Tổ Chi 3 / Cửa Ất", 
+            "ViDo": None, "KinhDo": None, "Link360": "", "MoTa": "Lăng mộ các cụ Chi 3 Cửa Ất."
+        },
+        {
+            "Nhom": "Ất", "Loai": "Nhà thờ", "Ten": "Nhà thờ Chi 4 / Cửa Ất", 
+            "ViDo": 18.436142, "KinhDo": 105.830161, "Link360": "", "MoTa": "Nơi thờ tự tiên tổ Chi 4 thuộc Cửa Ất."
+        },
+        {
+            "Nhom": "Ất", "Loai": "Lăng mộ", "Ten": "Khu mộ Tổ Chi 4 / Cửa Ất", 
+            "ViDo": None, "KinhDo": None, "Link360": "", "MoTa": "Lăng mộ các cụ Chi 4 Cửa Ất."
+        },
+        {
+            "Nhom": "Ất", "Loai": "Nhà thờ", "Ten": "Nhà thờ Chi 5 / Cửa Ất", 
+            "ViDo": 18.436104, "KinhDo": 105.831470, "Link360": "", "MoTa": "Nơi thờ tự tiên tổ Chi 5 thuộc Cửa Ất."
+        },
+        {
+            "Nhom": "Ất", "Loai": "Lăng mộ", "Ten": "Khu mộ Tổ Chi 5 / Cửa Ất", 
+            "ViDo": None, "KinhDo": None, "Link360": "", "MoTa": "Lăng mộ các cụ Chi 5 Cửa Ất."
+        },
+
+        # === HỆ THỐNG CỬA BÍNH ===
+        {
+            "Nhom": "Bính", "Loai": "Nhà thờ", "Ten": "Nhà thờ Chi 1 / Cửa Bính", 
+            "ViDo": 18.424517, "KinhDo": 105.812987, "Link360": "", "MoTa": "Nơi thờ tự tiên tổ Chi 1 thuộc Cửa Bính."
+        },
+        {
+            "Nhom": "Bính", "Loai": "Lăng mộ", "Ten": "Khu mộ Tổ Chi 1 / Cửa Bính", 
+            "ViDo": None, "KinhDo": None, "Link360": "", "MoTa": "Lăng mộ các cụ Chi 1 Cửa Bính."
+        },
+        {
+            "Nhom": "Bính", "Loai": "Nhà thờ", "Ten": "Nhà thờ Chi 2 / Cửa Bính", 
+            "ViDo": 18.41692000, "KinhDo": 105.830356, "Link360": "", "MoTa": "Nơi thờ tự tiên tổ Chi 2 thuộc Cửa Bính."
+        },
+        {
+            "Nhom": "Bính", "Loai": "Lăng mộ", "Ten": "Khu mộ Tổ Chi 2 / Cửa Bính", 
+            "ViDo": None, "KinhDo": None, "Link360": "", "MoTa": "Lăng mộ các cụ Chi 2 Cửa Bính."
+        },
+        {
+            "Nhom": "Bính", "Loai": "Nhà thờ", "Ten": "Nhà thờ Chi 3 / Cửa Bính", 
+            "ViDo": 18.492155, "KinhDo": 105.868197, "Link360": "", "MoTa": "Nơi thờ tự tiên tổ Chi 3 thuộc Cửa Bính."
+        },
+        {
+            "Nhom": "Bính", "Loai": "Lăng mộ", "Ten": "Khu mộ Tổ Chi 3 / Cửa Bính", 
+            "ViDo": None, "KinhDo": None, "Link360": "", "MoTa": "Lăng mộ các cụ Chi 3 Cửa Bính."
+        }
+    ]
+
+    @staticmethod
+    def lay_cau_hinh_giao_dien(nhom, loai):
+        """Hàm thuật toán quy định màu sắc và biểu tượng cho từng phân lớp"""
+        config = {"color": "gray", "icon": "info-sign"}
+        
+        # 1. Biểu tượng (Nhà thờ là icon nhà, Lăng mộ là icon bia/info)
+        if loai == "Nhà thờ":
+            config["icon"] = "home"
+        elif loai == "Lăng mộ":
+            config["icon"] = "bookmark" # Icon dạng bia đá/dấu mốc
+            
+        # 2. Quy định màu sắc theo nhánh huyết mạch
+        if nhom == "Đại tôn":
+            config["color"] = "darkred"    # Đỏ đậm quyền lực
+        elif nhom == "Giáp":
+            config["color"] = "blue"       # Xanh lam
+        elif nhom == "Ất":
+            config["color"] = "green"      # Xanh lục
+        elif nhom == "Xuân Lộc":
+            config["color"] = "orange"     # Màu cam nổi bật cho trung tâm Tiểu tôn
+        elif nhom == "Bính":
+            config["color"] = "purple"     # Tím
+            
+        return config
+
+    @staticmethod
+    def render_bando():
+        st.markdown('<h2 class="desktop-view" style="font-size: 1.3rem; font-weight: bold; color: #8B0000;">🗺️ Bản đồ Không gian Đại tôn & Tiểu tôn (Tích hợp VR 360)</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="mobile-view" style="font-size: 1.2rem; font-weight: bold; color: #8B0000;">🗺️ Bản đồ Đại tôn</h2>', unsafe_allow_html=True)
+        
+        # Chú thích màu sắc trên bản đồ
+        st.markdown("""
+        <div style='font-size: 0.9rem; margin-bottom: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;'>
+            <b>Chú giải:</b> 
+            <span style='color: darkred;'>🔴 Đại tôn</span> | 
+            <span style='color: blue;'>🔵 Cửa Giáp</span> | 
+            <span style='color: green;'>🟢 Cửa Ất</span> | 
+            <span style='color: purple;'>🟣 Cửa Bính</span> | 
+            <span style='color: darkorange; font-weight: bold;'>🟠 Tiểu tôn Xuân Lộc (Chi 2/Ất)</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if not BanDoGiaToc.DANH_SACH_DI_TICH:
+            return
+
+        # Focus camera vào tọa độ của Tiểu tôn Xuân Lộc (Chi 2 Ất) để khi mở lên ưu tiên nhìn thấy cội nguồn trực tiếp
+        xuan_loc = next((d for d in BanDoGiaToc.DANH_SACH_DI_TICH if d["Nhom"] == "Xuân Lộc"), BanDoGiaToc.DANH_SACH_DI_TICH[0])
+        
+
+
+        #m = folium.Map(location=[xuan_loc["ViDo"], xuan_loc["KinhDo"]], zoom_start=13, tiles="OpenStreetMap")
+        #m = folium.Map(
+            #location=[xuan_loc['ViDo'], xuan_loc['KinhDo']], 
+            #zoom_start=15, 
+            #width='100%', 
+            #height='100%'
+        #)
+        m = folium.Map(
+            location=[xuan_loc["ViDo"], xuan_loc["KinhDo"]], 
+            zoom_start=13, 
+            tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', 
+            attr='Esri'
+        )
+
+        for di_tich in BanDoGiaToc.DANH_SACH_DI_TICH:
+            vi_do = di_tich.get('ViDo')
+            kinh_do = di_tich.get('KinhDo')
+
+            # 🟢 BỘ LỌC THÔNG MINH: Bỏ qua không vẽ nếu tọa độ chưa có (None hoặc rỗng)
+            if vi_do is None or kinh_do is None or str(vi_do).strip() == "" or str(kinh_do).strip() == "":
+                continue
+
+            ui_config = BanDoGiaToc.lay_cau_hinh_giao_dien(di_tich["Nhom"], di_tich["Loai"])
+            link_google_maps = f"https://www.google.com/maps/dir/?api=1&destination={vi_do},{kinh_do}"
+            
+            # Khung hiển thị VR360
+            if di_tich.get('Link360') and str(di_tich['Link360']).strip() != "":
+                khung_360_html = f"""
+                <div style="margin-top: 10px; margin-bottom: 12px;">
+                    <iframe width="100%" height="200" style="border: 2px solid {ui_config['color']}; border-radius: 6px;" 
+                        src="{di_tich['Link360']}" allowfullscreen>
+                    </iframe>
+                </div>
+                """
+            else:
+                khung_360_html = f"""
+                <div style="margin-top: 10px; margin-bottom: 12px; height: 100px; background-color: #f4f4f4; border: 1px dashed #aaa; border-radius: 6px; display: flex; align-items: center; justify-content: center; text-align: center;">
+                    <div style="color: #666; font-size: 13px; padding: 10px;">📸 <br>Không gian 360°<br>sẽ sớm được cập nhật...</div>
+                </div>
+                """
+
+            popup_html = f"""
+            <div style="font-family: 'Arial', sans-serif; min-width: 280px; max-width: 300px;">
+                <h4 style="color: {ui_config['color']}; margin-top: 0; margin-bottom: 5px; font-size: 15px; text-transform: uppercase;">{di_tich['Ten']}</h4>
+                <span style="background-color: {ui_config['color']}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">Thuộc nhóm: {di_tich['Nhom']}</span>
+                <p style="font-size: 13px; color: #444; margin-top: 8px; margin-bottom: 8px;"><i>{di_tich.get('MoTa', '')}</i></p>
+                
+                {khung_360_html}
+                
+                <a href="{link_google_maps}" target="_blank" style="background-color: #1a73e8; color: white; padding: 8px 12px; text-decoration: none; border-radius: 5px; font-size: 13px; font-weight: bold; display: block; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    📍 CHỈ ĐƯỜNG TỚI ĐÂY
+                </a>
+            </div>
+            """
+
+            folium.Marker(
+                location=[vi_do, kinh_do],
+                popup=folium.Popup(popup_html, max_width=320),
+                tooltip=f"Chạm để xem: {di_tich['Ten']}",
+                icon=folium.Icon(color=ui_config['color'], icon=ui_config['icon'], prefix='glyphicon')
+            ).add_to(m)
+
+
+
+        from folium import Element
+        # 1. TIÊM MÃ JAVASCRIPT ĐỂ ĐÁNH THỨC BẢN ĐỒ SAU 0.5 GIÂY
+        js_danh_thuc = """
+        <script>
+            setTimeout(function(){
+                window.dispatchEvent(new Event('resize'));
+            }, 500);
+        </script>
+        """
+        m.get_root().html.add_child(Element(js_danh_thuc))
+
+        # 2. XUẤT BẢN ĐỒ RA NHƯ CŨ
+        import streamlit.components.v1 as components
+        # ép render tĩnh:
+        components.html(m._repr_html_(), height=660, scrolling=True)
 
 
 # ==============================================================================
@@ -3567,4 +5140,12 @@ class QuanLyCaNhanHoa:
 # ==============================================================================
 
 if __name__ == "__main__":
+    # 1. Đánh thức luồng lắng nghe ngầm của Bot Telegram TRƯỚC TIÊN
+    try:
+        TelegramBotManager.start_background_bot()
+    except Exception as e:
+        pass
+        
+    # 2. Sau khi Bot đã thức, mới bắt đầu vẽ giao diện SAU CÙNG
     SoChiHuyGiaoDien.render_app()
+    
