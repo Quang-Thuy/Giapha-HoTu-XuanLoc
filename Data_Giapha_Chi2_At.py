@@ -13,14 +13,14 @@ raw_data = [
    # ==========================================================
    # ĐỜI THỨ 3: CÁC CỤ ĐỨNG ĐẦU CHI
    # ==========================================================
-   ("110.03.0.001", "100.02.0.001", "Từ Hữu Liện", "", "Bà Trần Thị Tần", "", "", "11/12AL", "Con đầu cụ Trí. Đứng đầu Chi 1. Làm chức Khang hầu huyện, Huyện thừa. Lấy bà Bà Trần Thị Tần (giỗ 08/9 AL). Sinh hạ: Từ Hữu Di", "", ""),
-   ("120.03.0.002", "100.02.0.001", "Từ Hữu Dực", "", "Bà Ngô Thị Nữ Tắc", "", "", "", "Con thứ 2 cụ Trí. Đứng đầu Chi 2. Làm chức Thí tướng sĩ lang, Thừa hoa điện trí sự. Sinh hạ: Từ Hữu Kỵ, Từ Hữu Tương, Từ Hữu Tạc, Từ Hữu Tỉnh, Từ Hữu Ẩm, Từ Hữu Lộc (tảo vong), Từ Hữu Phú (tảo vong). [6 Con gái: Liệu, Đỏ, Thắm, Dênh, Anh, Yến đều chết sớm].", "", ""),
-   ("130.03.0.003", "100.02.0.001", "Từ Hữu Lạng", "", "Bà Trần Thị Yêm", "", "", "", "Con thứ 3 cụ Trí. Đứng đầu Chi 3. Ông làm tri điện nội chức, thí tướng sĩ lang. Hưởng kỳ thọ. Sinh hạ: Từ Hữu Tình, Từ Hữu Tính (Chết sớm)", "", ""),
-   ("100.03.0.004", "100.02.0.001", "Nguyễn Bá Hoan", "", "", "", "", "01/8 AL", "", "Con nuôi", ""),
-   ("240.03.0.005", "200.02.0.002", "Từ Hữu Màn", "", "Bà Trần Thị Lụ (Hiệu Ái Hộ)", "", "", "", "Con đầu cụ Mưu. Đứng đầu Chi 4. Ông làm Thầy thuốc, Y dược tế sinh. Hưởng kỳ thọ. Sinh hạ: Từ Hữu Hiển, Từ Hữu Kiến (chết sớm), Từ Thị Dục (chết sớm), Từ Hữu Thông (tảo một), Từ Hữu Minh (tảo vong)", "", ""),
-   ("250.03.0.006", "200.02.0.002", "Từ Hữu Hùng", "", "Bà Trần Thị Bích (Hiệu Từ Thuận)", "", "", "", "Con thứ 2 cụ Mưu. Đứng đầu Chi 5. Ông làm chức Tri bộ kiêm Chính đạo, Nghĩa nam. Sinh hạ: Từ Hữu Linh, Từ Hữu Cảo, Từ Hữu Đỏ (tảo vong), Từ Hữu Đỏ (tảo vong), [4 con gái: Vẹ, Thanh, Cần, Đỏ đều tảo vong]", "", ""),
-   ("260.03.0.007", "200.02.0.002", "Từ Hữu Lân", "", "Bà Trần Thị Ảnh (Hiệu Tiệp Ảnh)", "", "", "", "Con thứ 3 cụ Mưu. Đứng đầu Chi 6. Ông làm ưu binh đội trưởng. Sinh hạ: Từ Hữu Niên, Từ Hữu Điền, Từ Hữu Trung (tảo vong)", "", ""),
-   ("270.03.0.008", "200.02.0.002", "Từ Hữu Lạc", "", "Bà cả Hồ Thị (Hiệu Thuần Thục), Bà thứ Hà Thị (Hiệu Từ Hiên)", "", "", "", "Con thứ 4 cụ Mưu. Đứng đầu Chi 7. Ông làm việc cho nhà Vua, Chức vụ Ban cai đội Phó cơ chưởng Ngọc hầu. Sinh hạ: Từ Hữu Thận, Từ Hữu Đỏ (tảo một), Từ Thị Đỏ (tảo vong), Từ Hữu Chúng (tảo vong), Từ Thị Thuyết (tảo một)", "", ""),
+   ("110.03.0.001", "100.02.0.001", "Từ Hữu Liện", "", "Bà Trần Thị Tần", "", "", "11/12AL", "Con đầu cụ Từ Hữu Trí. Đứng đầu Chi 1. Làm chức Khang hầu huyện, Huyện thừa. Lấy bà Bà Trần Thị Tần (giỗ 08/9 AL). Sinh hạ: Từ Hữu Di", "", ""),
+   ("120.03.0.002", "100.02.0.001", "Từ Hữu Dực", "", "Bà Ngô Thị Nữ Tắc", "", "", "", "Con thứ 2 cụ Từ Hữu Trí. Đứng đầu Chi 2. Làm chức Thí tướng sĩ lang, Thừa hoa điện trí sự. Sinh hạ: Từ Hữu Kỵ, Từ Hữu Tương, Từ Hữu Tạc, Từ Hữu Tỉnh, Từ Hữu Ẩm, Từ Hữu Lộc (tảo vong), Từ Hữu Phú (tảo vong). [6 Con gái: Liệu, Đỏ, Thắm, Dênh, Anh, Yến đều chết sớm].", "", ""),
+   ("130.03.0.003", "100.02.0.001", "Từ Hữu Lạng", "", "Bà Trần Thị Yêm", "", "", "", "Con thứ 3 cụ Từ Hữu Trí. Đứng đầu Chi 3. Ông làm tri điện nội chức, thí tướng sĩ lang. Hưởng kỳ thọ. Sinh hạ: Từ Hữu Tình, Từ Hữu Tính (Chết sớm)", "", ""),
+   ("100.03.0.004", "100.02.0.001", "Nguyễn Bá Hoan", "", "", "", "", "01/8 AL", "Con nuôi cụ Từ Hữu Trí", "Con nuôi", ""),
+   ("240.03.0.005", "200.02.0.002", "Từ Hữu Màn", "", "Bà Trần Thị Lụ (Hiệu Ái Hộ)", "", "", "", "Con đầu cụ Từ Hữu Mưu. Đứng đầu Chi 4. Ông làm Thầy thuốc, Y dược tế sinh. Hưởng kỳ thọ. Sinh hạ: Từ Hữu Hiển, Từ Hữu Kiến (chết sớm), Từ Thị Dục (chết sớm), Từ Hữu Thông (tảo một), Từ Hữu Minh (tảo vong)", "", ""),
+   ("250.03.0.006", "200.02.0.002", "Từ Hữu Hùng", "", "Bà Trần Thị Bích (Hiệu Từ Thuận)", "", "", "", "Con thứ 2 cụ Từ Hữu Mưu. Đứng đầu Chi 5. Ông làm chức Tri bộ kiêm Chính đạo, Nghĩa nam. Sinh hạ: Từ Hữu Linh, Từ Hữu Cảo, Từ Hữu Đỏ (tảo vong), Từ Hữu Đỏ (tảo vong), [4 con gái: Vẹ, Thanh, Cần, Đỏ đều tảo vong]", "", ""),
+   ("260.03.0.007", "200.02.0.002", "Từ Hữu Lân", "", "Bà Trần Thị Ảnh (Hiệu Tiệp Ảnh)", "", "", "", "Con thứ 3 cụ Từ Hữu Mưu. Đứng đầu Chi 6. Ông làm ưu binh đội trưởng. Sinh hạ: Từ Hữu Niên, Từ Hữu Điền, Từ Hữu Trung (tảo vong)", "", ""),
+   ("270.03.0.008", "200.02.0.002", "Từ Hữu Lạc", "", "Bà cả Hồ Thị (Hiệu Thuần Thục), Bà thứ Hà Thị (Hiệu Từ Hiên)", "", "", "", "Con thứ 4 cụ Từ Hữu Mưu. Đứng đầu Chi 7. Ông làm việc cho nhà Vua, Chức vụ Ban cai đội Phó cơ chưởng Ngọc hầu. Sinh hạ: Từ Hữu Thận, Từ Hữu Đỏ (tảo một), Từ Thị Đỏ (tảo vong), Từ Hữu Chúng (tảo vong), Từ Thị Thuyết (tảo một)", "", ""),
    # ==========================================================
    # ĐỜI THỨ 4: PHÂN RẼ VÀO CÁC PHÁI
    # ==========================================================
@@ -593,14 +593,14 @@ raw_data = [
    # CHI 1
    # ------------------------------------
    ("111.09.0.001", "111.08.0.002", "Từ Hữu Vện", "Từ Hữu Hà", "Bà Trần Thị Nghĩa", "", "", "", "Con ông Điệt. Ông làm nghề thợ mộc. Sinh hạ: Từ Hữu Đắc, Từ Hữu Bật, Từ Hữu Phú, Từ Hữu Tư (mất sớm), Từ Hữu Ngụ, Từ Thị Xuân (chồng Thạch Sơn, Thạch Hà).", "", ""),
-   ("111.09.0.002", "111.08.0.005", "Từ Hữu Cháu", "", "Bà: lấy chồng khác", "", "", "", "Con ông Huyền. Sinh hạ: Từ Hữu Tân.", "", ""),
-   ("111.09.0.003", "111.08.0.005", "Từ Hữu Thụ", "Ông Dụng", "Bà Trần Thị Đởm", "", "", "", "Con thứ 2 ông Huyền. Sinh hạ: Từ Thị Dũng (lấy ông Trần Đạt trong làng), Từ Thị Hoà (lấy Trần Toản trong làng), Từ Hữu Đính, Từ Thị Bình, Từ Thị Minh, Từ Hữu Bính.", "", ""),
-   ("111.09.0.004", "111.08.0.005", "Từ Hữu Phù", "Từ Hữu Tửu", "Bà Trần Thị Em", "", "", "", "Con thứ 3 ông Huyền. Ông trước làm cán bộ xã và HTX nhiều nhiệm kỳ. Sinh hạ: Từ Thị Hương (lấy chồng về Xóm Mới), Từ Hữu Đạt, Từ Thị Xuân (Lấy ông Trần Tám (Cân)trong làng).", "", ""),
-   ("111.09.1.005", "111.08.0.005", "Từ Thị Tư", "", "Nguyễn Chung", "", "", "", "Con ông Huyền. Lấy ông Nguyễn Chung ở trong làng", "", ""),
-   ("111.09.1.006", "111.08.0.005", "Từ Thị Lục", "", "Trần Hoàn", "", "", "", "Con ông Huyền. Lấy ông Trần Hoàn ở trong làng", "", ""),
-   ("111.09.1.901", "111.08.0.005", "Từ Thị Bát", "", "", "", "", "", "Con ông Huyền.", "Chết sớm", ""),
-   ("111.09.0.007", "111.08.0.005", "Từ Hữu Dấu", "", "Bà Nguyễn Thị Hoa", "", "", "", "Con ông Huyền. Sinh hạ: Từ Hữu Huề, Từ Hữu Huê, Từ Hữu Hòa, Từ Thị Phương.", "", ""),
-   ("111.09.0.902", "111.08.0.005", "Từ Hữu Dạ", "", "", "", "", "", "Con ông Huyền.", "Chết sớm", ""),
+   ("111.09.0.002", "111.08.0.005", "Từ Hữu Cháu", "", "Bà: lấy chồng khác", "", "", "", "Con ông Từ Hữu Năm. Sinh hạ: Từ Hữu Tân.", "", ""),
+   ("111.09.0.003", "111.08.0.005", "Từ Hữu Thụ", "Ông Dụng", "Bà Trần Thị Đởm", "", "", "", "Con thứ 2 ông Từ Hữu Năm. Sinh hạ: Từ Thị Dũng (lấy ông Trần Đạt trong làng), Từ Thị Hoà (lấy Trần Toản trong làng), Từ Hữu Đính, Từ Thị Bình, Từ Thị Minh, Từ Hữu Bính.", "", ""),
+   ("111.09.0.004", "111.08.0.005", "Từ Hữu Phù", "Từ Hữu Tửu", "Bà Trần Thị Em", "", "", "", "Con thứ 3 ông Từ Hữu Năm. Ông trước làm cán bộ xã và HTX nhiều nhiệm kỳ. Sinh hạ: Từ Thị Hương (lấy chồng về Xóm Mới), Từ Hữu Đạt, Từ Thị Xuân (Lấy ông Trần Tám (Cân)trong làng).", "", ""),
+   ("111.09.1.005", "111.08.0.005", "Từ Thị Tư", "", "Nguyễn Chung", "", "", "", "Con ông Từ Hữu Năm. Lấy ông Nguyễn Chung ở trong làng", "", ""),
+   ("111.09.1.006", "111.08.0.005", "Từ Thị Lục", "", "Trần Hoàn", "", "", "", "Con ông Từ Hữu Năm. Lấy ông Trần Hoàn ở trong làng", "", ""),
+   ("111.09.1.901", "111.08.0.005", "Từ Thị Bát", "", "", "", "", "", "Con ông Từ Hữu Năm.", "Chết sớm", ""),
+   ("111.09.0.007", "111.08.0.005", "Từ Hữu Dấu", "", "Bà Nguyễn Thị Hoa", "", "", "", "Con ông Từ Hữu Năm. Sinh hạ: Từ Thị Thu (chết sớm), Từ Hữu Huề, Từ Hữu Huê, Từ Hữu Hòa, Từ Thị Hoài Phương.", "", ""),
+   ("111.09.0.902", "111.08.0.005", "Từ Hữu Dạ", "", "", "", "", "", "Con ông Từ Hữu Năm.", "Chết sớm", ""),
    ("111.09.0.008", "111.08.0.011", "Từ Hữu Hường", "", "", "", "", "", "Con ông Đồng. Ông là Liệt sĩ, vợ về lấy chồng khác.", "Liệt sĩ", ""),
    ("111.09.0.009", "111.08.0.011", "Từ Hữu Hồng", "", "Bà Nguyễn Thị Minh", "", "", "", "Con ông Đồng. Lấy bà Nguyễn Thị Minh ở Thạch Hà. Sinh hạ: Từ Hữu Quân, Từ Thị Thanh (chết đuối), Từ Thị Lý, Từ Hữu Mạo.", "", ""),
    ("111.09.0.010", "111.08.0.011", "Từ Hữu Bàng", "", "Bà Nguyễn Thị Chắt", "", "", "", "Con ông Đồng. Sinh hạ: Từ Thị Hoa, Từ Hữu Lan, Từ Thị Phương.", "", ""),
